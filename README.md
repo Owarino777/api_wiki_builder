@@ -60,6 +60,71 @@ php artisan migrate:fresh --seed --force
 
 `http://localhost:8000/api/v1`
 
+## Windows PowerShell test flow (Herd Lite)
+
+If `php` is not in PATH, use the Herd binary directly:
+
+```powershell
+$phpExe = "$env:USERPROFILE\.config\herd-lite\bin\php.exe"
+& $phpExe -v
+& $phpExe artisan --version
+```
+
+Prepare local SQLite flow:
+
+```powershell
+New-Item -ItemType File -Force .\database\database.sqlite
+& $phpExe artisan migrate:fresh --seed
+& $phpExe artisan route:list
+```
+
+Start API:
+
+```powershell
+& $phpExe artisan serve
+```
+
+Get seeded API key:
+
+```powershell
+& $phpExe artisan tinker --execute='dump(\App\Models\ApiKey::query()->first()?->key);'
+```
+
+Test write route (expected `401` if `API-KEY` is missing):
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri "http://127.0.0.1:8000/api/v1/builds" `
+  -ContentType "application/json" `
+  -Body '{"game_id":1,"title":"Test build","build_profile_id":1,"equipment_items":[{"equipment_item_id":1,"position":1}]}'
+```
+
+Test write route with API key:
+
+```powershell
+$apiKey = "dev-wiki-builder-key-1234567890abcdef"
+Invoke-RestMethod -Method Post `
+  -Uri "http://127.0.0.1:8000/api/v1/builds" `
+  -Headers @{ "API-KEY" = $apiKey } `
+  -ContentType "application/json" `
+  -Body '{
+    "game_id": 1,
+    "title": "Test build",
+    "description": "demo",
+    "build_profile_id": 1,
+    "equipment_items": [
+      { "equipment_item_id": 1, "position": 1 },
+      { "equipment_item_id": 2, "position": 2 }
+    ]
+  }'
+```
+
+Summary endpoint:
+
+```powershell
+Invoke-RestMethod "http://127.0.0.1:8000/api/v1/builds/4/summary" | ConvertTo-Json -Depth 10
+```
+
 ## Seeded credentials
 
 - `API-KEY`: `dev-wiki-builder-key-1234567890abcdef`
@@ -136,3 +201,5 @@ curl -s -X POST "http://localhost:8000/api/v1/builds/compare" \
 
 - If you use local PHP instead of Docker, ensure PHP 8.3+ and MySQL 8 are available.
 - Responses are standardized via `ApiResponse::success()` and `ApiResponse::error()`.
+- `api/v1/builds/<ID>/summary` now returns `404` because route params are constrained to numeric IDs.
+- If you run SQLite locally, keep `CACHE_STORE=file` in `.env` to avoid `no such table: cache` on `artisan optimize:clear`.
