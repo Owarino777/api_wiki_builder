@@ -1,153 +1,260 @@
 # Wiki Builder API (Laravel 12)
 
-REST API for the Wiki Builder project, generated from the MPD schema with business rules and course-oriented security.
+API REST pour le projet Wiki Builder — gestion d'un catalogue multi-jeux d'équipements et d'un module Builder pour assembler et comparer des configurations ("builds/loadouts").
 
-## Target stack
+## Stack technique
 
-- Laravel 12
-- PHP 8.3+
-- MySQL 8
-- Docker Compose
+- **Laravel 12** — Framework PHP
+- **PHP 8.3+**
+- **MySQL 8.0**
+- **Docker Compose** (app + db)
 
-## Project deliverables implemented
+---
 
-1. `docker-compose.yml` + `Dockerfile` + `.env.example`
-2. MPD migrations only (no Laravel default users/cache/jobs migrations)
-3. Seeders with required data volume
-4. Eloquent models + relationships
-5. `CheckApiKey` + `CheckRole` middlewares registered in `bootstrap/app.php`
-6. Controllers + routes + FormRequests + API Resources
-7. README with exact commands and curl examples
-
-## Security model
-
-- All routes are throttled with `throttle:60,1`.
-- Write routes require `API-KEY` header (`api_keys.key`, `is_active=1`).
-- Admin write routes also require `X-USER-ID` mapped to `users.role=admin`.
-- Middleware aliases are registered in `bootstrap/app.php` (`check.api.key`, `check.role`).
-
-## Database schema
-
-- Fully MPD-driven schema.
-- Includes:
-  - `users` table matching MPD (`username`, `email`, `role`, timestamps).
-  - `api_keys`.
-  - Pivot tables.
-  - Composite PK on `build_equipment_modifiers (build_id, equipment_item_id, equipment_modifier_id)`.
-- No default Laravel migrations.
-
-## Run with Docker
+## Déploiement rapide (Docker)
 
 ```bash
+# Cloner le projet
+git clone <url-du-repo>
+cd api_wiki_builder
+
+# Copier le fichier d'environnement
 cp .env.example .env
+
+# Lancer les conteneurs
 docker compose up -d --build
 ```
 
-## Exact commands (required)
+L'API démarre automatiquement sur `http://localhost:8000/api/v1`.
+
+Le docker-compose exécute automatiquement :
+1. `composer install`
+2. `php artisan key:generate`
+3. `php artisan migrate:fresh --seed --force`
+4. `php artisan serve`
+
+### Dump SQL
+
+Un dump SQL est fourni dans `dump/wiki_builder.sql` pour importer les données sans passer par les migrations :
 
 ```bash
-php artisan migrate --force
-php artisan db:seed --force
+mysql -u wiki -pwiki wiki_builder < dump/wiki_builder.sql
 ```
 
-## Clean reset workflow
+---
+
+## Déploiement local (sans Docker)
+
+### Prérequis
+
+- PHP 8.3+
+- Composer 2.x
+- MySQL 8.0
+
+### Installation
 
 ```bash
+composer install
+cp .env.example .env
+```
+
+Configurer `.env` :
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=wiki_game_builder
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+```bash
+php artisan key:generate
 php artisan migrate:fresh --seed --force
+php artisan serve
 ```
 
-## Base URL
+L'API est accessible sur `http://localhost:8000/api/v1`.
 
-`http://localhost:8000/api/v1`
+---
 
-## Windows PowerShell test flow (Herd Lite)
+## Structure du projet
 
-If `php` is not in PATH, use the Herd binary directly:
-
-```powershell
-$phpExe = "$env:USERPROFILE\.config\herd-lite\bin\php.exe"
-& $phpExe -v
-& $phpExe artisan --version
+```
+app/
+├── Enums/
+│   └── UserRole.php              # Enum PHP pour les rôles (admin/user)
+├── Http/
+│   ├── Controllers/Api/          # 9 controllers REST
+│   ├── Middleware/                # CheckApiKey, CheckRole
+│   ├── Requests/                 # 10 Form Requests (validation)
+│   └── Resources/                # 6 API Resources (sérialisation JSON)
+├── Models/                       # 8 modèles Eloquent
+├── Services/                     # BuildRuleService, BuildSummaryService
+├── Support/
+│   └── ApiResponse.php           # Wrapper réponses JSON standardisées
+database/
+├── migrations/                   # 12 fichiers (1 par table)
+├── seeders/                      # WikiBuilderSeeder + DatabaseSeeder
+dump/
+└── wiki_builder.sql              # Dump SQL avec données de test
+doc/
+├── AI_INSTRUCTIONS.md            # Cahier des charges IA
+├── wiki_game_builder.md          # Spécifications fonctionnelles + MPD
+├── architecture.md               # Documentation architecture prof
+├── support_cours.md              # Support de cours du prof
+└── demarche_et_methodo.md        # Démarches de construction
 ```
 
-Prepare local SQLite flow:
+---
 
-```powershell
-New-Item -ItemType File -Force .\database\database.sqlite
-& $phpExe artisan migrate:fresh --seed
-& $phpExe artisan route:list
+## Sécurité
+
+| Couche | Middleware | Description |
+|--------|-----------|-------------|
+| Throttle | `throttle:60,1` | 60 requêtes/min sur toutes les routes |
+| API Key | `check.api.key` | Header `API-KEY` validé en base (`api_keys.is_active = true`) |
+| Rôle | `check.role:admin` | Header `X-USER-ID` → vérifie `users.role` en base |
+
+Les middlewares sont enregistrés dans `bootstrap/app.php` (convention Laravel 12, pas `Kernel.php`).
+
+---
+
+## RGPD
+
+L'API implémente les droits RGPD suivants (routes protégées admin) :
+
+| Droit | Endpoint | Description |
+|-------|----------|-------------|
+| Droit d'accès | `GET /api/v1/users/{id}/export` | Exporte toutes les données personnelles |
+| Droit à l'oubli | `POST /api/v1/users/{id}/anonymize` | Anonymise username et email |
+| Droit de suppression | `DELETE /api/v1/users/{id}` | Supprime l'utilisateur, dissocie les builds |
+
+**Principes RGPD respectés :**
+- Minimisation des données : pas de mot de passe stocké, données strictement nécessaires
+- Droit d'accès : endpoint d'export des données personnelles
+- Droit à l'effacement : anonymisation ou suppression complète
+- Pas de données sensibles collectées (pas de données de santé, biométriques, etc.)
+
+---
+
+## Endpoints API
+
+### Base URL : `/api/v1`
+
+### Lecture publique (GET)
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /games` | Liste des jeux (paginé) |
+| `GET /games/{id}` | Détail d'un jeu |
+| `GET /games/{id}/build-profiles` | Profils d'un jeu |
+| `GET /games/{id}/equipment-items` | Équipements d'un jeu (filtres + tri + pagination) |
+| `GET /games/{id}/equipment-modifiers` | Modificateurs d'un jeu |
+| `GET /tags` | Liste des tags |
+| `GET /equipment-items` | Liste globale des équipements |
+| `GET /equipment-items/{id}` | Détail d'un équipement |
+| `GET /equipment-modifiers` | Liste globale des modificateurs |
+| `GET /equipment-modifiers/{id}` | Détail d'un modificateur |
+| `GET /builds/{id}` | Détail d'un build |
+| `GET /builds/{id}/summary` | Résumé stats d'un build |
+| `POST /builds/compare` | Comparaison de deux builds |
+
+### Écriture protégée (API-KEY)
+
+| Endpoint | Description |
+|----------|-------------|
+| `POST /builds` | Créer un build |
+| `PUT /builds/{id}` | Modifier un build |
+| `DELETE /builds/{id}` | Supprimer un build |
+
+### Administration (API-KEY + X-USER-ID admin)
+
+| Endpoint | Description |
+|----------|-------------|
+| `POST /build-profiles` | Créer un profil |
+| `PUT /build-profiles/{id}` | Modifier un profil |
+| `DELETE /build-profiles/{id}` | Supprimer un profil |
+| `POST /equipment-items` | Créer un équipement |
+| `PUT /equipment-items/{id}` | Modifier un équipement |
+| `DELETE /equipment-items/{id}` | Supprimer un équipement |
+| `POST /equipment-modifiers` | Créer un modificateur |
+| `PUT /equipment-modifiers/{id}` | Modifier un modificateur |
+| `DELETE /equipment-modifiers/{id}` | Supprimer un modificateur |
+| `POST /equipment-items/{id}/compatible-modifiers/{modifierId}` | Ajouter compatibilité |
+| `DELETE /equipment-items/{id}/compatible-modifiers/{modifierId}` | Retirer compatibilité |
+| `POST /equipment-items/{id}/tags/{tagId}` | Associer un tag |
+| `DELETE /equipment-items/{id}/tags/{tagId}` | Dissocier un tag |
+| `GET /users/{id}/export` | Export données RGPD |
+| `POST /users/{id}/anonymize` | Anonymisation RGPD |
+| `DELETE /users/{id}` | Suppression RGPD |
+
+### Filtres & tri disponibles
+
+**Equipment items** : `game_id`, `slot`, `rarity`, `score_min`, `score_max`, `tag`, `sort_by`, `sort_dir`, `per_page`
+
+**Equipment modifiers** : `game_id`, `modifier_type`, `score_min`, `score_max`, `sort_by`, `sort_dir`, `per_page`
+
+---
+
+## Format des réponses (Serialization)
+
+Toutes les réponses suivent le format `ApiResponse` standardisé :
+
+```json
+{
+  "success": true,
+  "message": "OK",
+  "data": { ... }
+}
 ```
 
-Start API:
-
-```powershell
-& $phpExe artisan serve
+En cas d'erreur :
+```json
+{
+  "success": false,
+  "message": "Validation failed.",
+  "errors": { ... }
+}
 ```
 
-Get seeded API key:
+La gestion des exceptions est centralisée dans `bootstrap/app.php` : les erreurs 404, 429 (throttle) et les exceptions non gérées retournent toujours le format JSON standardisé.
 
-```powershell
-& $phpExe artisan tinker --execute='dump(\App\Models\ApiKey::query()->first()?->key);'
-```
+---
 
-Test write route (expected `401` if `API-KEY` is missing):
+## Règles métier
 
-```powershell
-Invoke-RestMethod -Method Post `
-  -Uri "http://127.0.0.1:8000/api/v1/builds" `
-  -ContentType "application/json" `
-  -Body '{"game_id":1,"title":"Test build","build_profile_id":1,"equipment_items":[{"equipment_item_id":1,"position":1}]}'
-```
+1. **Build mono-jeu** : un build ne peut référencer que des items/modifiers/profils du même jeu
+2. **Compatibilité** : un modifier ne peut être ajouté que si la compatibilité existe dans `equipment_item_compatible_modifiers`
+3. **Résumé (NULL = 0)** : totaux = SUM(stats items) + SUM(deltas modifiers), avec `COALESCE(..., 0)`
 
-Test write route with API key:
+---
 
-```powershell
-$apiKey = "dev-wiki-builder-key-1234567890abcdef"
-Invoke-RestMethod -Method Post `
-  -Uri "http://127.0.0.1:8000/api/v1/builds" `
-  -Headers @{ "API-KEY" = $apiKey } `
-  -ContentType "application/json" `
-  -Body '{
-    "game_id": 1,
-    "title": "Test build",
-    "description": "demo",
-    "build_profile_id": 1,
-    "equipment_items": [
-      { "equipment_item_id": 1, "position": 1 },
-      { "equipment_item_id": 2, "position": 2 }
-    ]
-  }'
-```
+## Identifiants de test (seeder)
 
-Summary endpoint:
+| Donnée | Valeur |
+|--------|--------|
+| API-KEY | `dev-wiki-builder-key-1234567890abcdef` |
+| Admin (X-USER-ID) | `1` (role=admin) |
+| User standard | `2` (role=user) |
 
-```powershell
-Invoke-RestMethod "http://127.0.0.1:8000/api/v1/builds/4/summary" | ConvertTo-Json -Depth 10
-```
+---
 
-## Seeded credentials
+## Exemples curl
 
-- `API-KEY`: `dev-wiki-builder-key-1234567890abcdef`
-- Admin user id: `1` (`role=admin`)
-- Standard user id: `2` (`role=user`)
-
-## Curl examples
-
-### Public read endpoints
+### Lire les jeux
 
 ```bash
 curl -s "http://localhost:8000/api/v1/games"
 ```
 
+### Lire les équipements avec filtres
+
 ```bash
 curl -s "http://localhost:8000/api/v1/games/1/equipment-items?slot=weapon&rarity=epic&score_min=40&sort_by=score&sort_dir=desc&per_page=10"
 ```
 
-```bash
-curl -s "http://localhost:8000/api/v1/builds/1/summary"
-```
-
-### Create build (API key required)
+### Créer un build (API key requise)
 
 ```bash
 curl -s -X POST "http://localhost:8000/api/v1/builds" \
@@ -158,7 +265,6 @@ curl -s -X POST "http://localhost:8000/api/v1/builds" \
     "user_id": 2,
     "build_profile_id": 1,
     "title": "My Build",
-    "description": "Test build",
     "equipment_items": [
       { "equipment_item_id": 1, "position": 1 },
       { "equipment_item_id": 2, "position": 2 }
@@ -169,7 +275,21 @@ curl -s -X POST "http://localhost:8000/api/v1/builds" \
   }'
 ```
 
-### Admin write endpoint (API key + X-USER-ID required)
+### Résumé d'un build
+
+```bash
+curl -s "http://localhost:8000/api/v1/builds/1/summary"
+```
+
+### Comparer deux builds
+
+```bash
+curl -s -X POST "http://localhost:8000/api/v1/builds/compare" \
+  -H "Content-Type: application/json" \
+  -d '{"left_build_id": 1, "right_build_id": 2}'
+```
+
+### Endpoint admin (API key + rôle admin)
 
 ```bash
 curl -s -X POST "http://localhost:8000/api/v1/equipment-items" \
@@ -181,25 +301,37 @@ curl -s -X POST "http://localhost:8000/api/v1/equipment-items" \
     "name": "New Helmet",
     "slot": "helmet",
     "rarity": "rare",
-    "tier_level": "T2",
     "score": 55
   }'
 ```
 
-### Compare builds
+### RGPD — Export données utilisateur
 
 ```bash
-curl -s -X POST "http://localhost:8000/api/v1/builds/compare" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "left_build_id": 1,
-    "right_build_id": 2
-  }'
+curl -s "http://localhost:8000/api/v1/users/2/export" \
+  -H "API-KEY: dev-wiki-builder-key-1234567890abcdef" \
+  -H "X-USER-ID: 1"
 ```
 
-## Notes
+### RGPD — Anonymisation
 
-- If you use local PHP instead of Docker, ensure PHP 8.3+ and MySQL 8 are available.
-- Responses are standardized via `ApiResponse::success()` and `ApiResponse::error()`.
-- `api/v1/builds/<ID>/summary` now returns `404` because route params are constrained to numeric IDs.
-- If you run SQLite locally, keep `CACHE_STORE=file` in `.env` to avoid `no such table: cache` on `artisan optimize:clear`.
+```bash
+curl -s -X POST "http://localhost:8000/api/v1/users/2/anonymize" \
+  -H "API-KEY: dev-wiki-builder-key-1234567890abcdef" \
+  -H "X-USER-ID: 1"
+```
+
+---
+
+## Commandes utiles
+
+```bash
+# Reset complet
+php artisan migrate:fresh --seed --force
+
+# Liste des routes
+php artisan route:list
+
+# Lancer les tests
+php artisan test
+```

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Support\ApiResponse;
 use Closure;
@@ -19,7 +20,7 @@ class CheckRole
         }
 
         $user = User::query()->find((int) $userId);
-        if ($user === null || $user->role !== $role) {
+        if ($user === null || $user->role->value !== $role) {
             return ApiResponse::error('Forbidden. Insufficient role.', 403);
         }
 

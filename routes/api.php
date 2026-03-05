@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\EquipmentItemController;
 use App\Http\Controllers\Api\EquipmentItemTagController;
 use App\Http\Controllers\Api\EquipmentModifierController;
 use App\Http\Controllers\Api\GameController;
+use App\Http\Controllers\Api\RgpdController;
 use App\Http\Controllers\Api\TagController;
 use Illuminate\Support\Facades\Route;
 
@@ -61,6 +62,11 @@ Route::prefix('v1')
 
                 Route::post('/equipment-items/{equipmentItemId}/tags/{tagId}', [EquipmentItemTagController::class, 'attach']);
                 Route::delete('/equipment-items/{equipmentItemId}/tags/{tagId}', [EquipmentItemTagController::class, 'detach']);
+
+                // RGPD — Admin endpoints
+                Route::get('/users/{id}/export', [RgpdController::class, 'export']);
+                Route::post('/users/{id}/anonymize', [RgpdController::class, 'anonymize']);
+                Route::delete('/users/{id}', [RgpdController::class, 'destroy']);
             });
         });
     });
