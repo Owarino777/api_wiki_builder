@@ -115,8 +115,8 @@ return new class extends Migration {
         });
 
         Schema::create('equipment_item_compatible_modifiers', function (Blueprint $table): void {
-            $table->foreignId('equipment_item_id')->constrained('equipment_items');
-            $table->foreignId('equipment_modifier_id')->constrained('equipment_modifiers');
+            $table->foreignId('equipment_item_id')->constrained('equipment_items', indexName: 'eicm_item_fk');
+            $table->foreignId('equipment_modifier_id')->constrained('equipment_modifiers', indexName: 'eicm_modifier_fk');
             $table->primary(['equipment_item_id', 'equipment_modifier_id']);
 
             $table->index('equipment_modifier_id', 'equipment_item_compatible_modifiers_index_15');
@@ -133,8 +133,8 @@ return new class extends Migration {
 
         Schema::create('build_equipment_modifiers', function (Blueprint $table): void {
             $table->foreignId('build_id')->constrained('builds');
-            $table->foreignId('equipment_item_id')->constrained('equipment_items');
-            $table->foreignId('equipment_modifier_id')->constrained('equipment_modifiers');
+            $table->foreignId('equipment_item_id')->constrained('equipment_items', indexName: 'bem_item_fk');
+            $table->foreignId('equipment_modifier_id')->constrained('equipment_modifiers', indexName: 'bem_modifier_fk');
             $table->primary(['build_id', 'equipment_item_id', 'equipment_modifier_id']);
 
             $table->index('equipment_modifier_id', 'build_equipment_modifiers_index_17');
