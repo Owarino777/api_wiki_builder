@@ -15,8 +15,8 @@ L'IA a été utilisée comme **assistant de développement**, jamais comme gén�
 2. **Correction de bugs** : 
    - Erreur MySQL "Identifier name too long" sur les FK des tables pivot (noms > 64 caractères). L'IA a identifié le problème et proposé l'utilisation du paramètre `indexName` dans les appels `constrained()`.
 
-3. **Audit de conformité** : L'IA a comparé le code existant avec les documents de référence du prof (`architecture.md`, `support_cours.md`, `wiki_game_builder.md`) pour identifier les écarts :
-   - Migration monolithique → splittée en 12 fichiers (1 par table, comme le prof fait)
+3. **Audit de conformité** : L'IA a comparé le code existant avec les documents de référence (`architecture.md`, `support_cours.md`, `wiki_game_builder.md`) pour identifier les écarts :
+   - Migration monolithique → splittée en 12 fichiers (1 par table)
    - Ajout de `onDelete('cascade')` sur les FK des tables pivot
    - Utilisation de `unsignedSmallInteger` au lieu de `smallInteger` pour `position`
    - Ajout de l'enum `UserRole` (comme dans `architecture.md` du prof)
@@ -33,7 +33,7 @@ L'IA a été utilisée comme **assistant de développement**, jamais comme gén�
 - Configuration de l'environnement local (MySQL, PHP, .env)
 - Tests manuels des endpoints via curl
 - Compréhension et application du MPD/MCD fourni
-- Vérification de la cohérence entre le code et le barème du prof
+- Vérification de la cohérence entre le code et le barème d'évaluation
 
 ### Pourquoi l'IA
 
