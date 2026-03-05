@@ -10,6 +10,11 @@ use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\TagController;
 use Illuminate\Support\Facades\Route;
 
+Route::pattern('id', '[0-9]+');
+Route::pattern('equipmentItemId', '[0-9]+');
+Route::pattern('equipmentModifierId', '[0-9]+');
+Route::pattern('tagId', '[0-9]+');
+
 Route::prefix('v1')
     ->middleware('throttle:60,1')
     ->group(function (): void {
