@@ -1,59 +1,138 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Wiki Builder API (Laravel 12)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API for the Wiki Builder project, generated from the MPD schema with business rules and course-oriented security.
 
-## About Laravel
+## Target stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel 12
+- PHP 8.3+
+- MySQL 8
+- Docker Compose
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Project deliverables implemented
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. `docker-compose.yml` + `Dockerfile` + `.env.example`
+2. MPD migrations only (no Laravel default users/cache/jobs migrations)
+3. Seeders with required data volume
+4. Eloquent models + relationships
+5. `CheckApiKey` + `CheckRole` middlewares registered in `bootstrap/app.php`
+6. Controllers + routes + FormRequests + API Resources
+7. README with exact commands and curl examples
 
-## Learning Laravel
+## Security model
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- All routes are throttled with `throttle:60,1`.
+- Write routes require `API-KEY` header (`api_keys.key`, `is_active=1`).
+- Admin write routes also require `X-USER-ID` mapped to `users.role=admin`.
+- Middleware aliases are registered in `bootstrap/app.php` (`check.api.key`, `check.role`).
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Database schema
 
-## Laravel Sponsors
+- Fully MPD-driven schema.
+- Includes:
+  - `users` table matching MPD (`username`, `email`, `role`, timestamps).
+  - `api_keys`.
+  - Pivot tables.
+  - Composite PK on `build_equipment_modifiers (build_id, equipment_item_id, equipment_modifier_id)`.
+- No default Laravel migrations.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Run with Docker
 
-### Premium Partners
+```bash
+cp .env.example .env
+docker compose up -d --build
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Exact commands (required)
 
-## Contributing
+```bash
+php artisan migrate --force
+php artisan db:seed --force
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Clean reset workflow
 
-## Code of Conduct
+```bash
+php artisan migrate:fresh --seed --force
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Base URL
 
-## Security Vulnerabilities
+`http://localhost:8000/api/v1`
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Seeded credentials
 
-## License
+- `API-KEY`: `dev-wiki-builder-key-1234567890abcdef`
+- Admin user id: `1` (`role=admin`)
+- Standard user id: `2` (`role=user`)
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Curl examples
+
+### Public read endpoints
+
+```bash
+curl -s "http://localhost:8000/api/v1/games"
+```
+
+```bash
+curl -s "http://localhost:8000/api/v1/games/1/equipment-items?slot=weapon&rarity=epic&score_min=40&sort_by=score&sort_dir=desc&per_page=10"
+```
+
+```bash
+curl -s "http://localhost:8000/api/v1/builds/1/summary"
+```
+
+### Create build (API key required)
+
+```bash
+curl -s -X POST "http://localhost:8000/api/v1/builds" \
+  -H "Content-Type: application/json" \
+  -H "API-KEY: dev-wiki-builder-key-1234567890abcdef" \
+  -d '{
+    "game_id": 1,
+    "user_id": 2,
+    "build_profile_id": 1,
+    "title": "My Build",
+    "description": "Test build",
+    "equipment_items": [
+      { "equipment_item_id": 1, "position": 1 },
+      { "equipment_item_id": 2, "position": 2 }
+    ],
+    "equipment_modifiers": [
+      { "equipment_item_id": 1, "equipment_modifier_id": 1 }
+    ]
+  }'
+```
+
+### Admin write endpoint (API key + X-USER-ID required)
+
+```bash
+curl -s -X POST "http://localhost:8000/api/v1/equipment-items" \
+  -H "Content-Type: application/json" \
+  -H "API-KEY: dev-wiki-builder-key-1234567890abcdef" \
+  -H "X-USER-ID: 1" \
+  -d '{
+    "game_id": 1,
+    "name": "New Helmet",
+    "slot": "helmet",
+    "rarity": "rare",
+    "tier_level": "T2",
+    "score": 55
+  }'
+```
+
+### Compare builds
+
+```bash
+curl -s -X POST "http://localhost:8000/api/v1/builds/compare" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "left_build_id": 1,
+    "right_build_id": 2
+  }'
+```
+
+## Notes
+
+- If you use local PHP instead of Docker, ensure PHP 8.3+ and MySQL 8 are available.
+- Responses are standardized via `ApiResponse::success()` and `ApiResponse::error()`.
