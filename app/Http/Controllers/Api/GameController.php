@@ -73,7 +73,9 @@ class GameController extends Controller
             return ApiResponse::error('Game not found.', 404);
         }
 
-        $query = EquipmentModifier::query()->where('game_id', $game->id);
+        $query = EquipmentModifier::query()
+            ->with(['compatibleItems:id,game_id,name,slot,rarity,tier_level,score'])
+            ->where('game_id', $game->id);
         $this->applyEquipmentModifierFilters($request, $query);
 
         $perPage = (int) $request->query('per_page', 15);
@@ -89,6 +91,9 @@ class GameController extends Controller
         }
         if ($request->filled('rarity')) {
             $query->where('rarity', $request->query('rarity'));
+        }
+        if ($request->filled('tier_level')) {
+            $query->where('tier_level', $request->query('tier_level'));
         }
         if ($request->filled('score_min')) {
             $query->where('score', '>=', (int) $request->query('score_min'));

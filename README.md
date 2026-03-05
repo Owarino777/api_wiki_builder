@@ -63,13 +63,15 @@ Configurer `.env` :
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=wiki_game_builder
+DB_DATABASE=wiki_builder
 DB_USERNAME=root
 DB_PASSWORD=
 ```
 
 ```bash
 php artisan key:generate
+php artisan migrate --force
+php artisan db:seed --force
 php artisan migrate:fresh --seed --force
 php artisan serve
 ```
@@ -151,11 +153,11 @@ L'API implémente les droits RGPD suivants (routes protégées admin) :
 | `GET /games/{id}/build-profiles` | Profils d'un jeu |
 | `GET /games/{id}/equipment-items` | Équipements d'un jeu (filtres + tri + pagination) |
 | `GET /games/{id}/equipment-modifiers` | Modificateurs d'un jeu |
-| `GET /tags` | Liste des tags |
+| `GET /tags` | Liste des tags avec équipements associés |
 | `GET /equipment-items` | Liste globale des équipements |
 | `GET /equipment-items/{id}` | Détail d'un équipement |
 | `GET /equipment-modifiers` | Liste globale des modificateurs |
-| `GET /equipment-modifiers/{id}` | Détail d'un modificateur |
+| `GET /equipment-modifiers/{id}` | Détail d'un modificateur avec équipements compatibles |
 | `GET /builds/{id}` | Détail d'un build |
 | `GET /builds/{id}/summary` | Résumé stats d'un build |
 | `POST /builds/compare` | Comparaison de deux builds |
@@ -191,7 +193,7 @@ L'API implémente les droits RGPD suivants (routes protégées admin) :
 
 ### Filtres & tri disponibles
 
-**Equipment items** : `game_id`, `slot`, `rarity`, `score_min`, `score_max`, `tag`, `sort_by`, `sort_dir`, `per_page`
+**Equipment items** : `game_id`, `slot`, `rarity`, `tier_level`, `score_min`, `score_max`, `tag`, `sort_by`, `sort_dir`, `per_page`
 
 **Equipment modifiers** : `game_id`, `modifier_type`, `score_min`, `score_max`, `sort_by`, `sort_dir`, `per_page`
 
@@ -251,7 +253,19 @@ curl -s "http://localhost:8000/api/v1/games"
 ### Lire les équipements avec filtres
 
 ```bash
-curl -s "http://localhost:8000/api/v1/games/1/equipment-items?slot=weapon&rarity=epic&score_min=40&sort_by=score&sort_dir=desc&per_page=10"
+curl -s "http://localhost:8000/api/v1/games/1/equipment-items?slot=weapon&tier_level=T1&rarity=epic&score_min=40&sort_by=score&sort_dir=desc&per_page=10"
+```
+
+### Lire les tags avec leurs équipements associés
+
+```bash
+curl -s "http://localhost:8000/api/v1/tags"
+```
+
+### Lire un modificateur avec ses équipements compatibles
+
+```bash
+curl -s "http://localhost:8000/api/v1/equipment-modifiers/1"
 ```
 
 ### Créer un build (API key requise)
@@ -326,6 +340,11 @@ curl -s -X POST "http://localhost:8000/api/v1/users/2/anonymize" \
 ## Commandes utiles
 
 ```bash
+# Commandes exigées par le cahier des charges
+docker compose up -d --build
+php artisan migrate --force
+php artisan db:seed --force
+
 # Reset complet
 php artisan migrate:fresh --seed --force
 

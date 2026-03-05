@@ -26,6 +26,9 @@ class EquipmentItemController extends Controller
         if ($request->filled('rarity')) {
             $query->where('rarity', $request->query('rarity'));
         }
+        if ($request->filled('tier_level')) {
+            $query->where('tier_level', $request->query('tier_level'));
+        }
         if ($request->filled('score_min')) {
             $query->where('score', '>=', (int) $request->query('score_min'));
         }

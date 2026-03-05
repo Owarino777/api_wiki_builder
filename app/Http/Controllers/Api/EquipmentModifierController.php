@@ -14,7 +14,9 @@ class EquipmentModifierController extends Controller
 {
     public function index(Request $request)
     {
-        $query = EquipmentModifier::query();
+        $query = EquipmentModifier::query()->with([
+            'compatibleItems:id,game_id,name,slot,rarity,tier_level,score',
+        ]);
 
         if ($request->filled('game_id')) {
             $query->where('game_id', (int) $request->query('game_id'));
@@ -42,7 +44,9 @@ class EquipmentModifierController extends Controller
 
     public function show(Request $request, int $id)
     {
-        $modifier = EquipmentModifier::query()->find($id);
+        $modifier = EquipmentModifier::query()
+            ->with(['compatibleItems:id,game_id,name,slot,rarity,tier_level,score'])
+            ->find($id);
         if ($modifier === null) {
             return ApiResponse::error('Equipment modifier not found.', 404);
         }
