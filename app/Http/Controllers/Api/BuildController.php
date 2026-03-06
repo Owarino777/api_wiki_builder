@@ -22,6 +22,29 @@ class BuildController extends Controller
     ) {
     }
 
+    public function index(Request $request)
+    {
+        $query = Build::query()->with(['equipmentItems:id', 'equipmentModifiers:id']);
+
+        if ($request->filled('game_id')) {
+            $query->where('game_id', (int) $request->query('game_id'));
+        }
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', (int) $request->query('user_id'));
+        }
+
+        $allowedSort = ['id', 'title', 'created_at', 'updated_at'];
+        $sortBy = in_array($request->query('sort_by'), $allowedSort, true) ? $request->query('sort_by') : 'id';
+        $sortDir = strtolower((string) $request->query('sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $query->orderBy($sortBy, $sortDir);
+
+        $perPage = (int) $request->query('per_page', 15);
+        $builds = $query->paginate(max(1, min($perPage, 100)));
+
+        return ApiResponse::success(BuildResource::collection($builds)->response()->getData(true));
+    }
+
     public function show(Request $request, int $id)
     {
         $build = Build::query()
@@ -140,7 +163,7 @@ class BuildController extends Controller
             return ApiResponse::error('Build not found.', 404);
         }
 
-        return ApiResponse::success($this->buildSummaryService->summary($build), raw: true);
+        return ApiResponse::success($this->buildSummaryService->summary($build));
     }
 
     public function compare(CompareBuildRequest $request)
@@ -153,7 +176,7 @@ class BuildController extends Controller
             return ApiResponse::error('One or both builds were not found.', 404);
         }
 
-        return ApiResponse::success($this->buildSummaryService->compare($left, $right), raw: true);
+        return ApiResponse::success($this->buildSummaryService->compare($left, $right));
     }
 
     /**

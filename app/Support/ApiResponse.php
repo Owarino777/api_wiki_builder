@@ -9,14 +9,9 @@ class ApiResponse
     public static function success(
         mixed $data = null,
         string $message = 'OK',
-        int $status = 200,
-        bool $raw = false
+        int $status = 200
     ): JsonResponse
     {
-        if ($raw) {
-            return response()->json($data, $status);
-        }
-
         return response()->json([
             'success' => true,
             'message' => $message,

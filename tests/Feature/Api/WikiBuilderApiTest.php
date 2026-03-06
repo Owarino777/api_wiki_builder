@@ -12,6 +12,23 @@ beforeEach(function (): void {
     $this->seed(WikiBuilderSeeder::class);
 });
 
+it('seeds call of duty black ops iii as the primary real game dataset', function (): void {
+    $response = $this->getJson('/api/v1/games/1');
+
+    $response->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.name', 'Call of Duty: Black Ops III')
+        ->assertJsonPath('data.slug', 'call-of-duty-black-ops-iii');
+
+    $itemResponse = $this->getJson('/api/v1/equipment-items/1');
+
+    $itemResponse->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.name', 'KN-44')
+        ->assertJsonPath('data.metadata.seed_origin', 'verified-bo3')
+        ->assertJsonPath('data.metadata.source.page_url', 'https://callofduty.fandom.com/wiki/KN-44');
+});
+
 it('filters equipment items by tier level', function (): void {
     $response = $this->getJson('/api/v1/equipment-items?tier_level=T1');
 
@@ -111,15 +128,8 @@ it('rejects cross game equipment items in a build', function (): void {
 });
 
 it('rejects incompatible modifiers in a build', function (): void {
-    $item = EquipmentItem::query()->where('game_id', 1)->firstOrFail();
-    $modifier = EquipmentModifier::query()
-        ->where('game_id', 1)
-        ->whereNotIn('id', function ($query) use ($item): void {
-            $query->select('equipment_modifier_id')
-                ->from('equipment_item_compatible_modifiers')
-                ->where('equipment_item_id', $item->id);
-        })
-        ->firstOrFail();
+    $item = EquipmentItem::query()->where('name', 'KN-44')->firstOrFail();
+    $modifier = EquipmentModifier::query()->where('name', 'Laser Sight')->firstOrFail();
 
     $response = $this->postJson(
         '/api/v1/builds',
@@ -144,17 +154,59 @@ it('rejects incompatible modifiers in a build', function (): void {
         ->assertJsonPath('message', 'Business rule violation.');
 });
 
+it('lists public builds filtered by game', function (): void {
+    $response = $this->getJson('/api/v1/builds?game_id=1');
+
+    $response->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonCount(1, 'data.data')
+        ->assertJsonPath('data.data.0.title', 'BO3 Ranked Flex Core')
+        ->assertJsonPath('data.data.0.game_id', 1);
+});
+
 it('returns the expected summary shape for a seeded build', function (): void {
     $response = $this->getJson('/api/v1/builds/1/summary');
 
     $response->assertOk()
+        ->assertJsonPath('success', true)
         ->assertJsonStructure([
-            'build_id',
-            'items_count',
-            'modifiers_count',
-            'totals' => ['score', 'attack', 'defense', 'utility', 'accuracy', 'mobility'],
+            'success',
+            'message',
+            'data' => [
+                'build_id',
+                'items_count',
+                'modifiers_count',
+                'totals' => ['score', 'attack', 'defense', 'utility', 'accuracy', 'mobility'],
+            ],
         ]);
 
-    expect($response->json('items_count'))->toBe(3);
-    expect($response->json('modifiers_count'))->toBe(3);
+    expect($response->json('data.items_count'))->toBe(3);
+    expect($response->json('data.modifiers_count'))->toBe(3);
+});
+
+it('returns compare payload inside the standard api envelope', function (): void {
+    $response = $this->postJson('/api/v1/builds/compare', [
+        'left_build_id' => 1,
+        'right_build_id' => 2,
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonStructure([
+            'success',
+            'message',
+            'data' => [
+                'left' => ['build_id', 'totals'],
+                'right' => ['build_id', 'totals'],
+                'diff' => ['score', 'attack', 'defense', 'utility', 'accuracy', 'mobility'],
+            ],
+        ]);
+});
+
+it('keeps not found responses uniform on summary endpoint', function (): void {
+    $response = $this->getJson('/api/v1/builds/999/summary');
+
+    $response->assertNotFound()
+        ->assertJsonPath('success', false)
+        ->assertJsonPath('message', 'Build not found.');
 });

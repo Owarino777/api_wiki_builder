@@ -2,6 +2,8 @@
 
 API REST pour le projet Wiki Builder — gestion d'un catalogue multi-jeux d'équipements et d'un module Builder pour assembler et comparer des configurations ("builds/loadouts").
 
+Le seed principal livre un vrai catalogue **Call of Duty: Black Ops III** normalisé pour l'application, plus un second jeu synthétique pour démontrer le multi-jeux.
+
 ## Stack technique
 
 - **Laravel 12** — Framework PHP
@@ -77,6 +79,7 @@ php artisan serve
 ```
 
 L'API est accessible sur `http://localhost:8000/api/v1`.
+Une vitrine front légère est aussi disponible sur `http://localhost:8000/`.
 
 ---
 
@@ -222,6 +225,8 @@ En cas d'erreur :
 
 La gestion des exceptions est centralisée dans `bootstrap/app.php` : les erreurs 404, 429 (throttle) et les exceptions non gérées retournent toujours le format JSON standardisé.
 
+`GET /builds/{id}/summary` et `POST /builds/compare` utilisent désormais le même envelope JSON que le reste de l'API.
+
 ---
 
 ## Règles métier
@@ -240,6 +245,8 @@ La gestion des exceptions est centralisée dans `bootstrap/app.php` : les erreur
 | Admin (X-USER-ID) | `1` (role=admin) |
 | User standard | `2` (role=user) |
 
+Le jeu `1` correspond à `Call of Duty: Black Ops III`.
+
 ---
 
 ## Exemples curl
@@ -253,7 +260,7 @@ curl -s "http://localhost:8000/api/v1/games"
 ### Lire les équipements avec filtres
 
 ```bash
-curl -s "http://localhost:8000/api/v1/games/1/equipment-items?slot=weapon&tier_level=T1&rarity=epic&score_min=40&sort_by=score&sort_dir=desc&per_page=10"
+curl -s "http://localhost:8000/api/v1/games/1/equipment-items?slot=weapon&tier_level=L1&rarity=standard-issue&score_min=40&sort_by=score&sort_dir=desc&per_page=10"
 ```
 
 ### Lire les tags avec leurs équipements associés
@@ -295,6 +302,28 @@ curl -s -X POST "http://localhost:8000/api/v1/builds" \
 curl -s "http://localhost:8000/api/v1/builds/1/summary"
 ```
 
+Exemple de structure :
+
+```json
+{
+  "success": true,
+  "message": "OK",
+  "data": {
+    "build_id": 1,
+    "items_count": 3,
+    "modifiers_count": 3,
+    "totals": {
+      "score": 0,
+      "attack": 0,
+      "defense": 0,
+      "utility": 0,
+      "accuracy": 0,
+      "mobility": 0
+    }
+  }
+}
+```
+
 ### Comparer deux builds
 
 ```bash
@@ -302,6 +331,12 @@ curl -s -X POST "http://localhost:8000/api/v1/builds/compare" \
   -H "Content-Type: application/json" \
   -d '{"left_build_id": 1, "right_build_id": 2}'
 ```
+
+## Données BO3
+
+- Les noms d'armes et d'accessoires BO3 sont seedés avec des `source.page_url` stockés dans `metadata`.
+- Les URLs d'image ont été conservées uniquement quand elles ont pu être vérifiées proprement pendant la préparation du seed.
+- Les champs `score`, `attack`, `utility`, `accuracy`, `mobility` restent des scores de builder simplifiés, pas une copie brute de statistiques internes du jeu.
 
 ### Endpoint admin (API key + rôle admin)
 

@@ -29,6 +29,7 @@ Route::prefix('v1')
         Route::get('/equipment-items/{id}', [EquipmentItemController::class, 'show']);
         Route::get('/equipment-modifiers', [EquipmentModifierController::class, 'index']);
         Route::get('/equipment-modifiers/{id}', [EquipmentModifierController::class, 'show']);
+        Route::get('/builds', [BuildController::class, 'index']);
         Route::get('/builds/{id}', [BuildController::class, 'show']);
         Route::get('/builds/{id}/summary', [BuildController::class, 'summary']);
         Route::post('/builds/compare', [BuildController::class, 'compare']);

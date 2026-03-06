@@ -25,7 +25,12 @@ L'IA a été utilisée comme **assistant de développement**, jamais comme gén�
 
 5. **Gestion des exceptions** : Centralisation du rendu d'erreurs JSON dans `bootstrap/app.php`.
 
-6. **Documentation** : Rédaction du README et de ce document.
+6. **Jeu de données réel** :
+   - Recherche et validation d'un premier catalogue réel pour **Call of Duty: Black Ops III**
+   - Préparation d'un seed BO3 normalisé pour l'application avec `source.page_url` et, quand vérifié proprement, `image_url` dans `metadata`
+   - Conservation d'un second jeu synthétique pour démontrer le multi-jeux sans inventer un faux catalogue complet
+
+7. **Documentation** : Rédaction du README et de ce document.
 
 ### Ce qui a été fait manuellement
 
@@ -34,6 +39,7 @@ L'IA a été utilisée comme **assistant de développement**, jamais comme gén�
 - Tests manuels des endpoints via curl
 - Compréhension et application du MPD/MCD fourni
 - Vérification de la cohérence entre le code et le barème d'évaluation
+- Vérification manuelle de la cohérence entre les données BO3 seedées et les pages source retenues
 
 ### Pourquoi l'IA
 
@@ -41,6 +47,7 @@ L'IA a été utilisée pour :
 - Gagner du temps sur le boilerplate (migrations, CRUD répétitif)
 - Ne rien oublier dans le cahier des charges (audit automatique)
 - Appliquer les bonnes pratiques Laravel 12 (middleware dans `bootstrap/app.php`, etc.)
+- Accélérer la recherche documentaire sur les pages BO3 avant validation manuelle et intégration dans le seed
 
 L'IA n'a **pas** été utilisée pour :
 - Comprendre le sujet à ma place
