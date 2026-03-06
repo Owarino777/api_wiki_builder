@@ -13,6 +13,8 @@ class EquipmentModifierResource extends JsonResource
             'id' => $this->id,
             'game_id' => $this->game_id,
             'name' => $this->name,
+            'slug' => $this->slug,
+            'external_ref' => $this->external_ref,
             'modifier_type' => $this->modifier_type,
             'description' => $this->description,
             'delta_score' => $this->delta_score,
@@ -24,11 +26,12 @@ class EquipmentModifierResource extends JsonResource
             'metadata' => $this->metadata,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'compatible_equipment_items' => $this->whenLoaded('compatibleItems', function () {
-                return $this->compatibleItems->map(fn ($item) => [
+            'compatible_items' => $this->whenLoaded('items', function () {
+                return $this->items->map(fn ($item) => [
                     'id' => $item->id,
                     'game_id' => $item->game_id,
                     'name' => $item->name,
+                    'slug' => $item->slug,
                     'slot' => $item->slot,
                     'rarity' => $item->rarity,
                     'tier_level' => $item->tier_level,

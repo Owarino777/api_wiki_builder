@@ -10,12 +10,20 @@ class Tag extends Model
 {
     use HasFactory;
 
+    protected $table = 'categories';
+
     protected $fillable = [
         'label',
+        'slug',
     ];
+
+    public function items(): BelongsToMany
+    {
+        return $this->belongsToMany(EquipmentItem::class, 'item_categories', 'category_id', 'item_id');
+    }
 
     public function equipmentItems(): BelongsToMany
     {
-        return $this->belongsToMany(EquipmentItem::class, 'equipment_item_tags', 'tag_id', 'equipment_item_id');
+        return $this->items();
     }
 }

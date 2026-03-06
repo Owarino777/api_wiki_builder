@@ -34,7 +34,7 @@ class GameController extends Controller
         return ApiResponse::success((new GameResource($game))->toArray($request));
     }
 
-    public function buildProfiles(Request $request, int $id)
+    public function archetypes(Request $request, int $id)
     {
         $game = Game::query()->find($id);
         if ($game === null) {
@@ -42,12 +42,17 @@ class GameController extends Controller
         }
 
         $perPage = (int) $request->query('per_page', 15);
-        $profiles = $game->buildProfiles()->orderBy('id')->paginate(max(1, min($perPage, 100)));
+        $archetypes = $game->archetypes()->orderBy('id')->paginate(max(1, min($perPage, 100)));
 
-        return ApiResponse::success(BuildProfileResource::collection($profiles)->response()->getData(true));
+        return ApiResponse::success(BuildProfileResource::collection($archetypes)->response()->getData(true));
     }
 
-    public function equipmentItems(Request $request, int $id)
+    public function buildProfiles(Request $request, int $id)
+    {
+        return $this->archetypes($request, $id);
+    }
+
+    public function items(Request $request, int $id)
     {
         $game = Game::query()->find($id);
         if ($game === null) {
@@ -55,10 +60,10 @@ class GameController extends Controller
         }
 
         $query = EquipmentItem::query()
-            ->with('tags')
+            ->with(['categories', 'itemSlots'])
             ->where('game_id', $game->id);
 
-        $this->applyEquipmentItemFilters($request, $query);
+        $this->applyItemFilters($request, $query);
 
         $perPage = (int) $request->query('per_page', 15);
         $items = $query->paginate(max(1, min($perPage, 100)));
@@ -66,7 +71,12 @@ class GameController extends Controller
         return ApiResponse::success(EquipmentItemResource::collection($items)->response()->getData(true));
     }
 
-    public function equipmentModifiers(Request $request, int $id)
+    public function equipmentItems(Request $request, int $id)
+    {
+        return $this->items($request, $id);
+    }
+
+    public function modifiers(Request $request, int $id)
     {
         $game = Game::query()->find($id);
         if ($game === null) {
@@ -74,9 +84,10 @@ class GameController extends Controller
         }
 
         $query = EquipmentModifier::query()
-            ->with(['compatibleItems:id,game_id,name,slot,rarity,tier_level,score'])
+            ->with(['items:id,game_id,name,slug,slot,rarity,tier_level,score'])
             ->where('game_id', $game->id);
-        $this->applyEquipmentModifierFilters($request, $query);
+
+        $this->applyModifierFilters($request, $query);
 
         $perPage = (int) $request->query('per_page', 15);
         $modifiers = $query->paginate(max(1, min($perPage, 100)));
@@ -84,7 +95,12 @@ class GameController extends Controller
         return ApiResponse::success(EquipmentModifierResource::collection($modifiers)->response()->getData(true));
     }
 
-    private function applyEquipmentItemFilters(Request $request, Builder $query): void
+    public function equipmentModifiers(Request $request, int $id)
+    {
+        return $this->modifiers($request, $id);
+    }
+
+    private function applyItemFilters(Request $request, Builder $query): void
     {
         if ($request->filled('slot')) {
             $query->where('slot', $request->query('slot'));
@@ -101,20 +117,22 @@ class GameController extends Controller
         if ($request->filled('score_max')) {
             $query->where('score', '<=', (int) $request->query('score_max'));
         }
-        if ($request->filled('tag')) {
-            $tag = $request->query('tag');
-            $query->whereHas('tags', function (Builder $tagQuery) use ($tag): void {
-                $tagQuery->where('id', $tag)->orWhere('label', $tag);
+        if ($request->filled('category')) {
+            $category = $request->query('category');
+            $query->whereHas('categories', function (Builder $categoryQuery) use ($category): void {
+                $categoryQuery->where('id', $category)
+                    ->orWhere('label', $category)
+                    ->orWhere('slug', $category);
             });
         }
 
-        $allowedSort = ['id', 'name', 'score', 'slot', 'rarity', 'created_at'];
+        $allowedSort = ['id', 'name', 'slug', 'score', 'slot', 'rarity', 'created_at'];
         $sortBy = in_array($request->query('sort_by'), $allowedSort, true) ? $request->query('sort_by') : 'id';
         $sortDir = strtolower((string) $request->query('sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
         $query->orderBy($sortBy, $sortDir);
     }
 
-    private function applyEquipmentModifierFilters(Request $request, Builder $query): void
+    private function applyModifierFilters(Request $request, Builder $query): void
     {
         if ($request->filled('modifier_type')) {
             $query->where('modifier_type', $request->query('modifier_type'));
@@ -126,7 +144,7 @@ class GameController extends Controller
             $query->where('delta_score', '<=', (int) $request->query('score_max'));
         }
 
-        $allowedSort = ['id', 'name', 'modifier_type', 'delta_score', 'created_at'];
+        $allowedSort = ['id', 'name', 'slug', 'modifier_type', 'delta_score', 'created_at'];
         $sortBy = in_array($request->query('sort_by'), $allowedSort, true) ? $request->query('sort_by') : 'id';
         $sortDir = strtolower((string) $request->query('sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
         $query->orderBy($sortBy, $sortDir);

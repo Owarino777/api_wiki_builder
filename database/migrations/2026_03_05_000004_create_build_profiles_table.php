@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('build_profiles', function (Blueprint $table): void {
+        Schema::create('archetypes', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('game_id')->constrained('games')->onDelete('cascade');
             $table->string('name', 120);
@@ -20,6 +20,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('build_profiles');
+        Schema::dropIfExists('archetypes');
     }
 };

@@ -11,9 +11,13 @@ class EquipmentModifier extends Model
 {
     use HasFactory;
 
+    protected $table = 'modifiers';
+
     protected $fillable = [
         'game_id',
         'name',
+        'slug',
+        'external_ref',
         'modifier_type',
         'description',
         'delta_score',
@@ -34,19 +38,24 @@ class EquipmentModifier extends Model
         return $this->belongsTo(Game::class);
     }
 
-    public function compatibleItems(): BelongsToMany
+    public function items(): BelongsToMany
     {
         return $this->belongsToMany(
             EquipmentItem::class,
-            'equipment_item_compatible_modifiers',
-            'equipment_modifier_id',
-            'equipment_item_id'
+            'item_modifiers',
+            'modifier_id',
+            'item_id'
         );
+    }
+
+    public function compatibleItems(): BelongsToMany
+    {
+        return $this->items();
     }
 
     public function builds(): BelongsToMany
     {
-        return $this->belongsToMany(Build::class, 'build_equipment_modifiers', 'equipment_modifier_id', 'build_id')
-            ->withPivot('equipment_item_id');
+        return $this->belongsToMany(Build::class, 'build_slots', 'modifier_id', 'build_id')
+            ->withPivot('item_id', 'item_slot_id');
     }
 }

@@ -12,26 +12,29 @@ use App\Http\Controllers\Api\TagController;
 use Illuminate\Support\Facades\Route;
 
 Route::pattern('id', '[0-9]+');
-Route::pattern('equipmentItemId', '[0-9]+');
-Route::pattern('equipmentModifierId', '[0-9]+');
-Route::pattern('tagId', '[0-9]+');
+Route::pattern('itemId', '[0-9]+');
+Route::pattern('modifierId', '[0-9]+');
+Route::pattern('categoryId', '[0-9]+');
+Route::pattern('shareToken', '[A-Za-z0-9]+');
 
 Route::prefix('v1')
     ->middleware('throttle:60,1')
     ->group(function (): void {
         Route::get('/games', [GameController::class, 'index']);
         Route::get('/games/{id}', [GameController::class, 'show']);
-        Route::get('/games/{id}/build-profiles', [GameController::class, 'buildProfiles']);
-        Route::get('/games/{id}/equipment-items', [GameController::class, 'equipmentItems']);
-        Route::get('/games/{id}/equipment-modifiers', [GameController::class, 'equipmentModifiers']);
-        Route::get('/tags', [TagController::class, 'index']);
-        Route::get('/equipment-items', [EquipmentItemController::class, 'index']);
-        Route::get('/equipment-items/{id}', [EquipmentItemController::class, 'show']);
-        Route::get('/equipment-modifiers', [EquipmentModifierController::class, 'index']);
-        Route::get('/equipment-modifiers/{id}', [EquipmentModifierController::class, 'show']);
+        Route::get('/games/{id}/archetypes', [GameController::class, 'archetypes']);
+        Route::get('/games/{id}/items', [GameController::class, 'items']);
+        Route::get('/games/{id}/modifiers', [GameController::class, 'modifiers']);
+
+        Route::get('/categories', [TagController::class, 'index']);
+        Route::get('/items', [EquipmentItemController::class, 'index']);
+        Route::get('/items/{id}', [EquipmentItemController::class, 'show']);
+        Route::get('/modifiers', [EquipmentModifierController::class, 'index']);
+        Route::get('/modifiers/{id}', [EquipmentModifierController::class, 'show']);
         Route::get('/builds', [BuildController::class, 'index']);
         Route::get('/builds/{id}', [BuildController::class, 'show']);
         Route::get('/builds/{id}/summary', [BuildController::class, 'summary']);
+        Route::get('/builds/share/{shareToken}', [BuildController::class, 'share']);
         Route::post('/builds/compare', [BuildController::class, 'compare']);
 
         Route::middleware('check.api.key')->group(function (): void {
@@ -40,31 +43,28 @@ Route::prefix('v1')
             Route::delete('/builds/{id}', [BuildController::class, 'destroy']);
 
             Route::middleware('check.role:admin')->group(function (): void {
-                Route::post('/build-profiles', [BuildProfileController::class, 'store']);
-                Route::put('/build-profiles/{id}', [BuildProfileController::class, 'update']);
-                Route::delete('/build-profiles/{id}', [BuildProfileController::class, 'destroy']);
+                Route::post('/archetypes', [BuildProfileController::class, 'store']);
+                Route::put('/archetypes/{id}', [BuildProfileController::class, 'update']);
+                Route::delete('/archetypes/{id}', [BuildProfileController::class, 'destroy']);
 
-                Route::post('/equipment-items', [EquipmentItemController::class, 'store']);
-                Route::put('/equipment-items/{id}', [EquipmentItemController::class, 'update']);
-                Route::delete('/equipment-items/{id}', [EquipmentItemController::class, 'destroy']);
+                Route::post('/categories', [TagController::class, 'store']);
+                Route::put('/categories/{id}', [TagController::class, 'update']);
+                Route::delete('/categories/{id}', [TagController::class, 'destroy']);
 
-                Route::post('/equipment-modifiers', [EquipmentModifierController::class, 'store']);
-                Route::put('/equipment-modifiers/{id}', [EquipmentModifierController::class, 'update']);
-                Route::delete('/equipment-modifiers/{id}', [EquipmentModifierController::class, 'destroy']);
+                Route::post('/items', [EquipmentItemController::class, 'store']);
+                Route::put('/items/{id}', [EquipmentItemController::class, 'update']);
+                Route::delete('/items/{id}', [EquipmentItemController::class, 'destroy']);
 
-                Route::post(
-                    '/equipment-items/{equipmentItemId}/compatible-modifiers/{equipmentModifierId}',
-                    [EquipmentCompatibilityController::class, 'attach']
-                );
-                Route::delete(
-                    '/equipment-items/{equipmentItemId}/compatible-modifiers/{equipmentModifierId}',
-                    [EquipmentCompatibilityController::class, 'detach']
-                );
+                Route::post('/modifiers', [EquipmentModifierController::class, 'store']);
+                Route::put('/modifiers/{id}', [EquipmentModifierController::class, 'update']);
+                Route::delete('/modifiers/{id}', [EquipmentModifierController::class, 'destroy']);
 
-                Route::post('/equipment-items/{equipmentItemId}/tags/{tagId}', [EquipmentItemTagController::class, 'attach']);
-                Route::delete('/equipment-items/{equipmentItemId}/tags/{tagId}', [EquipmentItemTagController::class, 'detach']);
+                Route::post('/items/{itemId}/modifiers/{modifierId}', [EquipmentCompatibilityController::class, 'attach']);
+                Route::delete('/items/{itemId}/modifiers/{modifierId}', [EquipmentCompatibilityController::class, 'detach']);
 
-                // RGPD — Admin endpoints
+                Route::post('/items/{itemId}/categories/{categoryId}', [EquipmentItemTagController::class, 'attach']);
+                Route::delete('/items/{itemId}/categories/{categoryId}', [EquipmentItemTagController::class, 'detach']);
+
                 Route::get('/users/{id}/export', [RgpdController::class, 'export']);
                 Route::post('/users/{id}/anonymize', [RgpdController::class, 'anonymize']);
                 Route::delete('/users/{id}', [RgpdController::class, 'destroy']);

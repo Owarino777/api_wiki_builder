@@ -10,34 +10,34 @@ use Illuminate\Support\Facades\DB;
 
 class EquipmentCompatibilityController extends Controller
 {
-    public function attach(int $equipmentItemId, int $equipmentModifierId)
+    public function attach(int $itemId, int $modifierId)
     {
-        $item = EquipmentItem::query()->find($equipmentItemId);
-        $modifier = EquipmentModifier::query()->find($equipmentModifierId);
+        $item = EquipmentItem::query()->find($itemId);
+        $modifier = EquipmentModifier::query()->find($modifierId);
 
         if ($item === null || $modifier === null) {
-            return ApiResponse::error('Equipment item or modifier not found.', 404);
+            return ApiResponse::error('Item or modifier not found.', 404);
         }
 
         if ((int) $item->game_id !== (int) $modifier->game_id) {
             return ApiResponse::error('Item and modifier must belong to the same game.', 422);
         }
 
-        DB::table('equipment_item_compatible_modifiers')->insertOrIgnore([
-            'equipment_item_id' => $equipmentItemId,
-            'equipment_modifier_id' => $equipmentModifierId,
+        DB::table('item_modifiers')->insertOrIgnore([
+            'item_id' => $itemId,
+            'modifier_id' => $modifierId,
         ]);
 
-        return ApiResponse::success(null, 'Compatibility attached.', 201);
+        return ApiResponse::success(null, 'Modifier compatibility attached to item.');
     }
 
-    public function detach(int $equipmentItemId, int $equipmentModifierId)
+    public function detach(int $itemId, int $modifierId)
     {
-        DB::table('equipment_item_compatible_modifiers')
-            ->where('equipment_item_id', $equipmentItemId)
-            ->where('equipment_modifier_id', $equipmentModifierId)
+        DB::table('item_modifiers')
+            ->where('item_id', $itemId)
+            ->where('modifier_id', $modifierId)
             ->delete();
 
-        return ApiResponse::success(null, 'Compatibility detached.');
+        return ApiResponse::success(null, 'Modifier compatibility detached from item.');
     }
 }

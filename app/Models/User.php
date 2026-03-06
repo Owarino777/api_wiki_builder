@@ -16,12 +16,28 @@ class User extends Authenticatable
         'username',
         'email',
         'role',
+        'first_name',
+        'last_name',
+        'display_name',
+        'phone',
+        'birth_date',
+        'country_code',
+        'city',
+        'postal_code',
+        'address_line_1',
+        'address_line_2',
+        'avatar_url',
+        'is_anonymized',
+        'anonymized_at',
     ];
 
     protected function casts(): array
     {
         return [
             'role' => UserRole::class,
+            'birth_date' => 'date',
+            'is_anonymized' => 'boolean',
+            'anonymized_at' => 'datetime',
         ];
     }
 

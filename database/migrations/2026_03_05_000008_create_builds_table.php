@@ -11,13 +11,16 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('game_id')->constrained('games')->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->foreignId('build_profile_id')->nullable()->constrained('build_profiles')->onDelete('set null');
+            $table->foreignId('archetype_id')->nullable()->constrained('archetypes')->onDelete('set null');
             $table->string('title', 140);
             $table->text('description')->nullable();
+            $table->string('share_token', 64)->nullable()->unique();
+            $table->boolean('is_public')->default(false);
             $table->timestamps();
 
             $table->index('user_id');
-            $table->index('build_profile_id');
+            $table->index('archetype_id');
+            $table->index('is_public');
         });
     }
 

@@ -7,22 +7,22 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('equipment_item_compatible_modifiers', function (Blueprint $table): void {
-            $table->foreignId('equipment_item_id')
-                ->constrained('equipment_items', indexName: 'eicm_item_fk')
+        Schema::create('item_modifiers', function (Blueprint $table): void {
+            $table->foreignId('item_id')
+                ->constrained('items', indexName: 'im_item_fk')
                 ->onDelete('cascade');
-            $table->foreignId('equipment_modifier_id')
-                ->constrained('equipment_modifiers', indexName: 'eicm_modifier_fk')
+            $table->foreignId('modifier_id')
+                ->constrained('modifiers', indexName: 'im_modifier_fk')
                 ->onDelete('cascade');
             $table->primary(
-                ['equipment_item_id', 'equipment_modifier_id'],
-                'eicm_pk'
+                ['item_id', 'modifier_id'],
+                'im_pk'
             );
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('equipment_item_compatible_modifiers');
+        Schema::dropIfExists('item_modifiers');
     }
 };

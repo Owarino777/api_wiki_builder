@@ -12,13 +12,15 @@ class TagResource extends JsonResource
         return [
             'id' => $this->id,
             'label' => $this->label,
+            'slug' => $this->slug,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'equipment_items' => $this->whenLoaded('equipmentItems', function () {
-                return $this->equipmentItems->map(fn ($item) => [
+            'items' => $this->whenLoaded('items', function () {
+                return $this->items->map(fn ($item) => [
                     'id' => $item->id,
                     'game_id' => $item->game_id,
                     'name' => $item->name,
+                    'slug' => $item->slug,
                     'slot' => $item->slot,
                     'rarity' => $item->rarity,
                     'tier_level' => $item->tier_level,

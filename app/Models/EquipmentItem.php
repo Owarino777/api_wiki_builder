@@ -11,9 +11,13 @@ class EquipmentItem extends Model
 {
     use HasFactory;
 
+    protected $table = 'items';
+
     protected $fillable = [
         'game_id',
         'name',
+        'slug',
+        'external_ref',
         'slot',
         'rarity',
         'tier_level',
@@ -35,24 +39,39 @@ class EquipmentItem extends Model
         return $this->belongsTo(Game::class);
     }
 
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'item_categories', 'item_id', 'category_id');
+    }
+
     public function tags(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class, 'equipment_item_tags', 'equipment_item_id', 'tag_id');
+        return $this->categories();
+    }
+
+    public function modifiers(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            EquipmentModifier::class,
+            'item_modifiers',
+            'item_id',
+            'modifier_id'
+        );
     }
 
     public function compatibleModifiers(): BelongsToMany
     {
-        return $this->belongsToMany(
-            EquipmentModifier::class,
-            'equipment_item_compatible_modifiers',
-            'equipment_item_id',
-            'equipment_modifier_id'
-        );
+        return $this->modifiers();
+    }
+
+    public function itemSlots()
+    {
+        return $this->hasMany(EquipmentItemSlot::class, 'item_id')->orderBy('sort_order');
     }
 
     public function builds(): BelongsToMany
     {
-        return $this->belongsToMany(Build::class, 'build_equipment_items', 'equipment_item_id', 'build_id')
+        return $this->belongsToMany(Build::class, 'build_items', 'item_id', 'build_id')
             ->withPivot('position');
     }
 }

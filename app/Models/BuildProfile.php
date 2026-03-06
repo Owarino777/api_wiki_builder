@@ -11,6 +11,8 @@ class BuildProfile extends Model
 {
     use HasFactory;
 
+    protected $table = 'archetypes';
+
     protected $fillable = [
         'game_id',
         'name',
@@ -24,6 +26,6 @@ class BuildProfile extends Model
 
     public function builds(): HasMany
     {
-        return $this->hasMany(Build::class);
+        return $this->hasMany(Build::class, 'archetype_id');
     }
 }

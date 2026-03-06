@@ -9,31 +9,31 @@ class BuildSummaryService
 {
     public function summary(Build $build): array
     {
-        $itemTotals = DB::table('build_equipment_items as bei')
-            ->join('equipment_items as ei', 'ei.id', '=', 'bei.equipment_item_id')
-            ->where('bei.build_id', $build->id)
+        $itemTotals = DB::table('build_items as bi')
+            ->join('items as i', 'i.id', '=', 'bi.item_id')
+            ->where('bi.build_id', $build->id)
             ->selectRaw('
                 COUNT(*) as items_count,
-                COALESCE(SUM(ei.score), 0) as score,
-                COALESCE(SUM(ei.attack), 0) as attack,
-                COALESCE(SUM(ei.defense), 0) as defense,
-                COALESCE(SUM(ei.utility), 0) as utility,
-                COALESCE(SUM(ei.accuracy), 0) as accuracy,
-                COALESCE(SUM(ei.mobility), 0) as mobility
+                COALESCE(SUM(i.score), 0) as score,
+                COALESCE(SUM(i.attack), 0) as attack,
+                COALESCE(SUM(i.defense), 0) as defense,
+                COALESCE(SUM(i.utility), 0) as utility,
+                COALESCE(SUM(i.accuracy), 0) as accuracy,
+                COALESCE(SUM(i.mobility), 0) as mobility
             ')
             ->first();
 
-        $modifierTotals = DB::table('build_equipment_modifiers as bem')
-            ->join('equipment_modifiers as em', 'em.id', '=', 'bem.equipment_modifier_id')
-            ->where('bem.build_id', $build->id)
+        $modifierTotals = DB::table('build_slots as bs')
+            ->join('modifiers as m', 'm.id', '=', 'bs.modifier_id')
+            ->where('bs.build_id', $build->id)
             ->selectRaw('
                 COUNT(*) as modifiers_count,
-                COALESCE(SUM(em.delta_score), 0) as score,
-                COALESCE(SUM(em.delta_attack), 0) as attack,
-                COALESCE(SUM(em.delta_defense), 0) as defense,
-                COALESCE(SUM(em.delta_utility), 0) as utility,
-                COALESCE(SUM(em.delta_accuracy), 0) as accuracy,
-                COALESCE(SUM(em.delta_mobility), 0) as mobility
+                COALESCE(SUM(m.delta_score), 0) as score,
+                COALESCE(SUM(m.delta_attack), 0) as attack,
+                COALESCE(SUM(m.delta_defense), 0) as defense,
+                COALESCE(SUM(m.delta_utility), 0) as utility,
+                COALESCE(SUM(m.delta_accuracy), 0) as accuracy,
+                COALESCE(SUM(m.delta_mobility), 0) as mobility
             ')
             ->first();
 

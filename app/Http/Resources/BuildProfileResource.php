@@ -14,6 +14,7 @@ class BuildProfileResource extends JsonResource
             'game_id' => $this->game_id,
             'name' => $this->name,
             'description' => $this->description,
+            'resource_type' => 'archetype',
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

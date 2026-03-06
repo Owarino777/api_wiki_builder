@@ -16,19 +16,34 @@ class Game extends Model
         'genre',
     ];
 
-    public function buildProfiles(): HasMany
+    public function archetypes(): HasMany
     {
         return $this->hasMany(BuildProfile::class);
     }
 
-    public function equipmentItems(): HasMany
+    public function buildProfiles(): HasMany
+    {
+        return $this->archetypes();
+    }
+
+    public function items(): HasMany
     {
         return $this->hasMany(EquipmentItem::class);
     }
 
-    public function equipmentModifiers(): HasMany
+    public function equipmentItems(): HasMany
+    {
+        return $this->items();
+    }
+
+    public function modifiers(): HasMany
     {
         return $this->hasMany(EquipmentModifier::class);
+    }
+
+    public function equipmentModifiers(): HasMany
+    {
+        return $this->modifiers();
     }
 
     public function builds(): HasMany

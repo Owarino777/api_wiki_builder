@@ -7,10 +7,12 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('equipment_modifiers', function (Blueprint $table): void {
+        Schema::create('modifiers', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('game_id')->constrained('games')->onDelete('cascade');
             $table->string('name', 140);
+            $table->string('slug', 160);
+            $table->string('external_ref', 160)->nullable();
             $table->string('modifier_type', 60);
             $table->text('description')->nullable();
             $table->integer('delta_score')->default(0);
@@ -22,7 +24,8 @@ return new class extends Migration {
             $table->json('metadata')->nullable();
             $table->timestamps();
 
-            $table->unique(['game_id', 'name']);
+            $table->unique(['game_id', 'slug']);
+            $table->index(['game_id', 'external_ref']);
             $table->index('modifier_type');
             $table->index(['game_id', 'modifier_type']);
         });
@@ -30,6 +33,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('equipment_modifiers');
+        Schema::dropIfExists('modifiers');
     }
 };

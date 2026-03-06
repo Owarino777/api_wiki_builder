@@ -7,15 +7,18 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('tags', function (Blueprint $table): void {
+        Schema::create('categories', function (Blueprint $table): void {
             $table->id();
-            $table->string('label', 80)->unique();
+            $table->string('label', 80);
+            $table->string('slug', 100)->unique();
             $table->timestamps();
+
+            $table->unique('label');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('tags');
+        Schema::dropIfExists('categories');
     }
 };

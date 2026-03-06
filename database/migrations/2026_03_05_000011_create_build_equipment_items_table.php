@@ -7,16 +7,16 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('build_equipment_items', function (Blueprint $table): void {
+        Schema::create('build_items', function (Blueprint $table): void {
             $table->foreignId('build_id')->constrained('builds')->onDelete('cascade');
-            $table->foreignId('equipment_item_id')->constrained('equipment_items')->onDelete('cascade');
+            $table->foreignId('item_id')->constrained('items')->onDelete('cascade');
             $table->unsignedSmallInteger('position')->nullable();
-            $table->primary(['build_id', 'equipment_item_id']);
+            $table->primary(['build_id', 'item_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('build_equipment_items');
+        Schema::dropIfExists('build_items');
     }
 };

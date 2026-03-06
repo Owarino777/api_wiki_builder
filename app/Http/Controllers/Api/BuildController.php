@@ -13,6 +13,7 @@ use App\Services\BuildSummaryService;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class BuildController extends Controller
 {
@@ -24,7 +25,7 @@ class BuildController extends Controller
 
     public function index(Request $request)
     {
-        $query = Build::query()->with(['equipmentItems:id', 'equipmentModifiers:id']);
+        $query = Build::query()->with(['items:id,game_id,name,slug,slot']);
 
         if ($request->filled('game_id')) {
             $query->where('game_id', (int) $request->query('game_id'));
@@ -32,6 +33,10 @@ class BuildController extends Controller
 
         if ($request->filled('user_id')) {
             $query->where('user_id', (int) $request->query('user_id'));
+        }
+
+        if ($request->filled('is_public')) {
+            $query->where('is_public', filter_var($request->query('is_public'), FILTER_VALIDATE_BOOL));
         }
 
         $allowedSort = ['id', 'title', 'created_at', 'updated_at'];
@@ -47,10 +52,7 @@ class BuildController extends Controller
 
     public function show(Request $request, int $id)
     {
-        $build = Build::query()
-            ->with(['equipmentItems:id', 'equipmentModifiers:id'])
-            ->find($id);
-
+        $build = $this->loadDetailedBuild($id);
         if ($build === null) {
             return ApiResponse::error('Build not found.', 404);
         }
@@ -58,38 +60,59 @@ class BuildController extends Controller
         return ApiResponse::success((new BuildResource($build))->toArray($request));
     }
 
+    public function share(Request $request, string $shareToken)
+    {
+        $build = Build::query()
+            ->where('share_token', $shareToken)
+            ->where('is_public', true)
+            ->first();
+
+        if ($build === null) {
+            return ApiResponse::error('Shared build not found.', 404);
+        }
+
+        $build = $this->loadDetailedBuild($build->id);
+
+        return ApiResponse::success((new BuildResource($build))->toArray($request));
+    }
+
     public function store(StoreBuildRequest $request)
     {
         $data = $request->validated();
-        $equipmentItems = $this->normalizeItems($data['equipment_items']);
-        $equipmentModifiers = $this->normalizeModifiers($data['equipment_modifiers'] ?? []);
+        $items = $this->normalizeItems($data['items']);
+        $slots = $this->normalizeSlots($data['slots'] ?? []);
 
         $errors = $this->buildRuleService->validate(
             (int) $data['game_id'],
-            $data['build_profile_id'] ?? null,
-            $equipmentItems,
-            $equipmentModifiers
+            $data['archetype_id'] ?? null,
+            $items,
+            $slots
         );
+
         if ($errors !== []) {
             return ApiResponse::error('Business rule violation.', 422, $errors);
         }
 
-        $build = DB::transaction(function () use ($data, $equipmentItems, $equipmentModifiers) {
+        $build = DB::transaction(function () use ($data, $items, $slots) {
+            $isPublic = (bool) ($data['is_public'] ?? false);
+
             $build = Build::query()->create([
                 'game_id' => $data['game_id'],
                 'user_id' => $data['user_id'] ?? null,
-                'build_profile_id' => $data['build_profile_id'] ?? null,
+                'archetype_id' => $data['archetype_id'] ?? null,
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
+                'is_public' => $isPublic,
+                'share_token' => $isPublic ? ($data['share_token'] ?? $this->generateShareToken()) : null,
             ]);
 
-            $this->syncBuildItems($build->id, $equipmentItems);
-            $this->syncBuildModifiers($build->id, $equipmentModifiers);
+            $this->syncBuildItems($build->id, $items);
+            $this->syncBuildSlots($build->id, $slots);
 
             return $build;
         });
 
-        $build->load(['equipmentItems:id', 'equipmentModifiers:id']);
+        $build = $this->loadDetailedBuild($build->id);
 
         return ApiResponse::success((new BuildResource($build))->toArray($request), 'Build created.', 201);
     }
@@ -104,38 +127,50 @@ class BuildController extends Controller
         $data = $request->validated();
 
         $finalGameId = (int) ($data['game_id'] ?? $build->game_id);
-        $finalBuildProfileId = $data['build_profile_id'] ?? $build->build_profile_id;
-        $finalItems = array_key_exists('equipment_items', $data)
-            ? $this->normalizeItems($data['equipment_items'])
+        $finalArchetypeId = $data['archetype_id'] ?? $build->archetype_id;
+        $finalItems = array_key_exists('items', $data)
+            ? $this->normalizeItems($data['items'])
             : $this->existingBuildItems($build->id);
-        $finalModifiers = array_key_exists('equipment_modifiers', $data)
-            ? $this->normalizeModifiers($data['equipment_modifiers'])
-            : $this->existingBuildModifiers($build->id);
+        $finalSlots = array_key_exists('slots', $data)
+            ? $this->normalizeSlots($data['slots'])
+            : $this->existingBuildSlots($build->id);
 
         $errors = $this->buildRuleService->validate(
             $finalGameId,
-            $finalBuildProfileId !== null ? (int) $finalBuildProfileId : null,
+            $finalArchetypeId !== null ? (int) $finalArchetypeId : null,
             $finalItems,
-            $finalModifiers
+            $finalSlots
         );
+
         if ($errors !== []) {
             return ApiResponse::error('Business rule violation.', 422, $errors);
         }
 
-        DB::transaction(function () use ($build, $data, $finalItems, $finalModifiers): void {
+        DB::transaction(function () use ($build, $data, $finalItems, $finalSlots): void {
+            $isPublic = array_key_exists('is_public', $data) ? (bool) $data['is_public'] : $build->is_public;
+            $shareToken = array_key_exists('share_token', $data) ? $data['share_token'] : $build->share_token;
+            if ($isPublic && empty($shareToken)) {
+                $shareToken = $this->generateShareToken();
+            }
+            if (!$isPublic) {
+                $shareToken = null;
+            }
+
             $build->update([
                 'game_id' => $data['game_id'] ?? $build->game_id,
                 'user_id' => array_key_exists('user_id', $data) ? $data['user_id'] : $build->user_id,
-                'build_profile_id' => array_key_exists('build_profile_id', $data) ? $data['build_profile_id'] : $build->build_profile_id,
+                'archetype_id' => array_key_exists('archetype_id', $data) ? $data['archetype_id'] : $build->archetype_id,
                 'title' => $data['title'] ?? $build->title,
                 'description' => array_key_exists('description', $data) ? $data['description'] : $build->description,
+                'is_public' => $isPublic,
+                'share_token' => $shareToken,
             ]);
 
             $this->syncBuildItems($build->id, $finalItems);
-            $this->syncBuildModifiers($build->id, $finalModifiers);
+            $this->syncBuildSlots($build->id, $finalSlots);
         });
 
-        $build->refresh()->load(['equipmentItems:id', 'equipmentModifiers:id']);
+        $build = $this->loadDetailedBuild($build->id);
 
         return ApiResponse::success((new BuildResource($build))->toArray($request), 'Build updated.');
     }
@@ -148,8 +183,8 @@ class BuildController extends Controller
         }
 
         DB::transaction(function () use ($build): void {
-            DB::table('build_equipment_modifiers')->where('build_id', $build->id)->delete();
-            DB::table('build_equipment_items')->where('build_id', $build->id)->delete();
+            DB::table('build_slots')->where('build_id', $build->id)->delete();
+            DB::table('build_items')->where('build_id', $build->id)->delete();
             $build->delete();
         });
 
@@ -176,80 +211,86 @@ class BuildController extends Controller
             return ApiResponse::error('One or both builds were not found.', 404);
         }
 
+        if ((int) $left->game_id !== (int) $right->game_id) {
+            return ApiResponse::error('Builds must belong to the same game to be compared.', 422);
+        }
+
         return ApiResponse::success($this->buildSummaryService->compare($left, $right));
     }
 
     /**
-     * @param  array<int, array{equipment_item_id:mixed, position:mixed}>  $items
-     * @return array<int, array{equipment_item_id:int, position:int|null}>
+     * @param  array<int, array{item_id:mixed, position:mixed}>  $items
+     * @return array<int, array{item_id:int, position:int|null}>
      */
     private function normalizeItems(array $items): array
     {
         return collect($items)
             ->map(fn (array $row) => [
-                'equipment_item_id' => (int) $row['equipment_item_id'],
+                'item_id' => (int) $row['item_id'],
                 'position' => isset($row['position']) ? (int) $row['position'] : null,
             ])
-            ->unique('equipment_item_id')
+            ->unique('item_id')
             ->values()
             ->all();
     }
 
     /**
-     * @param  array<int, array{equipment_item_id:mixed, equipment_modifier_id:mixed}>  $modifiers
-     * @return array<int, array{equipment_item_id:int, equipment_modifier_id:int}>
+     * @param  array<int, array{item_id:mixed, item_slot_id:mixed, modifier_id:mixed}>  $slots
+     * @return array<int, array{item_id:int, item_slot_id:int, modifier_id:int}>
      */
-    private function normalizeModifiers(array $modifiers): array
+    private function normalizeSlots(array $slots): array
     {
-        return collect($modifiers)
+        return collect($slots)
             ->map(fn (array $row) => [
-                'equipment_item_id' => (int) $row['equipment_item_id'],
-                'equipment_modifier_id' => (int) $row['equipment_modifier_id'],
+                'item_id' => (int) $row['item_id'],
+                'item_slot_id' => (int) $row['item_slot_id'],
+                'modifier_id' => (int) $row['modifier_id'],
             ])
-            ->unique(fn (array $row) => $row['equipment_item_id'].'-'.$row['equipment_modifier_id'])
+            ->unique(fn (array $row) => $row['item_id'].'-'.$row['item_slot_id'])
             ->values()
             ->all();
     }
 
     /**
-     * @return array<int, array{equipment_item_id:int, position:int|null}>
+     * @return array<int, array{item_id:int, position:int|null}>
      */
     private function existingBuildItems(int $buildId): array
     {
-        return DB::table('build_equipment_items')
+        return DB::table('build_items')
             ->where('build_id', $buildId)
-            ->orderBy('equipment_item_id')
-            ->get(['equipment_item_id', 'position'])
+            ->orderBy('item_id')
+            ->get(['item_id', 'position'])
             ->map(fn ($row) => [
-                'equipment_item_id' => (int) $row->equipment_item_id,
+                'item_id' => (int) $row->item_id,
                 'position' => $row->position !== null ? (int) $row->position : null,
             ])
             ->all();
     }
 
     /**
-     * @return array<int, array{equipment_item_id:int, equipment_modifier_id:int}>
+     * @return array<int, array{item_id:int, item_slot_id:int, modifier_id:int}>
      */
-    private function existingBuildModifiers(int $buildId): array
+    private function existingBuildSlots(int $buildId): array
     {
-        return DB::table('build_equipment_modifiers')
+        return DB::table('build_slots')
             ->where('build_id', $buildId)
-            ->orderBy('equipment_item_id')
-            ->orderBy('equipment_modifier_id')
-            ->get(['equipment_item_id', 'equipment_modifier_id'])
+            ->orderBy('item_id')
+            ->orderBy('item_slot_id')
+            ->get(['item_id', 'item_slot_id', 'modifier_id'])
             ->map(fn ($row) => [
-                'equipment_item_id' => (int) $row->equipment_item_id,
-                'equipment_modifier_id' => (int) $row->equipment_modifier_id,
+                'item_id' => (int) $row->item_id,
+                'item_slot_id' => (int) $row->item_slot_id,
+                'modifier_id' => (int) $row->modifier_id,
             ])
             ->all();
     }
 
     /**
-     * @param  array<int, array{equipment_item_id:int, position:int|null}>  $rows
+     * @param  array<int, array{item_id:int, position:int|null}>  $rows
      */
     private function syncBuildItems(int $buildId, array $rows): void
     {
-        DB::table('build_equipment_items')->where('build_id', $buildId)->delete();
+        DB::table('build_items')->where('build_id', $buildId)->delete();
 
         if ($rows === []) {
             return;
@@ -257,19 +298,19 @@ class BuildController extends Controller
 
         $payload = collect($rows)->map(fn (array $row) => [
             'build_id' => $buildId,
-            'equipment_item_id' => $row['equipment_item_id'],
+            'item_id' => $row['item_id'],
             'position' => $row['position'],
         ])->all();
 
-        DB::table('build_equipment_items')->insert($payload);
+        DB::table('build_items')->insert($payload);
     }
 
     /**
-     * @param  array<int, array{equipment_item_id:int, equipment_modifier_id:int}>  $rows
+     * @param  array<int, array{item_id:int, item_slot_id:int, modifier_id:int}>  $rows
      */
-    private function syncBuildModifiers(int $buildId, array $rows): void
+    private function syncBuildSlots(int $buildId, array $rows): void
     {
-        DB::table('build_equipment_modifiers')->where('build_id', $buildId)->delete();
+        DB::table('build_slots')->where('build_id', $buildId)->delete();
 
         if ($rows === []) {
             return;
@@ -277,10 +318,80 @@ class BuildController extends Controller
 
         $payload = collect($rows)->map(fn (array $row) => [
             'build_id' => $buildId,
-            'equipment_item_id' => $row['equipment_item_id'],
-            'equipment_modifier_id' => $row['equipment_modifier_id'],
+            'item_id' => $row['item_id'],
+            'item_slot_id' => $row['item_slot_id'],
+            'modifier_id' => $row['modifier_id'],
         ])->all();
 
-        DB::table('build_equipment_modifiers')->insert($payload);
+        DB::table('build_slots')->insert($payload);
+    }
+
+    private function loadDetailedBuild(int $id): ?Build
+    {
+        $build = Build::query()
+            ->with(['items.categories', 'items.itemSlots'])
+            ->find($id);
+
+        if ($build === null) {
+            return null;
+        }
+
+        $slotAssignments = DB::table('build_slots as bs')
+            ->join('item_slots as is', 'is.id', '=', 'bs.item_slot_id')
+            ->join('modifiers as m', 'm.id', '=', 'bs.modifier_id')
+            ->where('bs.build_id', $build->id)
+            ->orderBy('bs.item_id')
+            ->orderBy('is.sort_order')
+            ->get([
+                'bs.item_id',
+                'bs.item_slot_id',
+                'bs.modifier_id',
+                'is.slot_key',
+                'is.slot_label',
+                'is.accepted_modifier_type',
+                'm.name as modifier_name',
+                'm.slug as modifier_slug',
+                'm.modifier_type',
+                'm.delta_score',
+                'm.delta_attack',
+                'm.delta_defense',
+                'm.delta_utility',
+                'm.delta_accuracy',
+                'm.delta_mobility',
+            ])
+            ->map(fn ($row) => [
+                'item_id' => (int) $row->item_id,
+                'item_slot_id' => (int) $row->item_slot_id,
+                'slot_key' => $row->slot_key,
+                'slot_label' => $row->slot_label,
+                'accepted_modifier_type' => $row->accepted_modifier_type,
+                'modifier' => [
+                    'id' => (int) $row->modifier_id,
+                    'name' => $row->modifier_name,
+                    'slug' => $row->modifier_slug,
+                    'modifier_type' => $row->modifier_type,
+                    'delta_score' => $row->delta_score,
+                    'delta_attack' => $row->delta_attack,
+                    'delta_defense' => $row->delta_defense,
+                    'delta_utility' => $row->delta_utility,
+                    'delta_accuracy' => $row->delta_accuracy,
+                    'delta_mobility' => $row->delta_mobility,
+                ],
+            ])
+            ->values()
+            ->all();
+
+        $build->setAttribute('slot_assignments', $slotAssignments);
+
+        return $build;
+    }
+
+    private function generateShareToken(): string
+    {
+        do {
+            $token = Str::random(40);
+        } while (Build::query()->where('share_token', $token)->exists());
+
+        return $token;
     }
 }

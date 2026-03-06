@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class WikiBuilderSeeder extends Seeder
 {
@@ -41,6 +42,17 @@ class WikiBuilderSeeder extends Seeder
                     'username' => 'admin',
                     'email' => 'admin@wikibuilder.local',
                     'role' => 'admin',
+                    'first_name' => 'Ada',
+                    'last_name' => 'Admin',
+                    'display_name' => 'Ada Admin',
+                    'phone' => '+33102030405',
+                    'birth_date' => '1990-01-15',
+                    'country_code' => 'FR',
+                    'city' => 'Paris',
+                    'postal_code' => '75001',
+                    'address_line_1' => '1 Rue du Wiki',
+                    'avatar_url' => 'https://example.com/avatars/admin.png',
+                    'is_anonymized' => false,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ],
@@ -48,6 +60,17 @@ class WikiBuilderSeeder extends Seeder
                     'username' => 'player1',
                     'email' => 'player1@wikibuilder.local',
                     'role' => 'user',
+                    'first_name' => 'Noah',
+                    'last_name' => 'Player',
+                    'display_name' => 'Noah Player',
+                    'phone' => '+33611112222',
+                    'birth_date' => '1998-08-22',
+                    'country_code' => 'FR',
+                    'city' => 'Lyon',
+                    'postal_code' => '69001',
+                    'address_line_1' => '9 Avenue Builder',
+                    'avatar_url' => 'https://example.com/avatars/player1.png',
+                    'is_anonymized' => false,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ],
@@ -61,66 +84,76 @@ class WikiBuilderSeeder extends Seeder
                 'updated_at' => $now,
             ]);
 
-            DB::table('build_profiles')->insert(array_merge(
+            DB::table('archetypes')->insert(array_merge(
                 $this->blackOpsThreeProfiles($bo3GameId, $now),
                 $this->steelHorizonProfiles($steelGameId, $now)
             ));
 
-            DB::table('equipment_items')->insert(array_merge(
+            DB::table('items')->insert(array_merge(
                 $this->blackOpsThreeItems($bo3GameId, $now),
                 $this->steelHorizonItems($steelGameId, $now)
             ));
 
-            DB::table('equipment_modifiers')->insert(array_merge(
+            DB::table('modifiers')->insert(array_merge(
                 $this->blackOpsThreeModifiers($bo3GameId, $now),
                 $this->steelHorizonModifiers($steelGameId, $now)
             ));
 
-            DB::table('tags')->insert([
-                ['label' => 'bo3', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'assault-rifle', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'smg', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'burst', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'precision', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'aggressive', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'high-capacity', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'versatile', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'prototype', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'shooter', 'created_at' => $now, 'updated_at' => $now],
+            DB::table('categories')->insert([
+                ['label' => 'bo3', 'slug' => 'bo3', 'created_at' => $now, 'updated_at' => $now],
+                ['label' => 'assault-rifle', 'slug' => 'assault-rifle', 'created_at' => $now, 'updated_at' => $now],
+                ['label' => 'smg', 'slug' => 'smg', 'created_at' => $now, 'updated_at' => $now],
+                ['label' => 'burst', 'slug' => 'burst', 'created_at' => $now, 'updated_at' => $now],
+                ['label' => 'precision', 'slug' => 'precision', 'created_at' => $now, 'updated_at' => $now],
+                ['label' => 'aggressive', 'slug' => 'aggressive', 'created_at' => $now, 'updated_at' => $now],
+                ['label' => 'high-capacity', 'slug' => 'high-capacity', 'created_at' => $now, 'updated_at' => $now],
+                ['label' => 'versatile', 'slug' => 'versatile', 'created_at' => $now, 'updated_at' => $now],
+                ['label' => 'prototype', 'slug' => 'prototype', 'created_at' => $now, 'updated_at' => $now],
+                ['label' => 'shooter', 'slug' => 'shooter', 'created_at' => $now, 'updated_at' => $now],
             ]);
 
-            $tagIds = DB::table('tags')->pluck('id', 'label');
-            $itemIds = DB::table('equipment_items')->pluck('id', 'name');
-            $modifierIds = DB::table('equipment_modifiers')->pluck('id', 'name');
+            $categoryIds = DB::table('categories')->pluck('id', 'label');
+            $itemIds = DB::table('items')->pluck('id', 'name');
+            $modifierIds = DB::table('modifiers')->pluck('id', 'name');
             $users = DB::table('users')->pluck('id', 'username');
-            $profiles = DB::table('build_profiles')->pluck('id', 'name');
+            $profiles = DB::table('archetypes')->pluck('id', 'name');
 
-            DB::table('equipment_item_tags')->insertOrIgnore(array_merge(
-                $this->blackOpsThreeItemTags($itemIds, $tagIds),
-                $this->steelHorizonItemTags($steelGameId, $tagIds)
+            DB::table('item_categories')->insertOrIgnore(array_merge(
+                $this->blackOpsThreeItemTags($itemIds, $categoryIds),
+                $this->steelHorizonItemTags($steelGameId, $categoryIds)
             ));
 
-            DB::table('equipment_item_compatible_modifiers')->insertOrIgnore(array_merge(
+            DB::table('item_modifiers')->insertOrIgnore(array_merge(
                 $this->blackOpsThreeCompatibility($itemIds, $modifierIds),
                 $this->steelHorizonCompatibility($steelGameId)
             ));
+
+            DB::table('item_slots')->insert($this->itemSlotsFromCompatibilities($now));
+
+            $itemSlotIds = DB::table('item_slots')
+                ->get(['id', 'item_id', 'slot_key'])
+                ->mapWithKeys(fn ($row) => [$row->item_id.'-'.$row->slot_key => $row->id]);
 
             DB::table('builds')->insert([
                 [
                     'game_id' => $bo3GameId,
                     'user_id' => $users['player1'],
-                    'build_profile_id' => $profiles['BO3 Flex Rifle'],
+                    'archetype_id' => $profiles['BO3 Flex Rifle'],
                     'title' => 'BO3 Ranked Flex Core',
                     'description' => 'A compact BO3 sample build seeded with verified weapons and attachments.',
+                    'share_token' => 'bo3-ranked-flex-core',
+                    'is_public' => true,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ],
                 [
                     'game_id' => $steelGameId,
                     'user_id' => $users['admin'],
-                    'build_profile_id' => $profiles['Precision Sniper'],
+                    'archetype_id' => $profiles['Precision Sniper'],
                     'title' => 'Steel Horizon Sniper Setup',
                     'description' => 'Seeded sample build for compare endpoint.',
+                    'share_token' => 'steel-horizon-sniper-setup',
+                    'is_public' => false,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ],
@@ -128,45 +161,51 @@ class WikiBuilderSeeder extends Seeder
 
             $buildIds = DB::table('builds')->pluck('id', 'title');
 
-            DB::table('build_equipment_items')->insertOrIgnore([
-                ['build_id' => $buildIds['BO3 Ranked Flex Core'], 'equipment_item_id' => $itemIds['KN-44'], 'position' => 1],
-                ['build_id' => $buildIds['BO3 Ranked Flex Core'], 'equipment_item_id' => $itemIds['ICR-1'], 'position' => 2],
-                ['build_id' => $buildIds['BO3 Ranked Flex Core'], 'equipment_item_id' => $itemIds['VMP'], 'position' => 3],
-                ['build_id' => $buildIds['Steel Horizon Sniper Setup'], 'equipment_item_id' => $itemIds['SH Item 1'], 'position' => 1],
-                ['build_id' => $buildIds['Steel Horizon Sniper Setup'], 'equipment_item_id' => $itemIds['SH Item 2'], 'position' => 2],
-                ['build_id' => $buildIds['Steel Horizon Sniper Setup'], 'equipment_item_id' => $itemIds['SH Item 3'], 'position' => 3],
+            DB::table('build_items')->insertOrIgnore([
+                ['build_id' => $buildIds['BO3 Ranked Flex Core'], 'item_id' => $itemIds['KN-44'], 'position' => 1],
+                ['build_id' => $buildIds['BO3 Ranked Flex Core'], 'item_id' => $itemIds['ICR-1'], 'position' => 2],
+                ['build_id' => $buildIds['BO3 Ranked Flex Core'], 'item_id' => $itemIds['VMP'], 'position' => 3],
+                ['build_id' => $buildIds['Steel Horizon Sniper Setup'], 'item_id' => $itemIds['SH Item 1'], 'position' => 1],
+                ['build_id' => $buildIds['Steel Horizon Sniper Setup'], 'item_id' => $itemIds['SH Item 2'], 'position' => 2],
+                ['build_id' => $buildIds['Steel Horizon Sniper Setup'], 'item_id' => $itemIds['SH Item 3'], 'position' => 3],
             ]);
 
-            DB::table('build_equipment_modifiers')->insertOrIgnore([
+            DB::table('build_slots')->insertOrIgnore([
                 [
                     'build_id' => $buildIds['BO3 Ranked Flex Core'],
-                    'equipment_item_id' => $itemIds['KN-44'],
-                    'equipment_modifier_id' => $modifierIds['Quickdraw Handle'],
-                ],
-                [
-                    'build_id' => $buildIds['BO3 Ranked Flex Core'],
-                    'equipment_item_id' => $itemIds['ICR-1'],
-                    'equipment_modifier_id' => $modifierIds['Grip'],
+                    'item_id' => $itemIds['KN-44'],
+                    'item_slot_id' => $itemSlotIds[$itemIds['KN-44'].'-rear_grip'],
+                    'modifier_id' => $modifierIds['Quickdraw Handle'],
                 ],
                 [
                     'build_id' => $buildIds['BO3 Ranked Flex Core'],
-                    'equipment_item_id' => $itemIds['VMP'],
-                    'equipment_modifier_id' => $modifierIds['Rapid Fire'],
+                    'item_id' => $itemIds['ICR-1'],
+                    'item_slot_id' => $itemSlotIds[$itemIds['ICR-1'].'-underbarrel'],
+                    'modifier_id' => $modifierIds['Grip'],
+                ],
+                [
+                    'build_id' => $buildIds['BO3 Ranked Flex Core'],
+                    'item_id' => $itemIds['VMP'],
+                    'item_slot_id' => $itemSlotIds[$itemIds['VMP'].'-mechanism'],
+                    'modifier_id' => $modifierIds['Rapid Fire'],
                 ],
                 [
                     'build_id' => $buildIds['Steel Horizon Sniper Setup'],
-                    'equipment_item_id' => $itemIds['SH Item 1'],
-                    'equipment_modifier_id' => $modifierIds['SH Mod 1'],
+                    'item_id' => $itemIds['SH Item 1'],
+                    'item_slot_id' => $itemSlotIds[$itemIds['SH Item 1'].'-defense'],
+                    'modifier_id' => $modifierIds['SH Mod 1'],
                 ],
                 [
                     'build_id' => $buildIds['Steel Horizon Sniper Setup'],
-                    'equipment_item_id' => $itemIds['SH Item 2'],
-                    'equipment_modifier_id' => $modifierIds['SH Mod 2'],
+                    'item_id' => $itemIds['SH Item 2'],
+                    'item_slot_id' => $itemSlotIds[$itemIds['SH Item 2'].'-mobility'],
+                    'modifier_id' => $modifierIds['SH Mod 2'],
                 ],
                 [
                     'build_id' => $buildIds['Steel Horizon Sniper Setup'],
-                    'equipment_item_id' => $itemIds['SH Item 3'],
-                    'equipment_modifier_id' => $modifierIds['SH Mod 3'],
+                    'item_id' => $itemIds['SH Item 3'],
+                    'item_slot_id' => $itemSlotIds[$itemIds['SH Item 3'].'-utility'],
+                    'modifier_id' => $modifierIds['SH Mod 3'],
                 ],
             ]);
         });
@@ -175,15 +214,16 @@ class WikiBuilderSeeder extends Seeder
     private function truncateTables(): void
     {
         DB::table('api_keys')->delete();
-        DB::table('build_equipment_modifiers')->delete();
-        DB::table('build_equipment_items')->delete();
-        DB::table('equipment_item_compatible_modifiers')->delete();
-        DB::table('equipment_item_tags')->delete();
+        DB::table('build_slots')->delete();
+        DB::table('build_items')->delete();
+        DB::table('item_slots')->delete();
+        DB::table('item_modifiers')->delete();
+        DB::table('item_categories')->delete();
         DB::table('builds')->delete();
-        DB::table('equipment_modifiers')->delete();
-        DB::table('equipment_items')->delete();
-        DB::table('build_profiles')->delete();
-        DB::table('tags')->delete();
+        DB::table('modifiers')->delete();
+        DB::table('items')->delete();
+        DB::table('archetypes')->delete();
+        DB::table('categories')->delete();
         DB::table('users')->delete();
         DB::table('games')->delete();
     }
@@ -483,6 +523,8 @@ class WikiBuilderSeeder extends Seeder
         return collect($items)->map(fn (array $item) => [
             'game_id' => $gameId,
             'name' => $item['name'],
+            'slug' => Str::slug($item['name']),
+            'external_ref' => null,
             'slot' => 'weapon',
             'rarity' => 'standard-issue',
             'tier_level' => $item['tier_level'],
@@ -508,6 +550,8 @@ class WikiBuilderSeeder extends Seeder
             $rows[] = [
                 'game_id' => $gameId,
                 'name' => 'SH Item '.$i,
+                'slug' => 'sh-item-'.$i,
+                'external_ref' => 'sh-item-'.$i,
                 'slot' => $itemSlots[$i % count($itemSlots)],
                 'rarity' => $rarities[$i % count($rarities)],
                 'tier_level' => 'T'.(($i % 5) + 1),
@@ -698,6 +742,8 @@ class WikiBuilderSeeder extends Seeder
         return collect($modifiers)->map(fn (array $modifier) => [
             'game_id' => $gameId,
             'name' => $modifier['name'],
+            'slug' => Str::slug($modifier['name']),
+            'external_ref' => null,
             'modifier_type' => $modifier['modifier_type'],
             'description' => $modifier['description'],
             'delta_score' => $modifier['delta_score'],
@@ -721,6 +767,8 @@ class WikiBuilderSeeder extends Seeder
             $rows[] = [
                 'game_id' => $gameId,
                 'name' => 'SH Mod '.$i,
+                'slug' => 'sh-mod-'.$i,
+                'external_ref' => 'sh-mod-'.$i,
                 'modifier_type' => $modifierTypes[$i % count($modifierTypes)],
                 'description' => 'Generated modifier '.$i.' for steel-horizon.',
                 'delta_score' => ($i % 2 === 0) ? 4 : -1,
@@ -742,7 +790,7 @@ class WikiBuilderSeeder extends Seeder
         return $rows;
     }
 
-    private function blackOpsThreeItemTags(Collection $itemIds, Collection $tagIds): array
+    private function blackOpsThreeItemTags(Collection $itemIds, Collection $categoryIds): array
     {
         $mapping = [
             'KN-44' => ['bo3', 'assault-rifle', 'versatile'],
@@ -761,8 +809,8 @@ class WikiBuilderSeeder extends Seeder
         foreach ($mapping as $itemName => $labels) {
             foreach ($labels as $label) {
                 $rows[] = [
-                    'equipment_item_id' => $itemIds[$itemName],
-                    'tag_id' => $tagIds[$label],
+                    'item_id' => $itemIds[$itemName],
+                    'category_id' => $categoryIds[$label],
                 ];
             }
         }
@@ -770,9 +818,9 @@ class WikiBuilderSeeder extends Seeder
         return $rows;
     }
 
-    private function steelHorizonItemTags(int $gameId, Collection $tagIds): array
+    private function steelHorizonItemTags(int $gameId, Collection $categoryIds): array
     {
-        $itemIds = DB::table('equipment_items')
+        $itemIds = DB::table('items')
             ->where('game_id', $gameId)
             ->orderBy('id')
             ->pluck('id')
@@ -783,12 +831,12 @@ class WikiBuilderSeeder extends Seeder
 
         foreach ($itemIds as $index => $itemId) {
             $rows[] = [
-                'equipment_item_id' => $itemId,
-                'tag_id' => $tagIds[$baseLabels[$index % count($baseLabels)]],
+                'item_id' => $itemId,
+                'category_id' => $categoryIds[$baseLabels[$index % count($baseLabels)]],
             ];
             $rows[] = [
-                'equipment_item_id' => $itemId,
-                'tag_id' => $tagIds[$baseLabels[($index + 1) % count($baseLabels)]],
+                'item_id' => $itemId,
+                'category_id' => $categoryIds[$baseLabels[($index + 1) % count($baseLabels)]],
             ];
         }
 
@@ -814,8 +862,8 @@ class WikiBuilderSeeder extends Seeder
         foreach ($mapping as $itemName => $modifierNames) {
             foreach ($modifierNames as $modifierName) {
                 $rows[] = [
-                    'equipment_item_id' => $itemIds[$itemName],
-                    'equipment_modifier_id' => $modifierIds[$modifierName],
+                    'item_id' => $itemIds[$itemName],
+                    'modifier_id' => $modifierIds[$modifierName],
                 ];
             }
         }
@@ -825,13 +873,13 @@ class WikiBuilderSeeder extends Seeder
 
     private function steelHorizonCompatibility(int $gameId): array
     {
-        $itemIds = DB::table('equipment_items')
+        $itemIds = DB::table('items')
             ->where('game_id', $gameId)
             ->orderBy('id')
             ->pluck('id')
             ->values();
 
-        $modifierIds = DB::table('equipment_modifiers')
+        $modifierIds = DB::table('modifiers')
             ->where('game_id', $gameId)
             ->orderBy('id')
             ->pluck('id')
@@ -840,15 +888,43 @@ class WikiBuilderSeeder extends Seeder
         $rows = [];
         foreach ($itemIds as $index => $itemId) {
             $rows[] = [
-                'equipment_item_id' => $itemId,
-                'equipment_modifier_id' => $modifierIds[$index % $modifierIds->count()],
+                'item_id' => $itemId,
+                'modifier_id' => $modifierIds[$index % $modifierIds->count()],
             ];
             $rows[] = [
-                'equipment_item_id' => $itemId,
-                'equipment_modifier_id' => $modifierIds[($index + 2) % $modifierIds->count()],
+                'item_id' => $itemId,
+                'modifier_id' => $modifierIds[($index + 2) % $modifierIds->count()],
             ];
         }
 
         return $rows;
+    }
+
+    private function itemSlotsFromCompatibilities(object $now): array
+    {
+        return DB::table('item_modifiers as im')
+            ->join('modifiers as m', 'm.id', '=', 'im.modifier_id')
+            ->select('im.item_id', 'm.modifier_type')
+            ->get()
+            ->groupBy('item_id')
+            ->flatMap(function (Collection $rows, int $itemId) use ($now) {
+                return $rows
+                    ->pluck('modifier_type')
+                    ->unique()
+                    ->values()
+                    ->map(fn (string $modifierType, int $index) => [
+                        'item_id' => $itemId,
+                        'slot_key' => $modifierType,
+                        'slot_label' => Str::headline(str_replace('_', ' ', $modifierType)),
+                        'accepted_modifier_type' => $modifierType,
+                        'sort_order' => $index + 1,
+                        'is_required' => false,
+                        'metadata' => null,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+            })
+            ->values()
+            ->all();
     }
 }

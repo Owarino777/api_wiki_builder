@@ -10,30 +10,30 @@ use Illuminate\Support\Facades\DB;
 
 class EquipmentItemTagController extends Controller
 {
-    public function attach(int $equipmentItemId, int $tagId)
+    public function attach(int $itemId, int $categoryId)
     {
-        $item = EquipmentItem::query()->find($equipmentItemId);
-        $tag = Tag::query()->find($tagId);
+        $item = EquipmentItem::query()->find($itemId);
+        $category = Tag::query()->find($categoryId);
 
-        if ($item === null || $tag === null) {
-            return ApiResponse::error('Equipment item or tag not found.', 404);
+        if ($item === null || $category === null) {
+            return ApiResponse::error('Item or category not found.', 404);
         }
 
-        DB::table('equipment_item_tags')->insertOrIgnore([
-            'equipment_item_id' => $equipmentItemId,
-            'tag_id' => $tagId,
+        DB::table('item_categories')->insertOrIgnore([
+            'item_id' => $itemId,
+            'category_id' => $categoryId,
         ]);
 
-        return ApiResponse::success(null, 'Tag attached to equipment item.', 201);
+        return ApiResponse::success(null, 'Category attached to item.');
     }
 
-    public function detach(int $equipmentItemId, int $tagId)
+    public function detach(int $itemId, int $categoryId)
     {
-        DB::table('equipment_item_tags')
-            ->where('equipment_item_id', $equipmentItemId)
-            ->where('tag_id', $tagId)
+        DB::table('item_categories')
+            ->where('item_id', $itemId)
+            ->where('category_id', $categoryId)
             ->delete();
 
-        return ApiResponse::success(null, 'Tag detached from equipment item.');
+        return ApiResponse::success(null, 'Category detached from item.');
     }
 }

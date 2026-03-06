@@ -9,7 +9,9 @@ class UpdateEquipmentModifierRequest extends ApiFormRequest
         return [
             'game_id' => ['sometimes', 'integer', 'exists:games,id'],
             'name' => ['sometimes', 'string', 'max:140'],
-            'modifier_type' => ['sometimes', 'string', 'max:60'],
+            'slug' => ['nullable', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'external_ref' => ['nullable', 'string', 'max:160'],
+            'modifier_type' => ['sometimes', 'string', 'max:60', 'regex:/^[a-z0-9_]+$/'],
             'description' => ['nullable', 'string'],
             'delta_score' => ['sometimes', 'integer'],
             'delta_attack' => ['nullable', 'integer'],

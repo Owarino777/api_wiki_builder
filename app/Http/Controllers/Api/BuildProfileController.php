@@ -8,7 +8,6 @@ use App\Http\Requests\UpdateBuildProfileRequest;
 use App\Http\Resources\BuildProfileResource;
 use App\Models\BuildProfile;
 use App\Support\ApiResponse;
-use Illuminate\Http\Request;
 
 class BuildProfileController extends Controller
 {
@@ -21,48 +20,49 @@ class BuildProfileController extends Controller
             ->exists();
 
         if ($exists) {
-            return ApiResponse::error('A build profile with this name already exists for the game.', 422);
+            return ApiResponse::error('An archetype with this name already exists for the game.', 422);
         }
 
-        $buildProfile = BuildProfile::query()->create($data);
+        $archetype = BuildProfile::query()->create($data);
 
-        return ApiResponse::success((new BuildProfileResource($buildProfile))->toArray($request), 'Build profile created.', 201);
+        return ApiResponse::success((new BuildProfileResource($archetype))->toArray($request), 'Archetype created.', 201);
     }
 
     public function update(UpdateBuildProfileRequest $request, int $id)
     {
-        $buildProfile = BuildProfile::query()->find($id);
-        if ($buildProfile === null) {
-            return ApiResponse::error('Build profile not found.', 404);
+        $archetype = BuildProfile::query()->find($id);
+        if ($archetype === null) {
+            return ApiResponse::error('Archetype not found.', 404);
         }
 
         $data = $request->validated();
-        $newGameId = $data['game_id'] ?? $buildProfile->game_id;
-        $newName = $data['name'] ?? $buildProfile->name;
+        $newGameId = $data['game_id'] ?? $archetype->game_id;
+        $newName = $data['name'] ?? $archetype->name;
 
         $exists = BuildProfile::query()
             ->where('game_id', $newGameId)
             ->where('name', $newName)
-            ->where('id', '!=', $buildProfile->id)
+            ->where('id', '!=', $archetype->id)
             ->exists();
+
         if ($exists) {
-            return ApiResponse::error('A build profile with this name already exists for the game.', 422);
+            return ApiResponse::error('An archetype with this name already exists for the game.', 422);
         }
 
-        $buildProfile->update($data);
+        $archetype->update($data);
 
-        return ApiResponse::success((new BuildProfileResource($buildProfile->fresh()))->toArray($request), 'Build profile updated.');
+        return ApiResponse::success((new BuildProfileResource($archetype->fresh()))->toArray($request), 'Archetype updated.');
     }
 
     public function destroy(int $id)
     {
-        $buildProfile = BuildProfile::query()->find($id);
-        if ($buildProfile === null) {
-            return ApiResponse::error('Build profile not found.', 404);
+        $archetype = BuildProfile::query()->find($id);
+        if ($archetype === null) {
+            return ApiResponse::error('Archetype not found.', 404);
         }
 
-        $buildProfile->delete();
+        $archetype->delete();
 
-        return ApiResponse::success(null, 'Build profile deleted.');
+        return ApiResponse::success(null, 'Archetype deleted.');
     }
 }

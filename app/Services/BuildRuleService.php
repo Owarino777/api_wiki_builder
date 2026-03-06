@@ -10,86 +10,118 @@ use Illuminate\Support\Facades\DB;
 class BuildRuleService
 {
     /**
-     * @param  array<int, array{equipment_item_id:int, position:int|null}>  $equipmentItems
-     * @param  array<int, array{equipment_item_id:int, equipment_modifier_id:int}>  $equipmentModifiers
+     * @param  array<int, array{item_id:int, position:int|null}>  $items
+     * @param  array<int, array{item_id:int, item_slot_id:int, modifier_id:int}>  $slots
      * @return array<int, string>
      */
     public function validate(
         int $gameId,
-        ?int $buildProfileId,
-        array $equipmentItems,
-        array $equipmentModifiers
+        ?int $archetypeId,
+        array $items,
+        array $slots
     ): array {
         $errors = [];
 
-        if ($buildProfileId !== null) {
-            $profile = BuildProfile::query()->find($buildProfileId);
-            if ($profile === null) {
-                $errors[] = 'build_profile_id does not exist.';
-            } elseif ((int) $profile->game_id !== $gameId) {
-                $errors[] = 'build_profile must belong to the same game as the build.';
+        if ($archetypeId !== null) {
+            $archetype = BuildProfile::query()->find($archetypeId);
+
+            if ($archetype === null) {
+                $errors[] = 'archetype_id does not exist.';
+            } elseif ((int) $archetype->game_id !== $gameId) {
+                $errors[] = 'archetype must belong to the same game as the build.';
             }
         }
 
-        $itemIds = collect($equipmentItems)
-            ->pluck('equipment_item_id')
-            ->merge(collect($equipmentModifiers)->pluck('equipment_item_id'))
+        $itemIds = collect($items)
+            ->pluck('item_id')
+            ->merge(collect($slots)->pluck('item_id'))
             ->unique()
             ->values();
 
-        if ($itemIds->isNotEmpty()) {
-            $itemGameById = EquipmentItem::query()
-                ->whereIn('id', $itemIds)
-                ->pluck('game_id', 'id');
+        $itemGameById = EquipmentItem::query()
+            ->whereIn('id', $itemIds)
+            ->pluck('game_id', 'id');
 
-            foreach ($itemIds as $itemId) {
-                if (! isset($itemGameById[$itemId])) {
-                    $errors[] = "equipment_item_id {$itemId} does not exist.";
-                    continue;
-                }
-                if ((int) $itemGameById[$itemId] !== $gameId) {
-                    $errors[] = "equipment_item_id {$itemId} is not in the build game.";
-                }
+        foreach ($itemIds as $itemId) {
+            if (!isset($itemGameById[$itemId])) {
+                $errors[] = "item_id {$itemId} does not exist.";
+                continue;
+            }
+
+            if ((int) $itemGameById[$itemId] !== $gameId) {
+                $errors[] = "item_id {$itemId} is not in the build game.";
             }
         }
 
-        $modifierIds = collect($equipmentModifiers)
-            ->pluck('equipment_modifier_id')
-            ->unique()
-            ->values();
+        $modifierIds = collect($slots)->pluck('modifier_id')->unique()->values();
+        $modifierGameById = EquipmentModifier::query()
+            ->whereIn('id', $modifierIds)
+            ->pluck('game_id', 'id');
 
-        if ($modifierIds->isNotEmpty()) {
-            $modifierGameById = EquipmentModifier::query()
-                ->whereIn('id', $modifierIds)
-                ->pluck('game_id', 'id');
+        foreach ($modifierIds as $modifierId) {
+            if (!isset($modifierGameById[$modifierId])) {
+                $errors[] = "modifier_id {$modifierId} does not exist.";
+                continue;
+            }
 
-            foreach ($modifierIds as $modifierId) {
-                if (! isset($modifierGameById[$modifierId])) {
-                    $errors[] = "equipment_modifier_id {$modifierId} does not exist.";
-                    continue;
-                }
-                if ((int) $modifierGameById[$modifierId] !== $gameId) {
-                    $errors[] = "equipment_modifier_id {$modifierId} is not in the build game.";
-                }
+            if ((int) $modifierGameById[$modifierId] !== $gameId) {
+                $errors[] = "modifier_id {$modifierId} is not in the build game.";
             }
         }
 
-        $buildItemIdSet = collect($equipmentItems)->pluck('equipment_item_id')->flip();
-        foreach ($equipmentModifiers as $row) {
-            $itemId = (int) $row['equipment_item_id'];
-            $modifierId = (int) $row['equipment_modifier_id'];
+        $buildItemIdSet = collect($items)->pluck('item_id')->flip();
+        $slotIds = collect($slots)->pluck('item_slot_id')->unique()->values();
 
-            if (! $buildItemIdSet->has($itemId)) {
-                $errors[] = "modifier relation references equipment_item_id {$itemId} that is not in the build.";
+        $itemSlots = DB::table('item_slots')
+            ->whereIn('id', $slotIds)
+            ->get(['id', 'item_id', 'accepted_modifier_type'])
+            ->keyBy('id');
+
+        $modifierTypes = DB::table('modifiers')
+            ->whereIn('id', $modifierIds)
+            ->pluck('modifier_type', 'id');
+
+        $slotOccupancySet = [];
+
+        foreach ($slots as $row) {
+            $itemId = (int) $row['item_id'];
+            $itemSlotId = (int) $row['item_slot_id'];
+            $modifierId = (int) $row['modifier_id'];
+            $occupancyKey = $itemId.'-'.$itemSlotId;
+
+            if (!$buildItemIdSet->has($itemId)) {
+                $errors[] = "slot assignment references item_id {$itemId} that is not in the build.";
             }
 
-            $isCompatible = DB::table('equipment_item_compatible_modifiers')
-                ->where('equipment_item_id', $itemId)
-                ->where('equipment_modifier_id', $modifierId)
+            if (!isset($itemSlots[$itemSlotId])) {
+                $errors[] = "item_slot_id {$itemSlotId} does not exist.";
+                continue;
+            }
+
+            $slot = $itemSlots[$itemSlotId];
+            if ((int) $slot->item_id !== $itemId) {
+                $errors[] = "item_slot_id {$itemSlotId} does not belong to item_id {$itemId}.";
+            }
+
+            if (isset($slotOccupancySet[$occupancyKey])) {
+                $errors[] = "item_slot_id {$itemSlotId} is assigned more than once for item_id {$itemId}.";
+            }
+            $slotOccupancySet[$occupancyKey] = true;
+
+            $isCompatible = DB::table('item_modifiers')
+                ->where('item_id', $itemId)
+                ->where('modifier_id', $modifierId)
                 ->exists();
 
-            if (! $isCompatible) {
-                $errors[] = "modifier {$modifierId} is not compatible with equipment item {$itemId}.";
+            if (!$isCompatible) {
+                $errors[] = "modifier {$modifierId} is not compatible with item {$itemId}.";
+            }
+
+            $acceptedModifierType = $slot->accepted_modifier_type;
+            $modifierType = $modifierTypes[$modifierId] ?? null;
+
+            if ($acceptedModifierType !== null && $modifierType !== $acceptedModifierType) {
+                $errors[] = "modifier {$modifierId} does not match the accepted type for item_slot_id {$itemSlotId}.";
             }
         }
 
