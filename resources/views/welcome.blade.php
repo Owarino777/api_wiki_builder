@@ -5,145 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'Wiki Builder API') }}</title>
     <style>
-        :root{--bg:#0f151c;--ink:#171b21;--muted:#626b77;--paper:rgba(250,244,234,.9);--paper2:rgba(255,250,245,.78);--night:rgba(14,20,28,.94);--accent:#e26a37;--accentSoft:rgba(226,106,55,.16);--cyan:#6bd1cf;--line:rgba(20,25,32,.1);--lineDark:rgba(255,255,255,.1);--xl:30px;--lg:22px;--md:18px;--sm:14px;--shadow:0 28px 72px rgba(6,10,16,.22);--ease:220ms cubic-bezier(.2,.8,.2,1)}
-        *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:"Aptos","Segoe UI",sans-serif;color:var(--ink);background:radial-gradient(circle at top left,rgba(226,106,55,.26),transparent 20%),radial-gradient(circle at 80% 14%,rgba(107,209,207,.15),transparent 18%),linear-gradient(180deg,#eef1f4,#dbe0e3)}
-        button,a{transition:transform var(--ease),border-color var(--ease),background var(--ease),box-shadow var(--ease)}button:focus-visible,a:focus-visible{outline:3px solid rgba(226,106,55,.35);outline-offset:3px}
-        .page{width:min(1380px,calc(100vw - 26px));margin:14px auto 24px;display:grid;gap:18px}.hero,.panel{border-radius:var(--xl);box-shadow:var(--shadow);overflow:hidden;border:1px solid rgba(255,255,255,.28)}
-        .hero{position:relative;padding:30px;color:#f8f1e8;background:linear-gradient(145deg,rgba(8,11,17,.96),rgba(37,29,24,.92)),linear-gradient(120deg,rgba(226,106,55,.32),transparent 55%)}.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(180deg,rgba(0,0,0,.86),transparent 94%);pointer-events:none}
-        .heroGrid,.layout{position:relative;z-index:1;display:grid;gap:18px}.heroGrid{grid-template-columns:1.1fr .9fr;align-items:start}.layout{grid-template-columns:minmax(0,1.45fr) minmax(320px,.85fr)}.stack{display:grid;gap:18px;align-content:start}
-        .hero h1{margin:16px 0 14px;max-width:10ch;font-family:"Arial Narrow","Bahnschrift",sans-serif;font-size:clamp(44px,7vw,82px);line-height:.9;letter-spacing:-.06em}.hero p,.muted,.source{color:rgba(248,241,232,.78);line-height:1.6}
-        .row,.switcher,.tabs,.metrics,.chips,.mods,.actions{display:flex;flex-wrap:wrap;gap:10px}.badge,.chip,.tab,.pill,.mod,.pick,.button{border-radius:999px;border:1px solid transparent;padding:9px 14px}.badge{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;background:rgba(255,255,255,.08)}
-        .metric{flex:1 1 150px;border-radius:20px;padding:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}.metric strong{display:block;font-family:"Arial Narrow","Bahnschrift",sans-serif;font-size:31px;letter-spacing:-.05em}
-        .heroCard{padding:18px;border-radius:var(--lg);background:rgba(255,255,255,.06);border:1px solid var(--lineDark)}.heroCard h3,.panel h2,.panel h3,.panel h4,.panel p{margin:0}.heroCard p{margin-top:6px}
-        .panel{padding:24px;background:var(--paper);color:var(--ink)}.panel.dark{background:var(--night);color:#f8f1e8;border-color:rgba(255,255,255,.06)}.panel.dark .muted,.panel.dark .source{color:rgba(248,241,232,.7)}
-        .head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px}.head h2{font-size:30px;letter-spacing:-.05em}.head h3{font-size:22px;letter-spacing:-.04em}
-        .chip,.tab,.pill,.mod,.pick,.button{background:rgba(255,255,255,.76);color:var(--ink);border-color:var(--line);cursor:pointer}.chip:hover,.tab:hover,.pill:hover,.mod:hover,.pick:hover,.button:hover{transform:translateY(-1px);border-color:rgba(226,106,55,.36);box-shadow:0 10px 24px rgba(7,10,16,.08)}
-        .chip.active,.tab.active,.pill.active,.mod.active,.pick.active{background:var(--accentSoft);border-color:rgba(226,106,55,.4);color:#5e2b1b}.button.primary{background:linear-gradient(135deg,#d85d2e,#f08a59);color:#fff7f1;border-color:transparent;text-decoration:none}.button.ghost{background:rgba(255,255,255,.08);color:#f8f1e8;border-color:rgba(255,255,255,.12)}
-        .section{display:grid;gap:14px;padding-top:18px;border-top:1px solid rgba(20,25,32,.08)}.section:first-child{padding-top:0;border-top:0}.grid2,.grid3,.tagGrid{display:grid;gap:14px}.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}.tagGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
-        .card,.summary,.empty{border-radius:var(--md);border:1px solid var(--line);background:var(--paper2);overflow:hidden;padding:14px}.media{position:relative;overflow:hidden;aspect-ratio:16/10;border-radius:18px;margin-bottom:14px;background:radial-gradient(circle at 18% 18%,rgba(107,209,207,.25),transparent 34%),linear-gradient(135deg,rgba(8,12,18,.98),rgba(38,31,27,.94));border:1px solid rgba(255,255,255,.08)}
-        .media img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:12px}.fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;gap:10px;color:rgba(255,247,241,.86)}.mark{width:84px;height:84px;display:grid;place-items:center;border-radius:24px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-family:"Arial Narrow","Bahnschrift",sans-serif;font-size:30px}
-        .card h4,.summary h4{font-size:22px;letter-spacing:-.04em}.mini{color:var(--muted);line-height:1.5}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.stat{border-radius:14px;padding:10px;background:rgba(18,24,32,.05)}.stat strong{display:block;font-size:22px;letter-spacing:-.05em}.stat span{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
-        .empty{min-height:180px;display:grid;place-content:center;text-align:center;gap:10px}.empty strong{font-size:22px;letter-spacing:-.04em}.pick{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left}.summaryMain{border-radius:22px;padding:18px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.02)),radial-gradient(circle at top right,rgba(226,106,55,.22),transparent 34%);border:1px solid rgba(255,255,255,.08)}.summaryMain strong{display:block;font-family:"Arial Narrow","Bahnschrift",sans-serif;font-size:42px;letter-spacing:-.06em}
-        [hidden]{display:none!important}@media (max-width:1120px){.heroGrid,.layout{grid-template-columns:1fr}}@media (max-width:760px){.page{width:min(100vw - 12px,1380px);margin:6px auto 16px;gap:12px}.hero,.panel{padding:18px;border-radius:24px}.grid2,.grid3,.tagGrid,.stats{grid-template-columns:1fr}.head{flex-direction:column}}
+        :root{--bg:#ede7df;--paper:rgba(255,250,244,.9);--ink:#181b20;--muted:#626975;--line:rgba(24,27,32,.12);--accent:#d86a35;--accent-soft:rgba(216,106,53,.14);--teal:#3f8b8f;--dark:#15191f;--dark-2:#1d232c;--ivory:#f8f3eb;--shadow:0 28px 56px rgba(14,18,24,.12);--ease:220ms cubic-bezier(.2,.8,.2,1)}
+        *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:"Aptos","Segoe UI",sans-serif;color:var(--ink);background:radial-gradient(circle at top left,rgba(216,106,53,.16),transparent 22%),radial-gradient(circle at top right,rgba(63,139,143,.12),transparent 18%),linear-gradient(180deg,#f4f0ea,#ddd8cf)}button,input,select,a{font:inherit;transition:transform var(--ease),border-color var(--ease),background-color var(--ease),box-shadow var(--ease)}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid rgba(216,106,53,.32);outline-offset:3px}
+        .page{width:min(1480px,calc(100vw - 24px));margin:12px auto 24px;display:grid;gap:18px}.hero,.panel{border-radius:32px;box-shadow:var(--shadow);overflow:hidden}.hero{position:relative;padding:28px;color:var(--ivory);background:linear-gradient(135deg,rgba(11,15,20,.98),rgba(36,28,24,.95));border:1px solid rgba(255,255,255,.08)}.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(180deg,rgba(0,0,0,.9),transparent 96%)}
+        .heroGrid,.layout,.compareGrid,.stack,.sidebar,.filters,.compareCard,.stats,.slotList,.catalogCard,.presetCard,.infoCard{position:relative;z-index:1;display:grid;gap:14px}.heroGrid{grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:18px}.layout{grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:18px}.compareGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+        .eyebrows,.metrics,.switcher,.targets,.chips,.actions{display:flex;flex-wrap:wrap;gap:10px}.eyebrow,.metric,.chip,.target,.chip2,.ghost,.primary,.slotTag,.meta span,.catalogMeta span,.pill{border-radius:999px;border:1px solid transparent}.eyebrow{padding:8px 12px;background:rgba(255,255,255,.08);font-size:11px;letter-spacing:.12em;text-transform:uppercase}.hero h1{margin:14px 0 10px;max-width:11ch;font-family:"Bahnschrift SemiCondensed","Trebuchet MS",sans-serif;font-size:clamp(44px,7vw,82px);line-height:.92;letter-spacing:-.06em}.hero p,.dark p,.dark .mini{color:rgba(248,243,235,.76);line-height:1.55}
+        .metric{min-width:138px;padding:16px;background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08)}.metric strong{display:block;font-family:"Bahnschrift SemiCondensed","Trebuchet MS",sans-serif;font-size:30px;letter-spacing:-.05em}.metric span{font-size:12px;color:rgba(248,243,235,.7);text-transform:uppercase;letter-spacing:.08em}
+        .panel{padding:22px;background:var(--paper);border:1px solid rgba(255,255,255,.24)}.dark{background:linear-gradient(160deg,var(--dark),var(--dark-2));color:var(--ivory);border-color:rgba(255,255,255,.06)}.panelHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}.panelHeader h2,.panelHeader h3,.weaponName,.catalogTitle{margin:0;font-family:"Bahnschrift SemiCondensed","Trebuchet MS",sans-serif;letter-spacing:-.04em}.panelHeader h2{font-size:34px}.panelHeader h3,.weaponName{font-size:24px}.mini{margin:0;color:var(--muted);line-height:1.55}
+        .chip,.target,.chip2,.ghost,.primary{padding:10px 14px;border-color:var(--line);cursor:pointer;background:rgba(255,255,255,.8);color:var(--ink)}.primary{background:linear-gradient(135deg,#b84c20,var(--accent));color:#fff7f1;border-color:transparent;text-decoration:none}.chip:hover,.target:hover,.chip2:hover,.ghost:hover,.primary:hover{transform:translateY(-1px);border-color:rgba(216,106,53,.34);box-shadow:0 12px 28px rgba(16,20,28,.08)}.chip[aria-pressed=true],.target[aria-pressed=true],.chip2[aria-pressed=true]{background:var(--accent-soft);border-color:rgba(216,106,53,.42);color:#5f2b18}
+        .field{display:grid;gap:8px}.field label{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.field input,.field select,.slotSelect{width:100%;min-height:46px;padding:11px 13px;border-radius:16px;border:1px solid var(--line);background:#fffdfa;color:var(--ink)}
+        .compareCard{padding:18px;border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(243,235,226,.94));border:1px solid var(--line)}.compareCard.active{border-color:rgba(216,106,53,.42);box-shadow:inset 0 0 0 1px rgba(216,106,53,.12)}.compareCard.empty{min-height:520px;place-content:center;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(238,230,220,.92))}.cardTop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.slotTag,.meta span,.catalogMeta span,.pill{display:inline-flex;align-items:center;padding:7px 10px;background:rgba(24,27,32,.05);font-size:12px;color:var(--muted)}
+        .media{position:relative;overflow:hidden;aspect-ratio:16/10;border-radius:22px;background:radial-gradient(circle at top left,rgba(63,139,143,.28),transparent 30%),linear-gradient(135deg,rgba(12,16,22,.98),rgba(36,28,24,.94))}.media img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:16px}.fallback{position:absolute;inset:0;display:grid;place-items:center;gap:10px;text-align:center;color:rgba(248,243,235,.88)}.mark{width:84px;height:84px;display:grid;place-items:center;border-radius:24px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-family:"Bahnschrift SemiCondensed","Trebuchet MS",sans-serif;font-size:30px}
+        .stats{grid-template-columns:repeat(2,minmax(0,1fr))}.summary{grid-template-columns:repeat(3,minmax(0,1fr))}.stat{padding:12px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.62)}.stat strong{display:block;font-size:24px;letter-spacing:-.05em}.stat span{display:block;margin-top:3px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.slotItem{padding:12px;border-radius:18px;border:1px solid rgba(24,27,32,.08);background:rgba(255,255,255,.62)}.slotHead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}.slotHead strong{font-size:15px}.slotHead span{font-size:12px;color:var(--muted)}
+        .matrixWrap{overflow:auto;border-radius:24px;border:1px solid var(--line);background:rgba(255,255,255,.76)}table{width:100%;border-collapse:collapse}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid rgba(24,27,32,.08)}thead th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;background:rgba(248,243,235,.92)}tbody th{min-width:120px;font-size:14px}.leader{font-weight:700;color:#5f2b18;background:#fff0e4}
+        .catalogGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.catalogCard,.presetCard,.infoCard,.note{padding:14px;border:1px solid var(--line);border-radius:20px;background:var(--paper)}.catalogTop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.catalogTitle{font-size:22px}.bars{display:grid;gap:8px}.bar{display:grid;grid-template-columns:74px 1fr 34px;gap:10px;align-items:center;font-size:13px;color:var(--muted)}.track{height:10px;border-radius:999px;overflow:hidden;background:rgba(24,27,32,.08)}.fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--teal),var(--accent))}.activeLabel{color:#31784d;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+        @media (max-width:1220px){.heroGrid,.layout,.compareGrid{grid-template-columns:1fr}.hero h1{max-width:14ch}}@media (max-width:760px){.page{width:min(100vw - 12px,1480px);margin:6px auto 16px;gap:12px}.hero,.panel{padding:18px;border-radius:24px}.panelHeader,.cardTop{flex-direction:column}.stats,.summary{grid-template-columns:1fr 1fr}.catalogGrid{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
     <div class="page">
         <header class="hero">
             <div class="heroGrid">
-                <div>
-                    <div class="row"><span class="badge">Wiki Builder API</span><span class="badge">Builder preview enabled</span></div>
-                    <h1>Multi-game catalog, usable builder, cleaner front.</h1>
-                    <p>This version is no longer just a catalog viewer. It adds a builder preview, public seeded builds, and resilient media cards that still look correct when wiki images fail to load.</p>
-                    <div id="hero-metrics" class="metrics"></div>
-                </div>
-                <div class="stack">
-                    <section class="heroCard">
-                        <div class="head"><div><h3>Catalog switcher</h3><p>Select a game and reload its items, profiles, modifiers, and public builds.</p></div></div>
-                        <div id="game-switcher" class="switcher"></div>
-                    </section>
-                    <section class="heroCard">
-                        <div class="head"><div><h3>Workspace tabs</h3><p>Builder first, then catalog review, then tag coverage.</p></div></div>
-                        <div id="tabs" class="tabs" role="tablist" aria-label="Workspace tabs"></div>
-                    </section>
-                </div>
+                <section class="stack">
+                    <div class="eyebrows"><span class="eyebrow">Wiki Builder API</span><span class="eyebrow">Comparateur 1-3 armes</span></div>
+                    <div><h1>Comparer des armes, pas juste les lister.</h1><p id="hero-copy">Charge un jeu, choisis jusqu’à trois armes, configure leurs slots puis lis immédiatement les écarts de stats.</p></div>
+                    <div id="hero-metrics" class="metrics" aria-live="polite"></div>
+                </section>
+                <section class="stack">
+                    <article class="panel dark"><div class="panelHeader"><div><h3>Jeu actif</h3><p class="mini">Les données viennent directement des endpoints publics.</p></div></div><div id="game-switcher" class="switcher" role="toolbar" aria-label="Sélection du jeu"></div></article>
+                    <article class="panel dark"><div class="panelHeader"><div><h3>Cible active</h3><p class="mini">Le catalogue charge l’arme dans la colonne sélectionnée.</p></div></div><div id="slot-targets" class="targets" role="toolbar" aria-label="Sélection de la colonne active"></div></article>
+                </section>
             </div>
         </header>
-
         <main class="layout">
-            <section class="stack">
+            <aside class="sidebar stack">
                 <section class="panel">
-                    <div class="head">
-                        <div><h2 id="title">Loading workspace</h2><p id="copy" class="mini">Fetching selected game data from the API.</p></div>
-                        <div class="actions"><button id="reset" type="button" class="button">Reset preview</button><a href="/api/v1/games" target="_blank" rel="noreferrer" class="button primary">Open API</a></div>
-                    </div>
-                    <div id="panel-builder"></div>
-                    <div id="panel-catalog" hidden></div>
-                    <div id="panel-categories" hidden></div>
-                </section>
-            </section>
-
-            <aside class="stack">
-                <section class="panel dark">
-                    <div class="head"><div><h3>Preview summary</h3><p class="muted">Local composition only. Persisting builds still requires the protected API routes.</p></div></div>
-                    <div id="summary"></div>
-                </section>
-                <section class="panel">
-                    <div class="head"><div><h3>Reference builds</h3><p class="mini">Use seeded public builds as comparison anchors.</p></div></div>
-                    <div id="builds" class="stack"></div>
-                </section>
-                <section class="panel dark">
-                    <div class="head"><div><h3>What changed</h3><p class="muted">The three concrete issues you raised are addressed here.</p></div></div>
-                    <div class="stack">
-                        <div class="summary"><h4>Builder added</h4><p class="muted">The page can now assemble a preview loadout with compatible modifiers.</p></div>
-                        <div class="summary"><h4>Images hardened</h4><p class="muted">Broken remote assets now degrade to generated marks instead of empty boxes.</p></div>
-                        <div class="summary"><h4>Public build listing</h4><p class="muted">The front no longer depends on hardcoded build ids.</p></div>
+                    <div class="panelHeader"><div><h3>Contexte builder</h3><p class="mini">Un profil, des filtres et un catalogue orienté comparaison.</p></div></div>
+                    <div class="filters">
+                        <div class="field"><label for="profile">Archétype</label><select id="profile" data-field="profile"></select></div>
+                        <div class="field"><label for="search">Recherche d’arme</label><input id="search" type="search" placeholder="Ex: Man-O-War, KN-44, VMP" data-field="search"></div>
+                        <div class="field"><label for="slot-filter">Type d’emplacement</label><select id="slot-filter" data-field="slot-filter"></select></div>
+                        <div class="field"><label>Catégories</label><div id="category-filter" class="chips" role="toolbar" aria-label="Filtre par catégorie"></div></div>
                     </div>
                 </section>
+                <section class="panel dark"><div class="panelHeader"><div><h3>Builds publics</h3><p class="mini">Charge un preset pour remplir les colonnes.</p></div></div><div id="preset-list" class="stack"></div></section>
+                <section class="panel"><div class="panelHeader"><div><h3>Repères UX</h3><p class="mini">Le flux est construit pour le vrai besoin.</p></div></div><div class="note"><p class="mini">Tu peux charger la même arme sur plusieurs colonnes avec des accessoires différents. Chaque colonne gère ses propres slots, et la matrice met en avant la meilleure valeur par statistique.</p></div></section>
             </aside>
+            <section class="stack">
+                <section class="panel"><div class="panelHeader"><div><h2 id="workspace-title">Comparateur d’armes</h2><p id="workspace-copy" class="mini">Choisis une à trois armes puis compare leurs stats finales avec leurs accessoires.</p></div><div class="actions"><button id="reset" type="button" class="ghost">Réinitialiser</button><a href="/api/v1/games" target="_blank" rel="noreferrer" class="primary">Ouvrir l’API</a></div></div><div id="compare-board"></div></section>
+                <section class="panel"><div class="panelHeader"><div><h3>Matrice de comparaison</h3><p class="mini">Les valeurs incluent l’arme de base et les modifiers sélectionnés dans sa colonne.</p></div></div><div id="matrix"></div></section>
+                <section class="panel"><div class="panelHeader"><div><h3>Catalogue d’armes</h3><p class="mini">Le bouton principal charge l’arme dans la colonne active du comparateur.</p></div><div id="catalog-status" class="eyebrow" aria-live="polite"></div></div><div id="catalog" class="catalogGrid"></div></section>
+            </section>
         </main>
     </div>
-
     <script>
-        const state = {activeTab:'builder',games:[],categories:[],items:[],modifiers:[],profiles:[],builds:[],buildSummaries:{},selectedGameId:null,selectedProfileId:null,selectedItems:[],selectedModifiers:{},selectedBuildId:null};
-        const nodes = {heroMetrics:document.getElementById('hero-metrics'),gameSwitcher:document.getElementById('game-switcher'),tabs:document.getElementById('tabs'),title:document.getElementById('title'),copy:document.getElementById('copy'),builder:document.getElementById('panel-builder'),catalog:document.getElementById('panel-catalog'),categories:document.getElementById('panel-categories'),summary:document.getElementById('summary'),builds:document.getElementById('builds'),reset:document.getElementById('reset')};
-        const tabOrder = [{id:'builder',label:'Builder'},{id:'catalog',label:'Catalog'},{id:'categories',label:'Categories'}];
         const statKeys = ['score','attack','defense','utility','accuracy','mobility'];
-        const escapeHtml = (value) => String(value ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
-        const asNumber = (value) => Number(value ?? 0);
-        const getJson = async (path, options = {}) => { const response = await fetch(path, {headers:{Accept:'application/json'}, ...options}); const payload = await response.json(); if (!response.ok || payload.success === false) { throw new Error(payload.message ?? `Request failed for ${path}`); } return payload; };
+        const labels = {score:'Score',attack:'Attack',defense:'Defense',utility:'Utility',accuracy:'Accuracy',mobility:'Mobility'};
+        const makeEntry = () => ({item:null,mods:{}});
+        const state = {games:[],items:[],profiles:[],builds:[],selectedGameId:null,selectedProfileId:null,search:'',slotFilter:'all',categoryFilter:'all',activeSlot:0,compare:[makeEntry(),makeEntry(),makeEntry()],cache:{}};
+        const $ = (id) => document.getElementById(id);
+        const nodes = {heroMetrics:$('hero-metrics'),heroCopy:$('hero-copy'),gameSwitcher:$('game-switcher'),slotTargets:$('slot-targets'),profile:$('profile'),search:$('search'),slotFilter:$('slot-filter'),categoryFilter:$('category-filter'),presetList:$('preset-list'),workspaceTitle:$('workspace-title'),workspaceCopy:$('workspace-copy'),compareBoard:$('compare-board'),matrix:$('matrix'),catalogStatus:$('catalog-status'),catalog:$('catalog'),reset:$('reset')};
+        const esc = (value) => String(value ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+        const num = (value) => Number(value ?? 0);
+        const api = async (path) => { const response = await fetch(path,{headers:{Accept:'application/json'}}); const payload = await response.json(); if (!response.ok || payload.success === false) { throw new Error(payload.message ?? `Request failed for ${path}`); } return payload; };
         const currentGame = () => state.games.find((game) => game.id === state.selectedGameId) ?? null;
+        const currentProfile = () => state.profiles.find((profile) => profile.id === state.selectedProfileId) ?? null;
         const initials = (label) => label.split(/[\s-]+/).filter(Boolean).slice(0,2).map((part) => part[0]?.toUpperCase() ?? '').join('');
-        const metricCard = (value, label) => `<div class="metric"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`;
-        const statCard = (label, value) => `<div class="stat"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`;
-        const mediaMarkup = (item) => { const imageUrl = item.metadata?.source?.image_url; const slotLabel = item.metadata?.bo3?.weapon_class ?? item.slot; return `<div class="media">${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<div class="fallback"><div class="mark">${escapeHtml(initials(item.name))}</div><div>${escapeHtml(slotLabel)}</div></div></div>`; };
-        const itemCard = (item, selected = false) => { const sourceUrl = item.metadata?.source?.page_url; const categories = Array.isArray(item.categories) ? item.categories.slice(0,3) : []; return `<article class="card">${mediaMarkup(item)}<div class="head"><div><h4>${escapeHtml(item.name)}</h4><p class="mini">${escapeHtml(item.metadata?.bo3?.handling_profile ?? 'Catalog item')}</p></div><button type="button" class="button ${selected ? '' : 'primary'}" data-action="${selected ? 'remove-item' : 'add-item'}" data-item-id="${item.id}">${selected ? 'Remove' : 'Add'}</button></div><div class="chips"><span class="pill">${escapeHtml(item.slot)}</span><span class="pill">${escapeHtml(item.rarity)}</span><span class="pill">${escapeHtml(item.tier_level)}</span>${categories.map((category) => `<span class="pill">${escapeHtml(category.label)}</span>`).join('')}</div><div class="stats">${statCard('Score', item.score)}${statCard('Attack', asNumber(item.attack))}${statCard('Accuracy', asNumber(item.accuracy))}${statCard('Utility', asNumber(item.utility))}${statCard('Mobility', asNumber(item.mobility))}${statCard('Defense', asNumber(item.defense))}</div>${sourceUrl ? `<p class="source">Source: <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">weapon page</a></p>` : ''}</article>`; };
-        const modifierCard = (modifier) => `<article class="card"><div class="head"><div><h4>${escapeHtml(modifier.name)}</h4><p class="mini">${escapeHtml(modifier.modifier_type)}</p></div></div><p>${escapeHtml(modifier.description ?? 'No description available.')}</p><div class="stats">${statCard('Score', asNumber(modifier.delta_score))}${statCard('Attack', asNumber(modifier.delta_attack))}${statCard('Accuracy', asNumber(modifier.delta_accuracy))}${statCard('Utility', asNumber(modifier.delta_utility))}${statCard('Mobility', asNumber(modifier.delta_mobility))}${statCard('Defense', asNumber(modifier.delta_defense))}</div></article>`;
-        const previewTotals = () => { const totals = {score:0,attack:0,defense:0,utility:0,accuracy:0,mobility:0}; state.selectedItems.forEach((item) => { totals.score += asNumber(item.score); totals.attack += asNumber(item.attack); totals.defense += asNumber(item.defense); totals.utility += asNumber(item.utility); totals.accuracy += asNumber(item.accuracy); totals.mobility += asNumber(item.mobility); }); Object.values(state.selectedModifiers).forEach((ids) => { ids.forEach((id) => { const modifier = state.modifiers.find((entry) => entry.id === id); if (!modifier) { return; } totals.score += asNumber(modifier.delta_score); totals.attack += asNumber(modifier.delta_attack); totals.defense += asNumber(modifier.delta_defense); totals.utility += asNumber(modifier.delta_utility); totals.accuracy += asNumber(modifier.delta_accuracy); totals.mobility += asNumber(modifier.delta_mobility); }); }); return totals; };
-        const modifierCount = () => Object.values(state.selectedModifiers).reduce((count, ids) => count + ids.length, 0);
-        const compatibleModifiers = (itemId) => state.modifiers.filter((modifier) => Array.isArray(modifier.compatible_items) && modifier.compatible_items.some((entry) => entry.id === itemId));
-        const renderHero = () => { const game = currentGame(); nodes.heroMetrics.innerHTML = [metricCard(state.games.length,'Games'),metricCard(state.items.length,'Items'),metricCard(state.modifiers.length,'Modifiers'),metricCard(state.builds.length,'Public builds')].join(''); nodes.title.textContent = game ? `${game.name} workspace` : 'Loading workspace'; nodes.copy.textContent = game ? `${game.genre ?? 'Game catalog'} · local builder preview, public build references, and resilient media cards.` : 'Fetching selected game data from the API.'; };
-        const renderGames = () => { nodes.gameSwitcher.innerHTML = state.games.map((game) => `<button type="button" class="chip ${game.id === state.selectedGameId ? 'active' : ''}" data-action="select-game" data-game-id="${game.id}">${escapeHtml(game.name)}</button>`).join(''); };
-        const renderTabs = () => { nodes.tabs.innerHTML = tabOrder.map((tab) => `<button type="button" id="tab-${tab.id}" role="tab" class="tab ${state.activeTab === tab.id ? 'active' : ''}" data-action="select-tab" data-tab-id="${tab.id}">${escapeHtml(tab.label)}</button>`).join(''); nodes.builder.hidden = state.activeTab !== 'builder'; nodes.catalog.hidden = state.activeTab !== 'catalog'; nodes.categories.hidden = state.activeTab !== 'categories'; };
-        const renderBuilder = () => {
-            const profileMarkup = state.profiles.length ? state.profiles.map((profile) => `<button type="button" class="pill ${profile.id === state.selectedProfileId ? 'active' : ''}" data-action="select-profile" data-profile-id="${profile.id}">${escapeHtml(profile.name)}</button>`).join('') : '<span class="mini">No build profiles returned by the API.</span>';
-            const selectedMarkup = state.selectedItems.length ? state.selectedItems.map((item) => `<article class="card"><div class="head"><div><h4>${escapeHtml(item.name)}</h4><p class="mini">${escapeHtml(item.metadata?.bo3?.weapon_class ?? item.slot)} · ${escapeHtml(item.metadata?.bo3?.fire_mode ?? 'standard')}</p></div><button type="button" class="button" data-action="remove-item" data-item-id="${item.id}">Remove</button></div><div class="mods">${compatibleModifiers(item.id).map((modifier) => `<button type="button" class="mod ${(state.selectedModifiers[item.id] ?? []).includes(modifier.id) ? 'active' : ''}" data-action="toggle-modifier" data-item-id="${item.id}" data-modifier-id="${modifier.id}">${escapeHtml(modifier.name)}</button>`).join('')}</div></article>`).join('') : '<article class="empty"><strong>No preview build yet</strong><p>Add up to three items, then toggle compatible modifiers to inspect the totals.</p></article>';
-            nodes.builder.innerHTML = `<section class="section"><div class="head"><div><h3>Build profile</h3><p class="mini">Profiles remain game-scoped and drive the builder context.</p></div></div><div class="chips">${profileMarkup}</div></section><section class="section"><div class="head"><div><h3>Assembly bench</h3><p class="mini">Public preview only. Persistence stays behind the API key middleware.</p></div></div><div class="stack">${selectedMarkup}</div></section><section class="section"><div class="head"><div><h3>Available items</h3><p class="mini">The preview is capped at three items to keep the demo readable.</p></div></div><div class="grid2">${state.items.length ? state.items.map((item) => itemCard(item, state.selectedItems.some((entry) => entry.id === item.id))).join('') : '<article class="empty"><strong>No items</strong><p>The API returned an empty item list.</p></article>'}</div></section>`;
-        };
-        const renderCatalog = () => { nodes.catalog.innerHTML = `<section class="section"><div class="head"><div><h3>Top catalog items</h3><p class="mini">Sorted by score from the public game-scoped endpoint.</p></div></div><div class="grid2">${state.items.slice(0,4).length ? state.items.slice(0,4).map((item) => itemCard(item, state.selectedItems.some((entry) => entry.id === item.id))).join('') : '<article class="empty"><strong>No items</strong><p>The API returned an empty item list.</p></article>'}</div></section><section class="section"><div class="head"><div><h3>Top modifiers</h3><p class="mini">Compatibility remains driven by the API relation, not a hardcoded matrix in the front.</p></div></div><div class="stack">${state.modifiers.slice(0,6).length ? state.modifiers.slice(0,6).map((modifier) => modifierCard(modifier)).join('') : '<article class="empty"><strong>No modifiers</strong><p>The API returned an empty modifier list.</p></article>'}</div></section>`; };
-        const renderCategories = () => {
-            const visibleItemIds = new Set(state.items.map((item) => item.id));
-            const visibleCategories = state.categories.map((category) => ({...category,matches:Array.isArray(category.items) ? category.items.filter((item) => visibleItemIds.has(item.id)) : []})).filter((category) => category.matches.length > 0);
-            nodes.categories.innerHTML = `<section class="section"><div class="head"><div><h3>Visible category coverage</h3><p class="mini">Categories remain global in storage but this panel narrows them to the selected game slice.</p></div></div><div class="tagGrid">${visibleCategories.length ? visibleCategories.map((category) => `<article class="card"><div class="head"><div><h4>${escapeHtml(category.label)}</h4><p class="mini">${escapeHtml(category.matches.length)} linked items</p></div></div><p>${escapeHtml(category.matches.map((item) => item.name).slice(0,4).join(', '))}</p></article>`).join('') : '<article class="empty"><strong>No category overlap</strong><p>No visible category currently matches the selected game slice.</p></article>'}</div></section>`;
-        };
-        const renderSummary = () => {
-            const totals = previewTotals();
-            const profile = state.profiles.find((entry) => entry.id === state.selectedProfileId) ?? null;
-            const reference = state.selectedBuildId ? state.buildSummaries[state.selectedBuildId] ?? null : null;
-            const diff = reference ? Object.fromEntries(statKeys.map((key) => [key, totals[key] - asNumber(reference.totals?.[key])])) : null;
-            nodes.summary.innerHTML = `<div class="summaryMain"><span class="badge">Local preview</span><strong>${escapeHtml(totals.score)}</strong><span>Total score</span><p class="muted">${escapeHtml(profile?.name ?? 'No profile selected')}</p></div><div class="stats">${statCard('Items', state.selectedItems.length)}${statCard('Mods', modifierCount())}${statCard('Score', totals.score)}${statCard('Attack', totals.attack)}${statCard('Accuracy', totals.accuracy)}${statCard('Mobility', totals.mobility)}</div>${reference ? `<div class="summary"><h4>Vs reference build</h4><p class="muted">${escapeHtml(reference.title ?? 'Selected reference')}</p><div class="stats">${statKeys.map((key) => statCard(`${key} diff`, diff[key] > 0 ? `+${diff[key]}` : diff[key])).join('')}</div></div>` : '<div class="summary"><h4>No comparison selected</h4><p class="muted">Choose a public build on the right to benchmark the current preview.</p></div>'}`;
-        };
-        const renderBuilds = () => { nodes.builds.innerHTML = state.builds.length ? state.builds.map((build) => `<button type="button" class="pick ${build.id === state.selectedBuildId ? 'active' : ''}" data-action="select-build" data-build-id="${build.id}"><span><strong>${escapeHtml(build.title)}</strong><small>${escapeHtml(build.description ?? 'Seeded build')}</small></span><span><strong>${escapeHtml(state.buildSummaries[build.id]?.totals?.score ?? 0)}</strong><small>score</small></span></button>`).join('') : '<article class="empty"><strong>No public builds</strong><p>The selected game does not expose a public build yet.</p></article>'; };
-        const bindEvents = () => {
-            document.querySelectorAll('[data-action="select-game"]').forEach((button) => button.addEventListener('click', async () => { const gameId = Number(button.dataset.gameId); if (gameId === state.selectedGameId) { return; } state.selectedGameId = gameId; await loadSelectedGame(); render(); }));
-            document.querySelectorAll('[data-action="select-tab"]').forEach((button) => button.addEventListener('click', () => { state.activeTab = button.dataset.tabId; render(); }));
-            document.querySelectorAll('[data-action="select-profile"]').forEach((button) => button.addEventListener('click', () => { state.selectedProfileId = Number(button.dataset.profileId); render(); }));
-            document.querySelectorAll('[data-action="add-item"],[data-action="remove-item"]').forEach((button) => button.addEventListener('click', () => { const itemId = Number(button.dataset.itemId); const existing = state.selectedItems.find((item) => item.id === itemId); if (existing) { state.selectedItems = state.selectedItems.filter((item) => item.id !== itemId); delete state.selectedModifiers[itemId]; render(); return; } if (state.selectedItems.length >= 3) { return; } const item = state.items.find((entry) => entry.id === itemId); if (!item) { return; } state.selectedItems = [...state.selectedItems, item]; render(); }));
-            document.querySelectorAll('[data-action="toggle-modifier"]').forEach((button) => button.addEventListener('click', () => { const itemId = Number(button.dataset.itemId); const modifierId = Number(button.dataset.modifierId); const selected = new Set(state.selectedModifiers[itemId] ?? []); if (selected.has(modifierId)) { selected.delete(modifierId); } else { selected.add(modifierId); } state.selectedModifiers[itemId] = Array.from(selected); render(); }));
-            document.querySelectorAll('[data-action="select-build"]').forEach((button) => button.addEventListener('click', () => { state.selectedBuildId = Number(button.dataset.buildId); render(); }));
-        };
-        const render = () => { renderHero(); renderGames(); renderTabs(); renderBuilder(); renderCatalog(); renderCategories(); renderSummary(); renderBuilds(); bindEvents(); };
-        const loadSelectedGame = async () => {
-            const game = currentGame(); if (!game) { return; }
-            const [itemsResponse, modifiersResponse, profilesResponse, buildsResponse] = await Promise.all([getJson(`/api/v1/games/${game.id}/items?per_page=12&sort_by=score&sort_dir=desc`),getJson(`/api/v1/games/${game.id}/modifiers?per_page=12&sort_by=delta_score&sort_dir=desc`),getJson(`/api/v1/games/${game.id}/archetypes?per_page=12`),getJson(`/api/v1/builds?game_id=${game.id}&is_public=true&per_page=12`)]);
-            state.items = itemsResponse.data.data ?? []; state.modifiers = modifiersResponse.data.data ?? []; state.profiles = profilesResponse.data.data ?? []; state.builds = buildsResponse.data.data ?? []; state.buildSummaries = {}; state.selectedItems = []; state.selectedModifiers = {}; state.selectedProfileId = state.profiles[0]?.id ?? null; state.selectedBuildId = state.builds[0]?.id ?? null;
-            const summaries = await Promise.all(state.builds.map(async (build) => { const response = await getJson(`/api/v1/builds/${build.id}/summary`); return [build.id, {...response.data,title:build.title}]; })); state.buildSummaries = Object.fromEntries(summaries);
-        };
-        const boot = async () => {
-            try { const [gamesResponse, categoriesResponse] = await Promise.all([getJson('/api/v1/games?per_page=12'),getJson('/api/v1/categories?per_page=24')]); state.games = gamesResponse.data.data ?? []; state.categories = categoriesResponse.data.data ?? []; state.selectedGameId = state.games.find((game) => game.slug === 'call-of-duty-black-ops-iii')?.id ?? state.games[0]?.id ?? null; await loadSelectedGame(); render(); } catch (error) { nodes.title.textContent = 'Front unavailable'; nodes.copy.textContent = error.message; nodes.builder.innerHTML = '<article class="empty"><strong>API fetch failed</strong><p>Start Laravel, run the migrations with seeds, and reload this page.</p></article>'; }
-        };
-        nodes.reset.addEventListener('click', () => { state.selectedItems = []; state.selectedModifiers = {}; render(); });
-        boot();
+        const image = (item) => { const url = item.metadata?.source?.image_url; const slotLabel = item.metadata?.bo3?.weapon_class ?? item.slot; return `<div class="media">${url ? `<img src="${esc(url)}" alt="${esc(item.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<div class="fallback"><div class="mark">${esc(initials(item.name))}</div><div>${esc(slotLabel)}</div></div></div>`; };
+        const availableSlots = () => ['all', ...new Set(state.items.map((item) => item.slot))];
+        const categories = () => { const map = new Map(); state.items.forEach((item) => (item.categories ?? []).forEach((category) => { const row = map.get(category.id) ?? {...category,count:0}; row.count += 1; map.set(category.id,row); })); return [...map.values()].sort((a,b) => b.count - a.count || a.label.localeCompare(b.label)); };
+        const filteredItems = () => { const q = state.search.trim().toLowerCase(); return state.items.filter((item) => { const searchOk = q === '' || item.name.toLowerCase().includes(q) || (item.metadata?.bo3?.weapon_class ?? '').toLowerCase().includes(q); const slotOk = state.slotFilter === 'all' || item.slot === state.slotFilter; const catOk = state.categoryFilter === 'all' || (item.categories ?? []).some((category) => category.slug === state.categoryFilter || String(category.id) === state.categoryFilter); return searchOk && slotOk && catOk; }); };
+        const findMod = (item, id) => (item.compatible_modifiers ?? []).find((modifier) => modifier.id === id) ?? null;
+        const totals = (entry) => { if (!entry.item) { return null; } const base = {score:num(entry.item.score),attack:num(entry.item.attack),defense:num(entry.item.defense),utility:num(entry.item.utility),accuracy:num(entry.item.accuracy),mobility:num(entry.item.mobility)}; Object.values(entry.mods).forEach((id) => { const mod = findMod(entry.item, Number(id)); if (!mod) { return; } base.score += num(mod.delta_score); base.attack += num(mod.delta_attack); base.defense += num(mod.delta_defense); base.utility += num(mod.delta_utility); base.accuracy += num(mod.delta_accuracy); base.mobility += num(mod.delta_mobility); }); return base; };
+        const optionsForSlot = (entry, slot) => (entry.item?.compatible_modifiers ?? []).filter((modifier) => !slot.accepted_modifier_type || modifier.modifier_type === slot.accepted_modifier_type).sort((a,b) => a.name.localeCompare(b.name));
+        const metric = (value, label) => `<div class="metric"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`;
+        const stat = (label, value) => `<div class="stat"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`;
+
+        function renderHero() {
+            const game = currentGame();
+            const active = state.compare[state.activeSlot]?.item?.name ?? `colonne ${state.activeSlot + 1}`;
+            nodes.heroMetrics.innerHTML = [metric(state.games.length,'Jeux'),metric(state.items.length,'Armes catalogue'),metric(state.compare.filter((entry) => entry.item).length,'Armes comparées'),metric(active,'Cible active')].join('');
+            nodes.heroCopy.textContent = game ? `${game.name} · charge une, deux ou trois armes, applique leurs accessoires par slot puis compare les écarts de stats sans sortir de la page.` : 'Charge un jeu, puis compose ton comparatif arme par arme.';
+            nodes.workspaceTitle.textContent = game ? `${game.name} · Builder comparateur` : 'Comparateur d’armes';
+            nodes.workspaceCopy.textContent = currentProfile() ? `Archétype actif: ${currentProfile().name}. La colonne active reçoit la prochaine arme chargée depuis le catalogue.` : 'Choisis un archétype puis configure les colonnes de comparaison.';
+        }
+
+        function renderFilters() {
+            nodes.gameSwitcher.innerHTML = state.games.map((game) => `<button type="button" class="chip" data-action="game" data-id="${game.id}" aria-pressed="${game.id === state.selectedGameId}">${esc(game.name)}</button>`).join('');
+            nodes.slotTargets.innerHTML = state.compare.map((entry, index) => `<button type="button" class="target" data-action="target" data-index="${index}" aria-pressed="${index === state.activeSlot}"><strong>Arme ${index + 1}</strong><span>${esc(entry.item?.name ?? 'Vide')}</span></button>`).join('');
+            nodes.profile.innerHTML = state.profiles.length ? state.profiles.map((profile) => `<option value="${profile.id}" ${profile.id === state.selectedProfileId ? 'selected' : ''}>${esc(profile.name)}</option>`).join('') : '<option value="">Aucun archétype</option>';
+            nodes.search.value = state.search;
+            nodes.slotFilter.innerHTML = availableSlots().map((slot) => `<option value="${esc(slot)}" ${slot === state.slotFilter ? 'selected' : ''}>${esc(slot === 'all' ? 'Tous les emplacements' : slot)}</option>`).join('');
+            nodes.categoryFilter.innerHTML = [`<button type="button" class="chip2" data-action="category" data-id="all" aria-pressed="${state.categoryFilter === 'all'}">Toutes</button>`, ...categories().map((category) => `<button type="button" class="chip2" data-action="category" data-id="${esc(category.slug ?? String(category.id))}" aria-pressed="${state.categoryFilter === (category.slug ?? String(category.id))}">${esc(category.label)} · ${esc(category.count)}</button>`)].join('');
+            nodes.presetList.innerHTML = state.builds.length ? state.builds.map((build) => `<article class="presetCard"><strong>${esc(build.title)}</strong><p class="mini">${esc(build.description ?? 'Build public')}</p><button type="button" class="ghost" data-action="build" data-id="${build.id}">Charger ce build</button></article>`).join('') : `<article class="presetCard"><strong>Aucun build public</strong><p class="mini">Le jeu actif n’expose pas encore de preset public.</p></article>`;
+        }
+
+        function renderCompare() {
+            nodes.compareBoard.innerHTML = `<div class="compareGrid">${state.compare.map((entry, index) => {
+                if (!entry.item) {
+                    return `<article class="compareCard empty ${index === state.activeSlot ? 'active' : ''}"><div class="stack"><span class="slotTag">Arme ${index + 1}</span><strong>Colonne prête</strong><p class="mini">Active cette colonne puis charge une arme depuis le catalogue.</p><button type="button" class="primary" data-action="target" data-index="${index}">Utiliser cette colonne</button></div></article>`;
+                }
+                const sum = totals(entry);
+                const itemSlots = entry.item.item_slots ?? [];
+                return `<article class="compareCard ${index === state.activeSlot ? 'active' : ''}"><div class="cardTop"><div><span class="slotTag">Arme ${index + 1}</span>${index === state.activeSlot ? `<div class="activeLabel">Cible active</div>` : ''}</div><div class="actions"><button type="button" class="ghost" data-action="target" data-index="${index}">Cibler</button><button type="button" class="ghost" data-action="clear" data-index="${index}">Retirer</button></div></div>${image(entry.item)}<div><h3 class="weaponName">${esc(entry.item.name)}</h3><p class="mini">${esc(entry.item.metadata?.bo3?.handling_profile ?? entry.item.metadata?.bo3?.weapon_class ?? entry.item.slot)}</p></div><div class="meta"><span>${esc(entry.item.slot)}</span><span>${esc(entry.item.rarity)}</span><span>${esc(entry.item.tier_level ?? 'N/A')}</span></div><div class="summary stats">${stat('Score total',sum.score)}${stat('Mods actifs',Object.keys(entry.mods).length)}${stat('Slots',itemSlots.length)}</div><div class="stats">${stat('Attack',sum.attack)}${stat('Accuracy',sum.accuracy)}${stat('Utility',sum.utility)}${stat('Mobility',sum.mobility)}</div><section class="slotList">${itemSlots.length ? itemSlots.map((slot) => { const selected = String(entry.mods[slot.slot_key] ?? ''); return `<div class="slotItem"><div class="slotHead"><strong>${esc(slot.slot_label)}</strong><span>${esc(slot.accepted_modifier_type ?? 'Tous')}</span></div><select class="slotSelect" data-action="mod" data-index="${index}" data-slot-key="${esc(slot.slot_key)}"><option value="">Aucun accessoire</option>${optionsForSlot(entry, slot).map((modifier) => `<option value="${modifier.id}" ${selected === String(modifier.id) ? 'selected' : ''}>${esc(modifier.name)}</option>`).join('')}</select></div>`; }).join('') : `<div class="note"><p class="mini">Cette arme n’expose pas encore de slots d’attachments exploitables par l’API.</p></div>`}</section></article>`;
+            }).join('')}</div>`;
+        }
+
+        function renderMatrix() {
+            const filled = state.compare.map((entry) => totals(entry)).filter(Boolean);
+            if (!filled.length) {
+                nodes.matrix.innerHTML = `<div class="note"><strong>Aucune arme sélectionnée</strong><p class="mini">Ajoute une arme dans le catalogue pour afficher une vraie matrice de comparaison.</p></div>`;
+                return;
+            }
+            const leaders = Object.fromEntries(statKeys.map((key) => [key, Math.max(...filled.map((row) => row[key]))]));
+            nodes.matrix.innerHTML = `<div class="matrixWrap"><table><thead><tr><th>Stat</th>${state.compare.map((entry, index) => `<th>${esc(entry.item?.name ?? `Arme ${index + 1}`)}</th>`).join('')}</tr></thead><tbody>${statKeys.map((key) => `<tr><th>${esc(labels[key])}</th>${state.compare.map((entry) => { const row = totals(entry); if (!row) { return '<td>—</td>'; } return `<td class="${row[key] === leaders[key] ? 'leader' : ''}">${esc(row[key])}</td>`; }).join('')}</tr>`).join('')}<tr><th>Attachments</th>${state.compare.map((entry) => `<td>${esc(Object.keys(entry.mods).length)}</td>`).join('')}</tr></tbody></table></div>`;
+        }
+
+        function renderCatalog() {
+            const items = filteredItems();
+            const active = state.compare[state.activeSlot]?.item?.name ?? `arme ${state.activeSlot + 1}`;
+            nodes.catalogStatus.textContent = `${items.length} résultat(s) · cible: ${active}`;
+            if (!items.length) {
+                nodes.catalog.innerHTML = `<div class="note"><strong>Aucune arme trouvée</strong><p class="mini">Modifie la recherche ou les filtres pour afficher plus de résultats.</p></div>`;
+                return;
+            }
+            const bar = (label, value) => `<div class="bar"><span>${esc(label)}</span><div class="track"><div class="fill" style="width:${Math.max(0,Math.min(100,num(value)))}%"></div></div><strong>${esc(value)}</strong></div>`;
+            nodes.catalog.innerHTML = items.map((item) => `<article class="catalogCard"><div class="catalogTop"><div><h4 class="catalogTitle">${esc(item.name)}</h4><p class="mini">${esc(item.metadata?.bo3?.weapon_class ?? item.slot)}</p></div><span class="pill">${esc(item.tier_level ?? 'N/A')}</span></div>${image(item)}<div class="catalogMeta"><span>${esc(item.slot)}</span><span>${esc(item.rarity)}</span>${(item.categories ?? []).slice(0,3).map((category) => `<span>${esc(category.label)}</span>`).join('')}</div><div class="bars">${bar('Score',item.score)}${bar('Attack',item.attack)}${bar('Accuracy',item.accuracy)}${bar('Mobility',item.mobility)}</div><button type="button" class="primary" data-action="load" data-id="${item.id}">Charger dans arme ${state.activeSlot + 1}</button></article>`).join('');
+        }
+
+        function render() { renderHero(); renderFilters(); renderCompare(); renderMatrix(); renderCatalog(); }
+        async function fetchItem(id) { if (state.cache[id]) { return state.cache[id]; } const payload = await api(`/api/v1/items/${id}`); state.cache[id] = payload.data; return payload.data; }
+        function resetBoard() { state.compare = [makeEntry(),makeEntry(),makeEntry()]; state.activeSlot = 0; }
+        async function loadItemIntoSlot(itemId, slotIndex) { const item = await fetchItem(itemId); state.compare[slotIndex] = {item,mods:{}}; state.activeSlot = slotIndex; }
+        async function loadBuild(buildId) { const payload = await api(`/api/v1/builds/${buildId}`); const grouped = (payload.data.slots ?? []).reduce((acc,row) => { const bucket = acc[row.item_id] ?? {}; bucket[row.slot_key] = row.modifier.id; acc[row.item_id] = bucket; return acc; }, {}); const next = [makeEntry(),makeEntry(),makeEntry()]; for (let i = 0; i < Math.min(3,(payload.data.items ?? []).length); i += 1) { const buildItem = payload.data.items[i]; const item = await fetchItem(buildItem.item_id); next[i] = {item,mods:{...(grouped[buildItem.item_id] ?? {})}}; } state.compare = next; state.activeSlot = 0; }
+        async function loadGame() { const game = currentGame(); if (!game) { return; } const [items,profiles,builds] = await Promise.all([api(`/api/v1/games/${game.id}/items?per_page=100&sort_by=score&sort_dir=desc`),api(`/api/v1/games/${game.id}/archetypes?per_page=100`),api(`/api/v1/builds?game_id=${game.id}&is_public=true&per_page=20`)]); state.items = items.data.data ?? []; state.profiles = profiles.data.data ?? []; state.builds = builds.data.data ?? []; state.selectedProfileId = state.profiles[0]?.id ?? null; state.search = ''; state.categoryFilter = 'all'; state.slotFilter = state.items.some((item) => item.slot === 'weapon') ? 'weapon' : 'all'; state.cache = {}; resetBoard(); }
+
+        document.addEventListener('click', async (event) => {
+            const trigger = event.target.closest('[data-action]');
+            if (!trigger) { return; }
+            try {
+                if (trigger.dataset.action === 'game') { const id = Number(trigger.dataset.id); if (id !== state.selectedGameId) { state.selectedGameId = id; await loadGame(); } render(); return; }
+                if (trigger.dataset.action === 'target') { state.activeSlot = Number(trigger.dataset.index); render(); return; }
+                if (trigger.dataset.action === 'clear') { const index = Number(trigger.dataset.index); state.compare[index] = makeEntry(); if (state.activeSlot === index) { state.activeSlot = Math.max(0,index - 1); } render(); return; }
+                if (trigger.dataset.action === 'category') { state.categoryFilter = trigger.dataset.id ?? 'all'; render(); return; }
+                if (trigger.dataset.action === 'load') { await loadItemIntoSlot(Number(trigger.dataset.id), state.activeSlot); render(); return; }
+                if (trigger.dataset.action === 'build') { await loadBuild(Number(trigger.dataset.id)); render(); }
+            } catch (error) { nodes.workspaceCopy.textContent = error.message; }
+        });
+
+        document.addEventListener('change', (event) => {
+            const target = event.target;
+            if (target.matches('[data-field="profile"]')) { state.selectedProfileId = Number(target.value) || null; render(); return; }
+            if (target.matches('[data-field="slot-filter"]')) { state.slotFilter = target.value; render(); return; }
+            if (target.matches('[data-action="mod"]')) { const index = Number(target.dataset.index); const slotKey = target.dataset.slotKey; if (!slotKey || !state.compare[index]) { return; } if (target.value === '') { delete state.compare[index].mods[slotKey]; } else { state.compare[index].mods[slotKey] = Number(target.value); } render(); }
+        });
+
+        document.addEventListener('input', (event) => { const target = event.target; if (target.matches('[data-field="search"]')) { state.search = target.value; render(); } });
+        nodes.reset.addEventListener('click', () => { resetBoard(); render(); });
+
+        (async function boot() {
+            try {
+                const payload = await api('/api/v1/games?per_page=20');
+                state.games = payload.data.data ?? [];
+                state.selectedGameId = state.games.find((game) => game.slug === 'call-of-duty-black-ops-iii')?.id ?? state.games[0]?.id ?? null;
+                await loadGame();
+                render();
+            } catch (error) {
+                nodes.workspaceTitle.textContent = 'Interface indisponible';
+                nodes.workspaceCopy.textContent = error.message;
+                nodes.compareBoard.innerHTML = `<div class="note"><strong>Chargement échoué</strong><p class="mini">Vérifie que Laravel tourne, que la base est seedée, puis recharge la page.</p></div>`;
+            }
+        }());
     </script>
 </body>
 </html>

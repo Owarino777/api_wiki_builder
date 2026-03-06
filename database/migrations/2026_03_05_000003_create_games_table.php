@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('games', function (Blueprint $table): void {
             $table->id();
-            $table->string('name', 120);
+            $table->string('name', 120)->unique();
             $table->string('slug', 120)->unique();
             $table->string('genre', 80)->nullable();
             $table->timestamps();

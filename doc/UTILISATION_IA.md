@@ -3,6 +3,7 @@
 ## Outil utilisé
 
 - **GitHub Copilot** (Claude) dans VS Code
+- **GPT Codex 5.4** dans VS Code
 
 ## Utilisation de l'IA
 
