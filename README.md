@@ -28,6 +28,20 @@ Notes :
 - le port expose est `http://localhost:8000`
 - l image Docker utilise PHP 8.4
 
+## Import BO7
+
+Pour importer Black Ops 7 depuis l API publique CODMunity :
+
+```bash
+php artisan codmunity:import-bo7 --fresh
+```
+
+Notes :
+- importe les armes, slots, attachments compatibles et builds publics BO7
+- stocke les URLs d images distantes dans les metadatas
+- `--skip-builds` importe seulement le catalogue
+- `--limit=5` permet un test rapide
+
 ## Docker prod
 
 Prerequis :
