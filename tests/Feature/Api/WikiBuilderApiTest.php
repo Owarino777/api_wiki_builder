@@ -12,6 +12,17 @@ beforeEach(function (): void {
     $this->seed(WikiBuilderSeeder::class);
 });
 
+it('returns a documented api root payload', function (): void {
+    $response = $this->getJson('/api/v1');
+
+    $response->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('message', 'Wiki Builder API root')
+        ->assertJsonPath('data.name', 'Wiki Builder API')
+        ->assertJsonPath('data.version', 'v1')
+        ->assertJsonPath('data.public_routes.0.path', '/api/v1/games');
+});
+
 it('seeds call of duty black ops iii as the primary real game dataset', function (): void {
     $response = $this->getJson('/api/v1/games/1');
 

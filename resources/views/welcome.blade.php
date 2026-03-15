@@ -5,177 +5,184 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'Wiki Builder API') }}</title>
     <style>
-        :root{--bg:#ede7df;--paper:rgba(255,250,244,.9);--ink:#181b20;--muted:#626975;--line:rgba(24,27,32,.12);--accent:#d86a35;--accent-soft:rgba(216,106,53,.14);--teal:#3f8b8f;--dark:#15191f;--dark-2:#1d232c;--ivory:#f8f3eb;--shadow:0 28px 56px rgba(14,18,24,.12);--ease:220ms cubic-bezier(.2,.8,.2,1)}
-        *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:"Aptos","Segoe UI",sans-serif;color:var(--ink);background:radial-gradient(circle at top left,rgba(216,106,53,.16),transparent 22%),radial-gradient(circle at top right,rgba(63,139,143,.12),transparent 18%),linear-gradient(180deg,#f4f0ea,#ddd8cf)}button,input,select,a{font:inherit;transition:transform var(--ease),border-color var(--ease),background-color var(--ease),box-shadow var(--ease)}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid rgba(216,106,53,.32);outline-offset:3px}
-        .page{width:min(1480px,calc(100vw - 24px));margin:12px auto 24px;display:grid;gap:18px}.hero,.panel{border-radius:32px;box-shadow:var(--shadow);overflow:hidden}.hero{position:relative;padding:28px;color:var(--ivory);background:linear-gradient(135deg,rgba(11,15,20,.98),rgba(36,28,24,.95));border:1px solid rgba(255,255,255,.08)}.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(180deg,rgba(0,0,0,.9),transparent 96%)}
-        .heroGrid,.layout,.compareGrid,.stack,.sidebar,.filters,.compareCard,.stats,.slotList,.catalogCard,.presetCard,.infoCard{position:relative;z-index:1;display:grid;gap:14px}.heroGrid{grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:18px}.layout{grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:18px}.compareGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-        .eyebrows,.metrics,.switcher,.targets,.chips,.actions{display:flex;flex-wrap:wrap;gap:10px}.eyebrow,.metric,.chip,.target,.chip2,.ghost,.primary,.slotTag,.meta span,.catalogMeta span,.pill{border-radius:999px;border:1px solid transparent}.eyebrow{padding:8px 12px;background:rgba(255,255,255,.08);font-size:11px;letter-spacing:.12em;text-transform:uppercase}.hero h1{margin:14px 0 10px;max-width:11ch;font-family:"Bahnschrift SemiCondensed","Trebuchet MS",sans-serif;font-size:clamp(44px,7vw,82px);line-height:.92;letter-spacing:-.06em}.hero p,.dark p,.dark .mini{color:rgba(248,243,235,.76);line-height:1.55}
-        .metric{min-width:138px;padding:16px;background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08)}.metric strong{display:block;font-family:"Bahnschrift SemiCondensed","Trebuchet MS",sans-serif;font-size:30px;letter-spacing:-.05em}.metric span{font-size:12px;color:rgba(248,243,235,.7);text-transform:uppercase;letter-spacing:.08em}
-        .panel{padding:22px;background:var(--paper);border:1px solid rgba(255,255,255,.24)}.dark{background:linear-gradient(160deg,var(--dark),var(--dark-2));color:var(--ivory);border-color:rgba(255,255,255,.06)}.panelHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}.panelHeader h2,.panelHeader h3,.weaponName,.catalogTitle{margin:0;font-family:"Bahnschrift SemiCondensed","Trebuchet MS",sans-serif;letter-spacing:-.04em}.panelHeader h2{font-size:34px}.panelHeader h3,.weaponName{font-size:24px}.mini{margin:0;color:var(--muted);line-height:1.55}
-        .chip,.target,.chip2,.ghost,.primary{padding:10px 14px;border-color:var(--line);cursor:pointer;background:rgba(255,255,255,.8);color:var(--ink)}.primary{background:linear-gradient(135deg,#b84c20,var(--accent));color:#fff7f1;border-color:transparent;text-decoration:none}.chip:hover,.target:hover,.chip2:hover,.ghost:hover,.primary:hover{transform:translateY(-1px);border-color:rgba(216,106,53,.34);box-shadow:0 12px 28px rgba(16,20,28,.08)}.chip[aria-pressed=true],.target[aria-pressed=true],.chip2[aria-pressed=true]{background:var(--accent-soft);border-color:rgba(216,106,53,.42);color:#5f2b18}
-        .field{display:grid;gap:8px}.field label{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.field input,.field select,.slotSelect{width:100%;min-height:46px;padding:11px 13px;border-radius:16px;border:1px solid var(--line);background:#fffdfa;color:var(--ink)}
-        .compareCard{padding:18px;border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(243,235,226,.94));border:1px solid var(--line)}.compareCard.active{border-color:rgba(216,106,53,.42);box-shadow:inset 0 0 0 1px rgba(216,106,53,.12)}.compareCard.empty{min-height:520px;place-content:center;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(238,230,220,.92))}.cardTop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.slotTag,.meta span,.catalogMeta span,.pill{display:inline-flex;align-items:center;padding:7px 10px;background:rgba(24,27,32,.05);font-size:12px;color:var(--muted)}
-        .media{position:relative;overflow:hidden;aspect-ratio:16/10;border-radius:22px;background:radial-gradient(circle at top left,rgba(63,139,143,.28),transparent 30%),linear-gradient(135deg,rgba(12,16,22,.98),rgba(36,28,24,.94))}.media img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:16px}.fallback{position:absolute;inset:0;display:grid;place-items:center;gap:10px;text-align:center;color:rgba(248,243,235,.88)}.mark{width:84px;height:84px;display:grid;place-items:center;border-radius:24px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-family:"Bahnschrift SemiCondensed","Trebuchet MS",sans-serif;font-size:30px}
-        .stats{grid-template-columns:repeat(2,minmax(0,1fr))}.summary{grid-template-columns:repeat(3,minmax(0,1fr))}.stat{padding:12px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.62)}.stat strong{display:block;font-size:24px;letter-spacing:-.05em}.stat span{display:block;margin-top:3px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.slotItem{padding:12px;border-radius:18px;border:1px solid rgba(24,27,32,.08);background:rgba(255,255,255,.62)}.slotHead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}.slotHead strong{font-size:15px}.slotHead span{font-size:12px;color:var(--muted)}
-        .matrixWrap{overflow:auto;border-radius:24px;border:1px solid var(--line);background:rgba(255,255,255,.76)}table{width:100%;border-collapse:collapse}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid rgba(24,27,32,.08)}thead th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;background:rgba(248,243,235,.92)}tbody th{min-width:120px;font-size:14px}.leader{font-weight:700;color:#5f2b18;background:#fff0e4}
-        .catalogGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.catalogCard,.presetCard,.infoCard,.note{padding:14px;border:1px solid var(--line);border-radius:20px;background:var(--paper)}.catalogTop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.catalogTitle{font-size:22px}.bars{display:grid;gap:8px}.bar{display:grid;grid-template-columns:74px 1fr 34px;gap:10px;align-items:center;font-size:13px;color:var(--muted)}.track{height:10px;border-radius:999px;overflow:hidden;background:rgba(24,27,32,.08)}.fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--teal),var(--accent))}.activeLabel{color:#31784d;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
-        @media (max-width:1220px){.heroGrid,.layout,.compareGrid{grid-template-columns:1fr}.hero h1{max-width:14ch}}@media (max-width:760px){.page{width:min(100vw - 12px,1480px);margin:6px auto 16px;gap:12px}.hero,.panel{padding:18px;border-radius:24px}.panelHeader,.cardTop{flex-direction:column}.stats,.summary{grid-template-columns:1fr 1fr}.catalogGrid{grid-template-columns:1fr}}
+        :root{--bg:#11161d;--panel:#18212c;--panel-2:#1e2936;--line:#2b3a4d;--text:#f6f8fb;--muted:#95a2b4;--accent:#3d82ff;--accent-2:#2454b7;--accent-soft:#15243f;--success:#c9ff2e;--shadow:0 20px 45px rgba(0,0,0,.28)}
+        *{box-sizing:border-box}body{margin:0;font-family:"Trebuchet MS","Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at top left,rgba(61,130,255,.12),transparent 28rem),var(--bg)}a,button,input,select{font:inherit}button{border:0}h1,h2,h3,h4,p{margin:0}
+        .page{width:min(1400px,calc(100vw - 20px));margin:10px auto 30px;display:grid;gap:16px}.panel,.slot-card,.item-card,.modal-card,.api-card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01)),var(--panel);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+        .hero,.top-controls,.catalog-panel,.builder-panel,.api-card{padding:20px}.hero{background:linear-gradient(145deg,#0a1020,#12213c 72%,#163368)}.hero-head,.hero-main,.hero-stats,.toolbar,.catalog-head,.builder-head,.slot-top,.slot-actions,.modal-head,.modal-actions,.api-head,.pager{display:flex;gap:12px}.hero-head,.toolbar,.catalog-head,.builder-head,.slot-top,.modal-head,.api-head{justify-content:space-between;align-items:flex-start}.hero-main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:16px;margin-top:12px}.hero-copy{display:grid;gap:10px}.hero-copy h1{font-size:clamp(38px,6vw,66px);line-height:.93;letter-spacing:-.05em}.hero-copy p{color:rgba(246,248,251,.86);line-height:1.55;max-width:55rem}
+        .badge,.pill,.mini{display:inline-flex;align-items:center;min-height:34px;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.badge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#fff}.pill,.mini{background:var(--accent-soft);border:1px solid rgba(61,130,255,.18);color:#bfd4ff}
+        .hero-links,.chips,.tags,.build-pills,.slot-grid,.stats-grid,.catalog-grid,.modal-grid,.accessory-grid{display:flex;flex-wrap:wrap;gap:10px}.hero-links .btn{min-width:110px}.hero-stats{margin-top:16px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.hero-stat{padding:16px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}.hero-stat strong{display:block;font-size:26px}.hero-stat span{display:block;margin-top:6px;color:rgba(246,248,251,.76);font-size:13px}
+        .btn,.chip,.slot-button,.item-card,.icon-btn,.replace-btn,.summary{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer;transition:.2s ease}.btn,.chip,.slot-button,.replace-btn,.summary{min-height:46px;padding:11px 16px;border-radius:16px}.btn{border:1px solid rgba(255,255,255,.14);background:#fff;color:#11161d}.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;color:#fff}.btn.ghost,.replace-btn{background:var(--panel-2);border:1px solid var(--line);color:var(--text)}.btn.neon{background:rgba(201,255,46,.12);border:1px solid rgba(201,255,46,.28);color:var(--success)}.btn:hover,.chip:hover,.slot-button:hover,.item-card:hover,.icon-btn:hover,.replace-btn:hover,.summary:hover{transform:translateY(-1px)}
+        .top-controls{display:grid;gap:14px}.controls-grid{display:grid;grid-template-columns:minmax(0,1.1fr) 220px minmax(0,.9fr);gap:14px}.field{display:grid;gap:8px}.field label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}input,select{width:100%;min-height:48px;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);outline:none}.helper,.muted{color:var(--muted);line-height:1.5}input:focus-visible,select:focus-visible,.btn:focus-visible,.chip:focus-visible,.item-card:focus-visible,.icon-btn:focus-visible,.summary:focus-visible,.replace-btn:focus-visible{border-color:var(--accent);box-shadow:0 0 0 4px rgba(61,130,255,.14)}
+        .chip{border:1px solid var(--line);background:var(--panel-2);color:var(--text);padding:10px 14px;border-radius:999px}.chip[aria-pressed=true]{background:var(--accent-soft);border-color:rgba(61,130,255,.34);color:#d6e5ff}.build-pills .chip{min-height:40px}
+        .workspace{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(360px,.88fr);gap:16px;align-items:start}.catalog-panel{display:grid;gap:14px}.catalog-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 180px;gap:12px}.catalog-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.item-card{width:100%;padding:16px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015)),var(--panel-2);color:var(--text);text-align:left;display:grid;gap:12px}.item-top{display:flex;justify-content:space-between;gap:12px}.item-title strong{display:block;font-size:23px;line-height:1}.item-title span{display:block;margin-top:6px;color:var(--muted)}.item-hint{color:#cfe0ff;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+        .bars{display:grid;gap:8px}.bar{display:grid;grid-template-columns:66px 1fr 32px;gap:8px;align-items:center;color:var(--muted);font-size:13px}.track{height:8px;border-radius:999px;overflow:hidden;background:#2b3950}.fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#c9ff2e,var(--accent))}
+        .pager{justify-content:space-between;align-items:center}.summary{padding:8px 14px;border:1px solid var(--line);background:var(--panel-2);color:var(--muted)}
+        .builder-stack{position:sticky;top:10px;display:grid;gap:16px}.builder-panel{display:grid;gap:16px}.builder-head p{margin-top:8px;color:var(--muted)}.slot-list{display:grid;gap:12px}.slot-card{padding:16px;display:grid;gap:12px}.slot-card[data-action]{cursor:pointer}.slot-card[data-action]:hover{transform:translateY(-1px)}.slot-card.empty{background:linear-gradient(180deg,rgba(61,130,255,.08),rgba(255,255,255,.02)),var(--panel)}.slot-card.add{place-items:center;text-align:center;border-style:dashed}.slot-number{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:var(--accent-soft);color:#d5e4ff;font-weight:700}.slot-actions{flex-wrap:wrap}.icon-btn{min-height:36px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel-2);color:var(--text)}.slot-main h3{font-size:28px;line-height:1}.slot-meta{display:flex;flex-wrap:wrap;gap:8px}.tag{display:inline-flex;align-items:center;min-height:32px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel-2);color:var(--muted);font-size:12px}.stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.stat-box{padding:12px;border-radius:16px;border:1px solid var(--line);background:var(--panel-2)}.stat-box strong{display:block;font-size:22px}.stat-box span{display:block;margin-top:5px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+        .matrix-panel{display:none;gap:12px}.matrix-panel.show{display:grid}.table{overflow-x:auto;border:1px solid var(--line);border-radius:18px;background:var(--panel-2)}table{width:100%;min-width:520px;border-collapse:collapse}th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}thead th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.leader{background:rgba(61,130,255,.12);color:#dbe9ff;font-weight:700}
+        .api-card{display:grid;gap:14px}details{width:100%}summary{list-style:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer}summary::-webkit-details-marker{display:none}.api-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}.endpoint-list{display:grid;gap:10px}.endpoint{padding:14px;border-radius:18px;border:1px solid var(--line);background:var(--panel-2);display:grid;gap:6px}.method{display:inline-flex;align-items:center;justify-content:center;min-width:54px;min-height:28px;padding:4px 10px;border-radius:999px;background:#0d1424;color:#fff;font-size:12px;font-weight:700;letter-spacing:.08em}pre{margin:0;padding:16px;border-radius:18px;background:#0c1322;color:#f6f8fb;overflow:auto;font-size:13px;line-height:1.5}code{font-family:Consolas,"Courier New",monospace}
+        .modal{position:fixed;inset:0;padding:16px;background:rgba(6,9,14,.72);display:grid;place-items:center;z-index:50}.modal-card{width:min(920px,100%);max-height:min(88vh,900px);overflow:auto;padding:20px}.modal-grid{display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);gap:16px}.replace-list{display:grid;gap:10px}.replace-btn{width:100%;justify-content:space-between;text-align:left}.replace-btn strong,.replace-btn span{display:block}.replace-btn span{color:var(--muted);font-size:13px}.accessory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+        @media (max-width:1180px){.hero-main,.controls-grid,.workspace,.catalog-toolbar,.api-grid,.modal-grid{grid-template-columns:1fr}.builder-stack{position:static}.catalog-grid{grid-template-columns:1fr 1fr}}@media (max-width:820px){.page{width:min(calc(100vw - 12px),1400px);margin:6px auto 20px}.hero,.top-controls,.catalog-panel,.builder-panel,.api-card{padding:16px}.hero-stats,.catalog-grid,.stats-grid,.accessory-grid{grid-template-columns:1fr}.hero-links,.toolbar,.pager,.modal-head,.modal-actions{flex-direction:column;align-items:stretch}.btn,.summary,.replace-btn{width:100%}}@media (max-width:560px){.chips,.build-pills,.slot-actions{display:grid;grid-template-columns:1fr}.chip,.btn,.icon-btn{width:100%}}
     </style>
 </head>
 <body>
     <div class="page">
-        <header class="hero">
-            <div class="heroGrid">
-                <section class="stack">
-                    <div class="eyebrows"><span class="eyebrow">Wiki Builder API</span><span class="eyebrow">Comparateur 1-3 armes</span></div>
-                    <div><h1>Comparer des armes, pas juste les lister.</h1><p id="hero-copy">Charge un jeu, choisis jusqu’à trois armes, configure leurs slots puis lis immédiatement les écarts de stats.</p></div>
-                    <div id="hero-metrics" class="metrics" aria-live="polite"></div>
-                </section>
-                <section class="stack">
-                    <article class="panel dark"><div class="panelHeader"><div><h3>Jeu actif</h3><p class="mini">Les données viennent directement des endpoints publics.</p></div></div><div id="game-switcher" class="switcher" role="toolbar" aria-label="Sélection du jeu"></div></article>
-                    <article class="panel dark"><div class="panelHeader"><div><h3>Cible active</h3><p class="mini">Le catalogue charge l’arme dans la colonne sélectionnée.</p></div></div><div id="slot-targets" class="targets" role="toolbar" aria-label="Sélection de la colonne active"></div></article>
-                </section>
+        <header class="hero panel">
+            <div class="hero-head">
+                <span class="badge">Laravel 12 - Builder multi-jeux</span>
+                <div class="hero-links">
+                    <a class="btn primary" href="/api/v1">Root API</a>
+                    <a class="btn" href="/api/v1/games">Jeux</a>
+                </div>
+            </div>
+            <div class="hero-main">
+                <div class="hero-copy">
+                    <span class="pill">Builder centre sur l action</span>
+                    <h1>Wiki Builder API</h1>
+                    <p id="hero-copy">Clique sur une arme pour la charger. Si un slot visible est libre, elle s y place toute seule. Si tout est plein, tu choisis simplement quoi remplacer.</p>
+                </div>
+                <div id="hero-stats" class="hero-stats"></div>
             </div>
         </header>
-        <main class="layout">
-            <aside class="sidebar stack">
-                <section class="panel">
-                    <div class="panelHeader"><div><h3>Contexte builder</h3><p class="mini">Un profil, des filtres et un catalogue orienté comparaison.</p></div></div>
-                    <div class="filters">
-                        <div class="field"><label for="profile">Archétype</label><select id="profile" data-field="profile"></select></div>
-                        <div class="field"><label for="search">Recherche d’arme</label><input id="search" type="search" placeholder="Ex: Man-O-War, KN-44, VMP" data-field="search"></div>
-                        <div class="field"><label for="slot-filter">Type d’emplacement</label><select id="slot-filter" data-field="slot-filter"></select></div>
-                        <div class="field"><label>Catégories</label><div id="category-filter" class="chips" role="toolbar" aria-label="Filtre par catégorie"></div></div>
+
+        <section class="top-controls panel">
+            <div class="controls-grid">
+                <div class="field">
+                    <label>Jeu</label>
+                    <div id="game-list" class="chips"></div>
+                </div>
+                <div class="field">
+                    <label for="profile">Archetype</label>
+                    <select id="profile"></select>
+                </div>
+                <div class="field">
+                    <label>Build public</label>
+                    <div id="build-list" class="build-pills"></div>
+                </div>
+            </div>
+        </section>
+
+        <main class="workspace">
+            <section class="catalog-panel panel">
+                <div class="catalog-head">
+                    <div>
+                        <span class="pill">Catalogue</span>
+                        <h2 style="margin-top:10px;font-size:clamp(30px,4vw,42px);line-height:.95">Choisir une arme</h2>
                     </div>
-                </section>
-                <section class="panel dark"><div class="panelHeader"><div><h3>Builds publics</h3><p class="mini">Charge un preset pour remplir les colonnes.</p></div></div><div id="preset-list" class="stack"></div></section>
-                <section class="panel"><div class="panelHeader"><div><h3>Repères UX</h3><p class="mini">Le flux est construit pour le vrai besoin.</p></div></div><div class="note"><p class="mini">Tu peux charger la même arme sur plusieurs colonnes avec des accessoires différents. Chaque colonne gère ses propres slots, et la matrice met en avant la meilleure valeur par statistique.</p></div></section>
-            </aside>
-            <section class="stack">
-                <section class="panel"><div class="panelHeader"><div><h2 id="workspace-title">Comparateur d’armes</h2><p id="workspace-copy" class="mini">Choisis une à trois armes puis compare leurs stats finales avec leurs accessoires.</p></div><div class="actions"><button id="reset" type="button" class="ghost">Réinitialiser</button><a href="/api/v1/games" target="_blank" rel="noreferrer" class="primary">Ouvrir l’API</a></div></div><div id="compare-board"></div></section>
-                <section class="panel"><div class="panelHeader"><div><h3>Matrice de comparaison</h3><p class="mini">Les valeurs incluent l’arme de base et les modifiers sélectionnés dans sa colonne.</p></div></div><div id="matrix"></div></section>
-                <section class="panel"><div class="panelHeader"><div><h3>Catalogue d’armes</h3><p class="mini">Le bouton principal charge l’arme dans la colonne active du comparateur.</p></div><div id="catalog-status" class="eyebrow" aria-live="polite"></div></div><div id="catalog" class="catalogGrid"></div></section>
+                    <div id="catalog-status" class="summary"></div>
+                </div>
+
+                <div class="catalog-toolbar">
+                    <input id="search" type="search" placeholder="Rechercher une arme, une categorie, un style">
+                    <select id="slot-filter"></select>
+                </div>
+
+                <div class="field">
+                    <label>Categories</label>
+                    <div id="category-list" class="chips"></div>
+                </div>
+
+                <div id="catalog" class="catalog-grid"></div>
+
+                <div class="pager">
+                    <button type="button" class="btn ghost" data-action="page-prev">Page precedente</button>
+                    <span id="page-status" class="summary"></span>
+                    <button type="button" class="btn ghost" data-action="page-next">Page suivante</button>
+                </div>
             </section>
+
+            <aside class="builder-stack">
+                <section class="builder-panel panel">
+                    <div class="builder-head">
+                        <div>
+                            <span class="pill">Builder</span>
+                            <h2 id="builder-title" style="margin-top:10px;font-size:clamp(30px,4vw,42px);line-height:.95">1 slot actif</h2>
+                            <p id="builder-copy">Un slot visible au depart. Clique sur + si tu veux ouvrir une comparaison.</p>
+                        </div>
+                        <div class="toolbar">
+                            <button id="reset-builder" type="button" class="btn ghost">Reinitialiser</button>
+                        </div>
+                    </div>
+
+                    <div id="slot-list" class="slot-list"></div>
+                </section>
+
+                <section id="matrix-panel" class="builder-panel panel matrix-panel">
+                    <div class="builder-head">
+                        <div>
+                            <span class="pill">Comparaison</span>
+                            <h3 style="margin-top:10px;font-size:26px">Matrice</h3>
+                        </div>
+                    </div>
+                    <div id="matrix"></div>
+                </section>
+            </aside>
         </main>
+
+        <section class="api-card panel">
+            <details>
+                <summary class="api-head">
+                    <div>
+                        <span class="pill">API rapide</span>
+                        <h2 style="margin-top:10px;font-size:clamp(28px,4vw,36px);line-height:1">/api/v1 et exemples utiles</h2>
+                    </div>
+                    <span class="summary">Ouvrir</span>
+                </summary>
+                <div class="api-grid">
+                    <div class="endpoint-list">
+                        <div class="endpoint"><span class="method">GET</span><strong>/api/v1</strong><p class="muted">Root JSON avec endpoints, headers et exemples.</p></div>
+                        <div class="endpoint"><span class="method">GET</span><strong>/api/v1/games</strong><p class="muted">Liste des jeux disponibles.</p></div>
+                        <div class="endpoint"><span class="method">GET</span><strong>/api/v1/games/{id}/items</strong><p class="muted">Catalogue filtre pour le jeu actif.</p></div>
+                        <div class="endpoint"><span class="method">GET</span><strong>/api/v1/items/{id}</strong><p class="muted">Detail complet avec categories, slots et modifiers compatibles.</p></div>
+                    </div>
+                    <div class="endpoint-list">
+                        <div class="endpoint">
+                            <strong>Lecture publique</strong>
+                            <pre><code>curl http://localhost:8000/api/v1
+curl "http://localhost:8000/api/v1/games/1/items?per_page=20&amp;sort_by=score&amp;sort_dir=desc"</code></pre>
+                        </div>
+                        <div class="endpoint">
+                            <strong>Ecriture protegee</strong>
+                            <pre><code>curl -X POST http://localhost:8000/api/v1/builds ^
+  -H "Content-Type: application/json" ^
+  -H "API-KEY: dev-wiki-builder-key-1234567890abcdef" ^
+  -d "{\"game_id\":1,\"title\":\"BO3 Flex\",\"items\":[{\"item_id\":1,\"position\":1}]}"</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </details>
+        </section>
     </div>
+
+    <div id="modal-root"></div>
+
     <script>
-        const statKeys = ['score','attack','defense','utility','accuracy','mobility'];
-        const labels = {score:'Score',attack:'Attack',defense:'Defense',utility:'Utility',accuracy:'Accuracy',mobility:'Mobility'};
-        const makeEntry = () => ({item:null,mods:{}});
-        const state = {games:[],items:[],profiles:[],builds:[],selectedGameId:null,selectedProfileId:null,search:'',slotFilter:'all',categoryFilter:'all',activeSlot:0,compare:[makeEntry(),makeEntry(),makeEntry()],cache:{}};
-        const $ = (id) => document.getElementById(id);
-        const nodes = {heroMetrics:$('hero-metrics'),heroCopy:$('hero-copy'),gameSwitcher:$('game-switcher'),slotTargets:$('slot-targets'),profile:$('profile'),search:$('search'),slotFilter:$('slot-filter'),categoryFilter:$('category-filter'),presetList:$('preset-list'),workspaceTitle:$('workspace-title'),workspaceCopy:$('workspace-copy'),compareBoard:$('compare-board'),matrix:$('matrix'),catalogStatus:$('catalog-status'),catalog:$('catalog'),reset:$('reset')};
-        const esc = (value) => String(value ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
-        const num = (value) => Number(value ?? 0);
-        const api = async (path) => { const response = await fetch(path,{headers:{Accept:'application/json'}}); const payload = await response.json(); if (!response.ok || payload.success === false) { throw new Error(payload.message ?? `Request failed for ${path}`); } return payload; };
-        const currentGame = () => state.games.find((game) => game.id === state.selectedGameId) ?? null;
-        const currentProfile = () => state.profiles.find((profile) => profile.id === state.selectedProfileId) ?? null;
-        const initials = (label) => label.split(/[\s-]+/).filter(Boolean).slice(0,2).map((part) => part[0]?.toUpperCase() ?? '').join('');
-        const image = (item) => { const url = item.metadata?.source?.image_url; const slotLabel = item.metadata?.bo3?.weapon_class ?? item.slot; return `<div class="media">${url ? `<img src="${esc(url)}" alt="${esc(item.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<div class="fallback"><div class="mark">${esc(initials(item.name))}</div><div>${esc(slotLabel)}</div></div></div>`; };
-        const availableSlots = () => ['all', ...new Set(state.items.map((item) => item.slot))];
-        const categories = () => { const map = new Map(); state.items.forEach((item) => (item.categories ?? []).forEach((category) => { const row = map.get(category.id) ?? {...category,count:0}; row.count += 1; map.set(category.id,row); })); return [...map.values()].sort((a,b) => b.count - a.count || a.label.localeCompare(b.label)); };
-        const filteredItems = () => { const q = state.search.trim().toLowerCase(); return state.items.filter((item) => { const searchOk = q === '' || item.name.toLowerCase().includes(q) || (item.metadata?.bo3?.weapon_class ?? '').toLowerCase().includes(q); const slotOk = state.slotFilter === 'all' || item.slot === state.slotFilter; const catOk = state.categoryFilter === 'all' || (item.categories ?? []).some((category) => category.slug === state.categoryFilter || String(category.id) === state.categoryFilter); return searchOk && slotOk && catOk; }); };
-        const findMod = (item, id) => (item.compatible_modifiers ?? []).find((modifier) => modifier.id === id) ?? null;
-        const totals = (entry) => { if (!entry.item) { return null; } const base = {score:num(entry.item.score),attack:num(entry.item.attack),defense:num(entry.item.defense),utility:num(entry.item.utility),accuracy:num(entry.item.accuracy),mobility:num(entry.item.mobility)}; Object.values(entry.mods).forEach((id) => { const mod = findMod(entry.item, Number(id)); if (!mod) { return; } base.score += num(mod.delta_score); base.attack += num(mod.delta_attack); base.defense += num(mod.delta_defense); base.utility += num(mod.delta_utility); base.accuracy += num(mod.delta_accuracy); base.mobility += num(mod.delta_mobility); }); return base; };
-        const optionsForSlot = (entry, slot) => (entry.item?.compatible_modifiers ?? []).filter((modifier) => !slot.accepted_modifier_type || modifier.modifier_type === slot.accepted_modifier_type).sort((a,b) => a.name.localeCompare(b.name));
-        const metric = (value, label) => `<div class="metric"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`;
-        const stat = (label, value) => `<div class="stat"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`;
-
-        function renderHero() {
-            const game = currentGame();
-            const active = state.compare[state.activeSlot]?.item?.name ?? `colonne ${state.activeSlot + 1}`;
-            nodes.heroMetrics.innerHTML = [metric(state.games.length,'Jeux'),metric(state.items.length,'Armes catalogue'),metric(state.compare.filter((entry) => entry.item).length,'Armes comparées'),metric(active,'Cible active')].join('');
-            nodes.heroCopy.textContent = game ? `${game.name} · charge une, deux ou trois armes, applique leurs accessoires par slot puis compare les écarts de stats sans sortir de la page.` : 'Charge un jeu, puis compose ton comparatif arme par arme.';
-            nodes.workspaceTitle.textContent = game ? `${game.name} · Builder comparateur` : 'Comparateur d’armes';
-            nodes.workspaceCopy.textContent = currentProfile() ? `Archétype actif: ${currentProfile().name}. La colonne active reçoit la prochaine arme chargée depuis le catalogue.` : 'Choisis un archétype puis configure les colonnes de comparaison.';
-        }
-
-        function renderFilters() {
-            nodes.gameSwitcher.innerHTML = state.games.map((game) => `<button type="button" class="chip" data-action="game" data-id="${game.id}" aria-pressed="${game.id === state.selectedGameId}">${esc(game.name)}</button>`).join('');
-            nodes.slotTargets.innerHTML = state.compare.map((entry, index) => `<button type="button" class="target" data-action="target" data-index="${index}" aria-pressed="${index === state.activeSlot}"><strong>Arme ${index + 1}</strong><span>${esc(entry.item?.name ?? 'Vide')}</span></button>`).join('');
-            nodes.profile.innerHTML = state.profiles.length ? state.profiles.map((profile) => `<option value="${profile.id}" ${profile.id === state.selectedProfileId ? 'selected' : ''}>${esc(profile.name)}</option>`).join('') : '<option value="">Aucun archétype</option>';
-            nodes.search.value = state.search;
-            nodes.slotFilter.innerHTML = availableSlots().map((slot) => `<option value="${esc(slot)}" ${slot === state.slotFilter ? 'selected' : ''}>${esc(slot === 'all' ? 'Tous les emplacements' : slot)}</option>`).join('');
-            nodes.categoryFilter.innerHTML = [`<button type="button" class="chip2" data-action="category" data-id="all" aria-pressed="${state.categoryFilter === 'all'}">Toutes</button>`, ...categories().map((category) => `<button type="button" class="chip2" data-action="category" data-id="${esc(category.slug ?? String(category.id))}" aria-pressed="${state.categoryFilter === (category.slug ?? String(category.id))}">${esc(category.label)} · ${esc(category.count)}</button>`)].join('');
-            nodes.presetList.innerHTML = state.builds.length ? state.builds.map((build) => `<article class="presetCard"><strong>${esc(build.title)}</strong><p class="mini">${esc(build.description ?? 'Build public')}</p><button type="button" class="ghost" data-action="build" data-id="${build.id}">Charger ce build</button></article>`).join('') : `<article class="presetCard"><strong>Aucun build public</strong><p class="mini">Le jeu actif n’expose pas encore de preset public.</p></article>`;
-        }
-
-        function renderCompare() {
-            nodes.compareBoard.innerHTML = `<div class="compareGrid">${state.compare.map((entry, index) => {
-                if (!entry.item) {
-                    return `<article class="compareCard empty ${index === state.activeSlot ? 'active' : ''}"><div class="stack"><span class="slotTag">Arme ${index + 1}</span><strong>Colonne prête</strong><p class="mini">Active cette colonne puis charge une arme depuis le catalogue.</p><button type="button" class="primary" data-action="target" data-index="${index}">Utiliser cette colonne</button></div></article>`;
-                }
-                const sum = totals(entry);
-                const itemSlots = entry.item.item_slots ?? [];
-                return `<article class="compareCard ${index === state.activeSlot ? 'active' : ''}"><div class="cardTop"><div><span class="slotTag">Arme ${index + 1}</span>${index === state.activeSlot ? `<div class="activeLabel">Cible active</div>` : ''}</div><div class="actions"><button type="button" class="ghost" data-action="target" data-index="${index}">Cibler</button><button type="button" class="ghost" data-action="clear" data-index="${index}">Retirer</button></div></div>${image(entry.item)}<div><h3 class="weaponName">${esc(entry.item.name)}</h3><p class="mini">${esc(entry.item.metadata?.bo3?.handling_profile ?? entry.item.metadata?.bo3?.weapon_class ?? entry.item.slot)}</p></div><div class="meta"><span>${esc(entry.item.slot)}</span><span>${esc(entry.item.rarity)}</span><span>${esc(entry.item.tier_level ?? 'N/A')}</span></div><div class="summary stats">${stat('Score total',sum.score)}${stat('Mods actifs',Object.keys(entry.mods).length)}${stat('Slots',itemSlots.length)}</div><div class="stats">${stat('Attack',sum.attack)}${stat('Accuracy',sum.accuracy)}${stat('Utility',sum.utility)}${stat('Mobility',sum.mobility)}</div><section class="slotList">${itemSlots.length ? itemSlots.map((slot) => { const selected = String(entry.mods[slot.slot_key] ?? ''); return `<div class="slotItem"><div class="slotHead"><strong>${esc(slot.slot_label)}</strong><span>${esc(slot.accepted_modifier_type ?? 'Tous')}</span></div><select class="slotSelect" data-action="mod" data-index="${index}" data-slot-key="${esc(slot.slot_key)}"><option value="">Aucun accessoire</option>${optionsForSlot(entry, slot).map((modifier) => `<option value="${modifier.id}" ${selected === String(modifier.id) ? 'selected' : ''}>${esc(modifier.name)}</option>`).join('')}</select></div>`; }).join('') : `<div class="note"><p class="mini">Cette arme n’expose pas encore de slots d’attachments exploitables par l’API.</p></div>`}</section></article>`;
-            }).join('')}</div>`;
-        }
-
-        function renderMatrix() {
-            const filled = state.compare.map((entry) => totals(entry)).filter(Boolean);
-            if (!filled.length) {
-                nodes.matrix.innerHTML = `<div class="note"><strong>Aucune arme sélectionnée</strong><p class="mini">Ajoute une arme dans le catalogue pour afficher une vraie matrice de comparaison.</p></div>`;
-                return;
-            }
-            const leaders = Object.fromEntries(statKeys.map((key) => [key, Math.max(...filled.map((row) => row[key]))]));
-            nodes.matrix.innerHTML = `<div class="matrixWrap"><table><thead><tr><th>Stat</th>${state.compare.map((entry, index) => `<th>${esc(entry.item?.name ?? `Arme ${index + 1}`)}</th>`).join('')}</tr></thead><tbody>${statKeys.map((key) => `<tr><th>${esc(labels[key])}</th>${state.compare.map((entry) => { const row = totals(entry); if (!row) { return '<td>—</td>'; } return `<td class="${row[key] === leaders[key] ? 'leader' : ''}">${esc(row[key])}</td>`; }).join('')}</tr>`).join('')}<tr><th>Attachments</th>${state.compare.map((entry) => `<td>${esc(Object.keys(entry.mods).length)}</td>`).join('')}</tr></tbody></table></div>`;
-        }
-
-        function renderCatalog() {
-            const items = filteredItems();
-            const active = state.compare[state.activeSlot]?.item?.name ?? `arme ${state.activeSlot + 1}`;
-            nodes.catalogStatus.textContent = `${items.length} résultat(s) · cible: ${active}`;
-            if (!items.length) {
-                nodes.catalog.innerHTML = `<div class="note"><strong>Aucune arme trouvée</strong><p class="mini">Modifie la recherche ou les filtres pour afficher plus de résultats.</p></div>`;
-                return;
-            }
-            const bar = (label, value) => `<div class="bar"><span>${esc(label)}</span><div class="track"><div class="fill" style="width:${Math.max(0,Math.min(100,num(value)))}%"></div></div><strong>${esc(value)}</strong></div>`;
-            nodes.catalog.innerHTML = items.map((item) => `<article class="catalogCard"><div class="catalogTop"><div><h4 class="catalogTitle">${esc(item.name)}</h4><p class="mini">${esc(item.metadata?.bo3?.weapon_class ?? item.slot)}</p></div><span class="pill">${esc(item.tier_level ?? 'N/A')}</span></div>${image(item)}<div class="catalogMeta"><span>${esc(item.slot)}</span><span>${esc(item.rarity)}</span>${(item.categories ?? []).slice(0,3).map((category) => `<span>${esc(category.label)}</span>`).join('')}</div><div class="bars">${bar('Score',item.score)}${bar('Attack',item.attack)}${bar('Accuracy',item.accuracy)}${bar('Mobility',item.mobility)}</div><button type="button" class="primary" data-action="load" data-id="${item.id}">Charger dans arme ${state.activeSlot + 1}</button></article>`).join('');
-        }
-
-        function render() { renderHero(); renderFilters(); renderCompare(); renderMatrix(); renderCatalog(); }
-        async function fetchItem(id) { if (state.cache[id]) { return state.cache[id]; } const payload = await api(`/api/v1/items/${id}`); state.cache[id] = payload.data; return payload.data; }
-        function resetBoard() { state.compare = [makeEntry(),makeEntry(),makeEntry()]; state.activeSlot = 0; }
-        async function loadItemIntoSlot(itemId, slotIndex) { const item = await fetchItem(itemId); state.compare[slotIndex] = {item,mods:{}}; state.activeSlot = slotIndex; }
-        async function loadBuild(buildId) { const payload = await api(`/api/v1/builds/${buildId}`); const grouped = (payload.data.slots ?? []).reduce((acc,row) => { const bucket = acc[row.item_id] ?? {}; bucket[row.slot_key] = row.modifier.id; acc[row.item_id] = bucket; return acc; }, {}); const next = [makeEntry(),makeEntry(),makeEntry()]; for (let i = 0; i < Math.min(3,(payload.data.items ?? []).length); i += 1) { const buildItem = payload.data.items[i]; const item = await fetchItem(buildItem.item_id); next[i] = {item,mods:{...(grouped[buildItem.item_id] ?? {})}}; } state.compare = next; state.activeSlot = 0; }
-        async function loadGame() { const game = currentGame(); if (!game) { return; } const [items,profiles,builds] = await Promise.all([api(`/api/v1/games/${game.id}/items?per_page=100&sort_by=score&sort_dir=desc`),api(`/api/v1/games/${game.id}/archetypes?per_page=100`),api(`/api/v1/builds?game_id=${game.id}&is_public=true&per_page=20`)]); state.items = items.data.data ?? []; state.profiles = profiles.data.data ?? []; state.builds = builds.data.data ?? []; state.selectedProfileId = state.profiles[0]?.id ?? null; state.search = ''; state.categoryFilter = 'all'; state.slotFilter = state.items.some((item) => item.slot === 'weapon') ? 'weapon' : 'all'; state.cache = {}; resetBoard(); }
-
-        document.addEventListener('click', async (event) => {
-            const trigger = event.target.closest('[data-action]');
-            if (!trigger) { return; }
-            try {
-                if (trigger.dataset.action === 'game') { const id = Number(trigger.dataset.id); if (id !== state.selectedGameId) { state.selectedGameId = id; await loadGame(); } render(); return; }
-                if (trigger.dataset.action === 'target') { state.activeSlot = Number(trigger.dataset.index); render(); return; }
-                if (trigger.dataset.action === 'clear') { const index = Number(trigger.dataset.index); state.compare[index] = makeEntry(); if (state.activeSlot === index) { state.activeSlot = Math.max(0,index - 1); } render(); return; }
-                if (trigger.dataset.action === 'category') { state.categoryFilter = trigger.dataset.id ?? 'all'; render(); return; }
-                if (trigger.dataset.action === 'load') { await loadItemIntoSlot(Number(trigger.dataset.id), state.activeSlot); render(); return; }
-                if (trigger.dataset.action === 'build') { await loadBuild(Number(trigger.dataset.id)); render(); }
-            } catch (error) { nodes.workspaceCopy.textContent = error.message; }
-        });
-
-        document.addEventListener('change', (event) => {
-            const target = event.target;
-            if (target.matches('[data-field="profile"]')) { state.selectedProfileId = Number(target.value) || null; render(); return; }
-            if (target.matches('[data-field="slot-filter"]')) { state.slotFilter = target.value; render(); return; }
-            if (target.matches('[data-action="mod"]')) { const index = Number(target.dataset.index); const slotKey = target.dataset.slotKey; if (!slotKey || !state.compare[index]) { return; } if (target.value === '') { delete state.compare[index].mods[slotKey]; } else { state.compare[index].mods[slotKey] = Number(target.value); } render(); }
-        });
-
-        document.addEventListener('input', (event) => { const target = event.target; if (target.matches('[data-field="search"]')) { state.search = target.value; render(); } });
-        nodes.reset.addEventListener('click', () => { resetBoard(); render(); });
-
-        (async function boot() {
-            try {
-                const payload = await api('/api/v1/games?per_page=20');
-                state.games = payload.data.data ?? [];
-                state.selectedGameId = state.games.find((game) => game.slug === 'call-of-duty-black-ops-iii')?.id ?? state.games[0]?.id ?? null;
-                await loadGame();
-                render();
-            } catch (error) {
-                nodes.workspaceTitle.textContent = 'Interface indisponible';
-                nodes.workspaceCopy.textContent = error.message;
-                nodes.compareBoard.innerHTML = `<div class="note"><strong>Chargement échoué</strong><p class="mini">Vérifie que Laravel tourne, que la base est seedée, puis recharge la page.</p></div>`;
-            }
-        }());
+        const S={games:[],items:[],profiles:[],builds:[],game:null,profile:null,search:'',slot:'all',category:'all',page:1,perPage:8,visibleSlots:1,compare:[{item:null,mods:{}},{item:null,mods:{}},{item:null,mods:{}}],cache:{},editing:null,pending:null},K=['score','attack','defense','utility','accuracy','mobility'],L={score:'Score',attack:'Attack',defense:'Defense',utility:'Utility',accuracy:'Accuracy',mobility:'Mobility'},$=id=>document.getElementById(id),N={heroCopy:$('hero-copy'),heroStats:$('hero-stats'),gameList:$('game-list'),profile:$('profile'),builds:$('build-list'),search:$('search'),slot:$('slot-filter'),category:$('category-list'),catalogStatus:$('catalog-status'),catalog:$('catalog'),pageStatus:$('page-status'),builderTitle:$('builder-title'),builderCopy:$('builder-copy'),slots:$('slot-list'),matrixPanel:$('matrix-panel'),matrix:$('matrix'),modal:$('modal-root'),reset:$('reset-builder')},E=v=>String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"),M=v=>Number(v??0),GAME=()=>S.games.find(game=>game.id===S.game)||null,PROFILE=()=>S.profiles.find(profile=>profile.id===S.profile)||null,ITEM=(item,mods={})=>({item,mods});
+        async function api(path){const response=await fetch(path,{headers:{Accept:'application/json'}}),payload=await response.json();if(!response.ok||payload.success===false)throw new Error(payload.message??`Request failed for ${path}`);return payload}
+        const visibleEntries=()=>S.compare.slice(0,S.visibleSlots),loadedEntries=()=>visibleEntries().filter(entry=>entry.item),pageCount=rows=>Math.max(1,Math.ceil(rows.length/S.perPage));
+        function cats(){const map=new Map();S.items.forEach(item=>(item.categories??[]).forEach(category=>{const row=map.get(category.id)??{...category,count:0};row.count+=1;map.set(category.id,row)}));return [...map.values()].sort((a,b)=>b.count-a.count||a.label.localeCompare(b.label))}
+        function filteredItems(){const q=S.search.trim().toLowerCase();return S.items.filter(item=>{const bag=[item.name,item.slot,item.metadata?.bo3?.weapon_class,...(item.categories??[]).map(category=>category.label)].filter(Boolean).join(' ').toLowerCase(),matchQuery=q===''||bag.includes(q),matchSlot=S.slot==='all'||item.slot===S.slot,matchCategory=S.category==='all'||(item.categories??[]).some(category=>category.slug===S.category||String(category.id)===S.category);return matchQuery&&matchSlot&&matchCategory})}
+        const findMod=(item,id)=>(item.compatible_modifiers??[]).find(modifier=>modifier.id===id)||null,options=(entry,slot)=>(entry.item?.compatible_modifiers??[]).filter(modifier=>!slot.accepted_modifier_type||modifier.modifier_type===slot.accepted_modifier_type).sort((a,b)=>a.name.localeCompare(b.name));
+        function totals(entry){if(!entry.item)return null;const total={score:M(entry.item.score),attack:M(entry.item.attack),defense:M(entry.item.defense),utility:M(entry.item.utility),accuracy:M(entry.item.accuracy),mobility:M(entry.item.mobility)};Object.values(entry.mods).forEach(modifierId=>{const modifier=findMod(entry.item,Number(modifierId));if(!modifier)return;total.score+=M(modifier.delta_score);total.attack+=M(modifier.delta_attack);total.defense+=M(modifier.delta_defense);total.utility+=M(modifier.delta_utility);total.accuracy+=M(modifier.delta_accuracy);total.mobility+=M(modifier.delta_mobility)});return total}
+        function setPage(value){S.page=Math.min(Math.max(1,value),pageCount(filteredItems()))}
+        function resetBuilder(){S.visibleSlots=1;S.compare=[{item:null,mods:{}},{item:null,mods:{}},{item:null,mods:{}}];S.editing=null;S.pending=null}
+        async function fetchItem(id){if(S.cache[id])return S.cache[id];const payload=await api(`/api/v1/items/${id}`);S.cache[id]=payload.data;return payload.data}
+        async function placeItem(id,index){S.compare[index]=ITEM(await fetchItem(id));S.editing=null;S.pending=null}
+        async function handlePick(id){const freeIndex=visibleEntries().findIndex(entry=>!entry.item);if(freeIndex!==-1){await placeItem(id,freeIndex);render();return}S.pending=Number(id);render()}
+        async function replacePending(index){if(S.pending===null)return;await placeItem(S.pending,index);render()}
+        async function loadBuild(id){const payload=await api(`/api/v1/builds/${id}`),grouped=(payload.data.slots??[]).reduce((carry,row)=>{const bucket=carry[row.item_id]??{};bucket[row.slot_key]=row.modifier.id;carry[row.item_id]=bucket;return carry},{}),next=[{item:null,mods:{}},{item:null,mods:{}},{item:null,mods:{}}],buildItems=payload.data.items??[];for(let index=0;index<Math.min(3,buildItems.length);index+=1){const buildItem=buildItems[index],item=await fetchItem(buildItem.item_id);next[index]=ITEM(item,{...(grouped[buildItem.item_id]??{})})}S.compare=next;S.visibleSlots=Math.max(1,Math.min(3,buildItems.length||1));S.editing=null;S.pending=null;render()}
+        async function loadGame(){const game=GAME();if(!game)return;const [itemsPayload,profilesPayload,buildsPayload]=await Promise.all([api(`/api/v1/games/${game.id}/items?per_page=100&sort_by=score&sort_dir=desc`),api(`/api/v1/games/${game.id}/archetypes?per_page=100`),api(`/api/v1/builds?game_id=${game.id}&is_public=true&per_page=20`)]);S.items=itemsPayload.data.data??[];S.profiles=profilesPayload.data.data??[];S.builds=buildsPayload.data.data??[];S.profile=S.profiles[0]?.id??null;S.search='';S.slot=S.items.some(item=>item.slot==='weapon')?'weapon':'all';S.category='all';S.page=1;S.cache={};resetBuilder()}
+        function renderHero(){const game=GAME(),loaded=loadedEntries().length;N.heroCopy.textContent=game?`${game.name} : clique sur une arme pour la charger. Ouvre les slots un par un avec + si tu veux comparer plusieurs builds.`:'Choisis un jeu puis charge des armes depuis le catalogue.';N.heroStats.innerHTML=[['Jeux',S.games.length],['Items',S.items.length],['Slots ouverts',S.visibleSlots],['Armes chargees',loaded]].map(([label,value])=>`<article class="hero-stat"><strong>${E(value)}</strong><span>${E(label)}</span></article>`).join('')}
+        function renderControls(){N.gameList.innerHTML=S.games.map(game=>`<button type="button" class="chip" data-action="game" data-id="${game.id}" aria-pressed="${game.id===S.game}">${E(game.name)}</button>`).join('');N.profile.innerHTML=S.profiles.length?S.profiles.map(profile=>`<option value="${profile.id}" ${profile.id===S.profile?'selected':''}>${E(profile.name)}</option>`).join(''):'<option value="">Aucun archetype</option>';N.builds.innerHTML=S.builds.length?S.builds.map(build=>`<button type="button" class="chip" data-action="build" data-id="${build.id}">${E(build.title)}</button>`).join(''):'<span class="muted">Aucun build public</span>';N.slot.innerHTML=['all',...new Set(S.items.map(item=>item.slot).filter(Boolean))].map(slot=>`<option value="${E(slot)}" ${slot===S.slot?'selected':''}>${E(slot==='all'?'Tous les slots':slot)}</option>`).join('');N.category.innerHTML=[`<button type="button" class="chip" data-action="category" data-id="all" aria-pressed="${S.category==='all'}">Toutes</button>`,...cats().map(category=>{const id=category.slug??String(category.id);return `<button type="button" class="chip" data-action="category" data-id="${E(id)}" aria-pressed="${S.category===id}">${E(category.label)} - ${E(category.count)}</button>`})].join('')}
+        function renderBuilder(){const loaded=loadedEntries().length;N.builderTitle.textContent=`${S.visibleSlots} slot${S.visibleSlots>1?'s':''} actif${S.visibleSlots>1?'s':''}`;N.builderCopy.textContent=loaded>1?'La matrice apparait car au moins deux slots sont charges. Clique sur une arme du builder pour ouvrir les accessoires.':loaded===1?'Clique sur l arme chargee pour ouvrir les accessoires dans une popup.':"Un slot visible au depart. Clique sur + si tu veux ouvrir une comparaison.";N.slots.innerHTML=visibleEntries().map((entry,index)=>{if(!entry.item){const canRemove=S.visibleSlots>1&&index===S.visibleSlots-1;return `<article class="slot-card empty"><div class="slot-top"><span class="slot-number">${index+1}</span>${canRemove?`<div class="slot-actions"><button type="button" class="icon-btn" data-action="remove-slot">Retirer le slot</button></div>`:''}</div><h3>Selection vide</h3><p class="muted">Choisis une arme dans la liste a gauche. Le premier slot vide visible sera utilise automatiquement.</p></article>`}const total=totals(entry),mods=Object.keys(entry.mods).length;return `<article class="slot-card" data-action="edit-slot" data-index="${index}"><div class="slot-top"><span class="slot-number">${index+1}</span><div class="slot-actions"><button type="button" class="icon-btn" data-action="edit-slot" data-index="${index}">Configurer</button><button type="button" class="icon-btn" data-action="clear-slot" data-index="${index}">Retirer</button></div></div><div class="slot-main"><h3>${E(entry.item.name)}</h3><p class="muted" style="margin-top:6px">${E(entry.item.metadata?.bo3?.weapon_class??entry.item.slot)}</p></div><div class="slot-meta"><span class="tag">${E(entry.item.slot)}</span><span class="tag">${mods} accessoire(s)</span>${(entry.item.categories??[]).slice(0,2).map(category=>`<span class="tag">${E(category.label)}</span>`).join('')}</div><div class="stats-grid"><div class="stat-box"><strong>${E(total.score)}</strong><span>Score</span></div><div class="stat-box"><strong>${E(total.attack)}</strong><span>Attack</span></div><div class="stat-box"><strong>${E(total.mobility)}</strong><span>Mobility</span></div></div></article>`}).join('')+(S.visibleSlots<3?`<article class="slot-card add"><span class="slot-number">+</span><h3>Ajouter un slot</h3><p class="muted">Ouvre un slot de plus uniquement quand tu veux comparer.</p><button type="button" class="btn neon" data-action="add-slot">Ajouter</button></article>`:'')}
+        function renderMatrix(){const rows=loadedEntries().map(totals).filter(Boolean);if(rows.length<2){N.matrixPanel.classList.remove('show');N.matrix.innerHTML='';return}const leaders=Object.fromEntries(K.map(key=>[key,Math.max(...rows.map(row=>row[key]))]));N.matrixPanel.classList.add('show');N.matrix.innerHTML=`<div class="table"><table><thead><tr><th>Stat</th>${visibleEntries().map((entry,index)=>`<th>${E(entry.item?.name??`Slot ${index+1}`)}</th>`).join('')}</tr></thead><tbody>${K.map(key=>`<tr><th>${E(L[key])}</th>${visibleEntries().map(entry=>{const row=totals(entry);if(!row)return'<td>-</td>';return `<td class="${row[key]===leaders[key]?'leader':''}">${E(row[key])}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>`}
+        function renderCatalog(){const rows=filteredItems(),pages=pageCount(rows),start=(S.page-1)*S.perPage,end=start+S.perPage,chunk=rows.slice(start,end);N.catalogStatus.textContent=`${rows.length} arme(s)`;N.pageStatus.textContent=`Page ${S.page} / ${pages}`;N.catalog.innerHTML=chunk.length?chunk.map(item=>`<button type="button" class="item-card" data-action="load" data-id="${item.id}"><div class="item-top"><div class="item-title"><strong>${E(item.name)}</strong><span>${E(item.metadata?.bo3?.weapon_class??item.slot)}</span></div><span class="item-hint">Ajouter</span></div><div class="tags"><span class="tag">${E(item.slot)}</span><span class="tag">${E(item.tier_level??'n/a')}</span>${(item.categories??[]).slice(0,2).map(category=>`<span class="tag">${E(category.label)}</span>`).join('')}</div><div class="bars"><div class="bar"><span>Score</span><div class="track"><div class="fill" style="width:${Math.max(0,Math.min(100,M(item.score)))}%"></div></div><strong>${E(item.score??0)}</strong></div><div class="bar"><span>Attack</span><div class="track"><div class="fill" style="width:${Math.max(0,Math.min(100,M(item.attack)))}%"></div></div><strong>${E(item.attack??0)}</strong></div><div class="bar"><span>Mobility</span><div class="track"><div class="fill" style="width:${Math.max(0,Math.min(100,M(item.mobility)))}%"></div></div><strong>${E(item.mobility??0)}</strong></div></div></button>`).join(''):`<article class="slot-card empty"><h3>Aucun resultat</h3><p class="muted">Ajuste la recherche ou les filtres pour elargir la liste.</p></article>`}
+        function renderModals(){const entry=S.editing!==null?S.compare[S.editing]:null,pending=S.pending!==null?S.items.find(item=>item.id===S.pending)||null:null;if(!entry?.item&&!pending){N.modal.innerHTML='';return}if(pending){N.modal.innerHTML=`<div class="modal"><div class="modal-card"><div class="modal-head"><div><span class="pill">Remplacer une arme</span><h2 style="margin-top:10px;font-size:34px;line-height:.95">${E(pending.name)}</h2><p class="muted" style="margin-top:8px">Tous les slots visibles sont occupes. Choisis simplement lequel remplacer.</p></div><div class="modal-actions"><button type="button" class="btn ghost" data-action="close-modal">Annuler</button></div></div><div class="replace-list" style="margin-top:16px">${visibleEntries().map((slot,index)=>`<button type="button" class="replace-btn" data-action="replace-slot" data-index="${index}"><span><strong>Slot ${index+1}</strong><span>${E(slot.item?.name??'Vide')}</span></span><span>Remplacer</span></button>`).join('')}</div></div></div>`;return}const total=totals(entry),itemSlots=entry.item.item_slots??[];N.modal.innerHTML=`<div class="modal"><div class="modal-card"><div class="modal-head"><div><span class="pill">Configuration</span><h2 style="margin-top:10px;font-size:34px;line-height:.95">${E(entry.item.name)}</h2><p class="muted" style="margin-top:8px">${E(entry.item.metadata?.bo3?.weapon_class??entry.item.slot)}</p></div><div class="modal-actions"><button type="button" class="btn ghost" data-action="close-modal">Fermer</button></div></div><div class="modal-grid" style="margin-top:16px"><div class="slot-card"><div class="stats-grid"><div class="stat-box"><strong>${E(total.score)}</strong><span>Score</span></div><div class="stat-box"><strong>${E(total.attack)}</strong><span>Attack</span></div><div class="stat-box"><strong>${E(total.accuracy)}</strong><span>Accuracy</span></div><div class="stat-box"><strong>${E(total.mobility)}</strong><span>Mobility</span></div><div class="stat-box"><strong>${E(total.utility)}</strong><span>Utility</span></div><div class="stat-box"><strong>${E(itemSlots.length)}</strong><span>Slots</span></div></div><div class="slot-meta" style="margin-top:12px"><span class="tag">${E(entry.item.slot)}</span>${(entry.item.categories??[]).slice(0,3).map(category=>`<span class="tag">${E(category.label)}</span>`).join('')}</div></div><div class="accessory-grid">${itemSlots.length?itemSlots.map(slot=>{const selected=String(entry.mods[slot.slot_key]??'');return `<div class="field"><label>${E(slot.slot_label)}</label><select data-action="mod" data-index="${S.editing}" data-slot-key="${E(slot.slot_key)}"><option value="">Aucun accessoire</option>${options(entry,slot).map(modifier=>`<option value="${modifier.id}" ${selected===String(modifier.id)?'selected':''}>${E(modifier.name)}</option>`).join('')}</select></div>`}).join(''):`<div class="slot-card empty"><h3>Aucun slot exploitable</h3><p class="muted">Cet item ne declare pas encore de slots internes utilisables dans le builder.</p></div>`}</div></div></div></div>`}
+        function render(){renderHero();renderControls();renderBuilder();renderMatrix();renderCatalog();renderModals()}
+        document.addEventListener('click',async event=>{const target=event.target.closest('[data-action]');if(!target)return;try{if(target.dataset.action==='game'){if(Number(target.dataset.id)!==S.game){S.game=Number(target.dataset.id);await loadGame()}render();return}if(target.dataset.action==='build'){await loadBuild(Number(target.dataset.id));return}if(target.dataset.action==='category'){S.category=target.dataset.id??'all';S.page=1;render();return}if(target.dataset.action==='load'){await handlePick(Number(target.dataset.id));return}if(target.dataset.action==='add-slot'){S.visibleSlots=Math.min(3,S.visibleSlots+1);render();return}if(target.dataset.action==='remove-slot'){if(S.visibleSlots>1){S.compare[S.visibleSlots-1]={item:null,mods:{}};S.visibleSlots-=1;render()}return}if(target.dataset.action==='clear-slot'){const index=Number(target.dataset.index);S.compare[index]={item:null,mods:{}};if(S.editing===index)S.editing=null;render();return}if(target.dataset.action==='edit-slot'){S.editing=Number(target.dataset.index);render();return}if(target.dataset.action==='replace-slot'){await replacePending(Number(target.dataset.index));return}if(target.dataset.action==='close-modal'){S.editing=null;S.pending=null;render();return}if(target.dataset.action==='page-prev'){setPage(S.page-1);render();return}if(target.dataset.action==='page-next'){setPage(S.page+1);render()}}catch(error){N.builderCopy.textContent=error.message}});
+        document.addEventListener('change',event=>{const target=event.target;if(target===N.profile){S.profile=Number(target.value)||null;render();return}if(target===N.slot){S.slot=target.value;S.page=1;render();return}if(target.matches('[data-action="mod"]')){const index=Number(target.dataset.index),key=target.dataset.slotKey;if(!key||!S.compare[index])return;if(target.value==='')delete S.compare[index].mods[key];else S.compare[index].mods[key]=Number(target.value);render()}});
+        document.addEventListener('keydown',event=>{if(event.key==='Escape'&&(S.editing!==null||S.pending!==null)){S.editing=null;S.pending=null;render()}});
+        N.search.addEventListener('input',event=>{S.search=event.target.value;S.page=1;render()});N.reset.addEventListener('click',()=>{resetBuilder();render()});
+        (async function boot(){try{const payload=await api('/api/v1/games?per_page=20');S.games=payload.data.data??[];S.game=S.games.find(game=>game.slug==='call-of-duty-black-ops-iii')?.id??S.games[0]?.id??null;await loadGame();render()}catch(error){N.heroCopy.textContent='Chargement impossible';N.catalog.innerHTML=`<article class="slot-card empty"><h3>Interface indisponible</h3><p class="muted">${E(error.message)}</p></article>`;N.slots.innerHTML=`<article class="slot-card empty"><h3>API inaccessible</h3><p class="muted">Verifie que l application tourne et que la base a bien ete migree puis seedee.</p></article>`}})();
     </script>
 </body>
 </html>

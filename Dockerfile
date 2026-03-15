@@ -1,4 +1,4 @@
-FROM php:8.3-cli
+FROM php:8.4-fpm-bookworm
 
 WORKDIR /var/www/html
 
@@ -9,13 +9,23 @@ RUN apt-get update \
         libzip-dev \
         libicu-dev \
         libonig-dev \
-    && docker-php-ext-install pdo_mysql intl mbstring zip \
+    && docker-php-ext-install pdo_mysql intl mbstring zip opcache \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
+COPY docker/app/entrypoint.sh /usr/local/bin/app-entrypoint
+
+RUN chmod +x /usr/local/bin/app-entrypoint
+
 COPY . .
 
-EXPOSE 8000
+RUN composer install \
+        --no-dev \
+        --no-interaction \
+        --prefer-dist \
+        --optimize-autoloader \
+    && chown -R www-data:www-data storage bootstrap/cache
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+CMD ["app-entrypoint"]

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ApiHomeController;
 use App\Http\Controllers\Api\BuildController;
 use App\Http\Controllers\Api\BuildProfileController;
 use App\Http\Controllers\Api\EquipmentCompatibilityController;
@@ -20,6 +21,8 @@ Route::pattern('shareToken', '[A-Za-z0-9]+');
 Route::prefix('v1')
     ->middleware('throttle:60,1')
     ->group(function (): void {
+        Route::get('/', ApiHomeController::class);
+
         Route::get('/games', [GameController::class, 'index']);
         Route::get('/games/{id}', [GameController::class, 'show']);
         Route::get('/games/{id}/archetypes', [GameController::class, 'archetypes']);
