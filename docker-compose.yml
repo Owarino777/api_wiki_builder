@@ -20,6 +20,8 @@ services:
       GENERATE_APP_KEY: "true"
       RUN_MIGRATIONS: "true"
       SEED_DATABASE: "false"
+      BOOTSTRAP_BO7_MODE: "${BOOTSTRAP_BO7_MODE:-live}"
+      BOOTSTRAP_BO7_FORCE: "${BOOTSTRAP_BO7_FORCE:-false}"
     volumes:
       - ./:/var/www/html
       - vendor_data:/var/www/html/vendor

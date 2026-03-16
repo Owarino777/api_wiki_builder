@@ -33,6 +33,10 @@ L'IA a été utilisée comme **assistant de développement**, jamais comme gén�
 
 7. **Documentation** : Rédaction du README et de ce document.
 
+8. **Cadrage d'architecture produit/backend** :
+   - formalisation d'une spec complete pour la future feature de creation guidee de jeux par l'utilisateur
+   - proposition d'une ADR et d'un plan de migrations pour separer `draft` et `runtime` sans casser l'API existante
+
 ### Ce qui a été fait manuellement
 
 - Relecture et validation de toutes les modifications

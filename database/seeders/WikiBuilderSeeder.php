@@ -99,28 +99,31 @@ class WikiBuilderSeeder extends Seeder
                 $this->steelHorizonModifiers($steelGameId, $now)
             ));
 
-            DB::table('categories')->insert([
-                ['label' => 'bo3', 'slug' => 'bo3', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'assault-rifle', 'slug' => 'assault-rifle', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'smg', 'slug' => 'smg', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'burst', 'slug' => 'burst', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'precision', 'slug' => 'precision', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'aggressive', 'slug' => 'aggressive', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'high-capacity', 'slug' => 'high-capacity', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'versatile', 'slug' => 'versatile', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'prototype', 'slug' => 'prototype', 'created_at' => $now, 'updated_at' => $now],
-                ['label' => 'shooter', 'slug' => 'shooter', 'created_at' => $now, 'updated_at' => $now],
-            ]);
-
-            $categoryIds = DB::table('categories')->pluck('id', 'label');
+            $bo3CategoryIds = $this->seedCategories($bo3GameId, [
+                'bo3',
+                'assault-rifle',
+                'smg',
+                'burst',
+                'precision',
+                'aggressive',
+                'high-capacity',
+                'versatile',
+            ], $now);
+            $steelCategoryIds = $this->seedCategories($steelGameId, [
+                'prototype',
+                'shooter',
+                'precision',
+                'aggressive',
+                'versatile',
+            ], $now);
             $itemIds = DB::table('items')->pluck('id', 'name');
             $modifierIds = DB::table('modifiers')->pluck('id', 'name');
             $users = DB::table('users')->pluck('id', 'username');
             $profiles = DB::table('archetypes')->pluck('id', 'name');
 
             DB::table('item_categories')->insertOrIgnore(array_merge(
-                $this->blackOpsThreeItemTags($itemIds, $categoryIds),
-                $this->steelHorizonItemTags($steelGameId, $categoryIds)
+                $this->blackOpsThreeItemTags($itemIds, $bo3CategoryIds),
+                $this->steelHorizonItemTags($steelGameId, $steelCategoryIds)
             ));
 
             DB::table('item_modifiers')->insertOrIgnore(array_merge(
@@ -788,6 +791,29 @@ class WikiBuilderSeeder extends Seeder
         }
 
         return $rows;
+    }
+
+    private function seedCategories(int $gameId, array $labels, object $now): Collection
+    {
+        $rows = collect($labels)
+            ->unique()
+            ->map(fn (string $label) => [
+                'game_id' => $gameId,
+                'label' => $label,
+                'slug' => Str::slug($label),
+                'source_type' => 'system',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])
+            ->values()
+            ->all();
+
+        DB::table('categories')->upsert($rows, ['game_id', 'slug'], ['label', 'source_type', 'updated_at']);
+
+        return DB::table('categories')
+            ->where('game_id', $gameId)
+            ->whereIn('label', $labels)
+            ->pluck('id', 'label');
     }
 
     private function blackOpsThreeItemTags(Collection $itemIds, Collection $categoryIds): array

@@ -15,10 +15,16 @@ class TagController extends Controller
     public function index(Request $request)
     {
         $perPage = (int) $request->query('per_page', 15);
-        $categories = Tag::query()
+        $query = Tag::query()
             ->with('items:id,game_id,name,slug,slot,rarity,tier_level,score')
-            ->orderBy('label')
-            ->paginate(max(1, min($perPage, 100)));
+            ->orderBy('game_id')
+            ->orderBy('label');
+
+        if ($request->filled('game_id')) {
+            $query->where('game_id', (int) $request->query('game_id'));
+        }
+
+        $categories = $query->paginate(max(1, min($perPage, 100)));
 
         return ApiResponse::success(TagResource::collection($categories)->response()->getData(true));
     }
@@ -26,6 +32,7 @@ class TagController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'game_id' => ['required', 'integer', 'exists:games,id'],
             'label' => ['required', 'string', 'max:80'],
             'slug' => ['nullable', 'string', 'max:100', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
         ]);
@@ -37,9 +44,22 @@ class TagController extends Controller
         $data = $validator->validated();
         $data['slug'] = $data['slug'] ?? Str::slug($data['label']);
 
-        $exists = Tag::query()->where('slug', $data['slug'])->exists();
+        $exists = Tag::query()
+            ->where('game_id', $data['game_id'])
+            ->where('slug', $data['slug'])
+            ->exists();
+
         if ($exists) {
-            return ApiResponse::error('A category with this slug already exists.', 422);
+            return ApiResponse::error('A category with this slug already exists for the game.', 422);
+        }
+
+        $labelExists = Tag::query()
+            ->where('game_id', $data['game_id'])
+            ->where('label', $data['label'])
+            ->exists();
+
+        if ($labelExists) {
+            return ApiResponse::error('A category with this label already exists for the game.', 422);
         }
 
         $category = Tag::query()->create($data);
@@ -55,6 +75,7 @@ class TagController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
+            'game_id' => ['sometimes', 'integer', 'exists:games,id'],
             'label' => ['sometimes', 'string', 'max:80'],
             'slug' => ['nullable', 'string', 'max:100', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
         ]);
@@ -64,16 +85,29 @@ class TagController extends Controller
         }
 
         $data = $validator->validated();
+        $newGameId = $data['game_id'] ?? $category->game_id;
         $newSlug = $data['slug'] ?? ($data['label'] ?? null ? Str::slug($data['label']) : $category->slug);
+        $newLabel = $data['label'] ?? $category->label;
         $data['slug'] = $newSlug;
 
         $exists = Tag::query()
+            ->where('game_id', $newGameId)
             ->where('slug', $newSlug)
             ->where('id', '!=', $category->id)
             ->exists();
 
         if ($exists) {
-            return ApiResponse::error('A category with this slug already exists.', 422);
+            return ApiResponse::error('A category with this slug already exists for the game.', 422);
+        }
+
+        $labelExists = Tag::query()
+            ->where('game_id', $newGameId)
+            ->where('label', $newLabel)
+            ->where('id', '!=', $category->id)
+            ->exists();
+
+        if ($labelExists) {
+            return ApiResponse::error('A category with this label already exists for the game.', 422);
         }
 
         $category->update($data);

@@ -45,4 +45,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Build::class);
     }
+
+    public function ownedGames(): HasMany
+    {
+        return $this->hasMany(Game::class, 'owner_user_id');
+    }
+
+    public function gameDrafts(): HasMany
+    {
+        return $this->hasMany(GameDraft::class, 'owner_user_id');
+    }
 }

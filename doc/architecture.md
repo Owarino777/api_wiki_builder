@@ -105,3 +105,25 @@ Le projet integre un perimetre RGPD reel :
 - suppression utilisateur
 
 Les donnees personnelles sont stockees dans `users` de maniere volontaire pour l'evaluation pedagogique.
+
+## 9. Extension prevue - Jeux utilisateur
+
+La creation de jeux par l'utilisateur ne doit pas ecrire directement dans le runtime existant.
+
+La cible retenue pour cette extension est :
+
+- creation guidee dans un schema `draft`
+- validation backend forte par etape
+- publication transactionnelle vers le runtime
+- jeux utilisateur prives par defaut en V1
+- ownership derive du contexte d'auth
+
+Documents de reference pour cette extension :
+
+- `doc/spec_ajout_jeux_utilisateur.md`
+- `doc/adr_001_jeux_utilisateur_draft_runtime.md`
+- `doc/plan_migrations_jeux_utilisateur.md`
+
+Point d'attention important :
+
+- `categories` devra evoluer vers un scope par jeu pour eviter les collisions entre datasets utilisateurs.

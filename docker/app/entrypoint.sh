@@ -58,6 +58,14 @@ if [ "${SEED_DATABASE:-false}" = "true" ]; then
     php artisan db:seed --force --no-interaction
 fi
 
+if [ "${BOOTSTRAP_BO7_MODE:-skip}" != "skip" ]; then
+    if [ "${BOOTSTRAP_BO7_FORCE:-false}" = "true" ]; then
+        php artisan bo7:ensure-data "--mode=${BOOTSTRAP_BO7_MODE}" --force --no-interaction
+    else
+        php artisan bo7:ensure-data "--mode=${BOOTSTRAP_BO7_MODE}" --no-interaction
+    fi
+fi
+
 if [ "${APP_ENV:-production}" = "production" ]; then
     php artisan config:cache
     php artisan route:cache

@@ -1,86 +1,186 @@
 # Wiki Builder API
 
-## Démarrage rapide
+## Lancer le projet
 
 ```powershell
 Copy-Item .env.example .env
-```
-
-Crée la configuration locale.
-
-```bash
 docker compose up -d --build
 ```
 
-Construit les images, démarre `db`, `app`, `web`, génère la clé Laravel (si nécessaire) et exécute les migrations.
+Ce que fait `docker compose up -d --build` :
+- build l'image PHP
+- démarre `db`, `app`, `web`
+- génère `APP_KEY` si besoin
+- lance les migrations
+- garantit un dataset BO7 au démarrage
 
-```bash
+Par défaut, Docker démarre avec :
+- `BOOTSTRAP_BO7_MODE=live`
+- si CODMunity répond : import BO7 complet
+- si CODMunity ne répond pas : fallback BO7 offline
+- si un dataset BO7 live existe déjà : il n'est pas écrasé
+
+## URLs
+
+- `http://localhost:8000` : interface web intégrée
+- `http://localhost:8000/api/v1` : API JSON
+- `http://localhost:8000/up` : healthcheck Laravel
+
+## Front
+
+Il n'y a pas de front séparé à installer.
+
+Le front de démo est intégré dans Laravel :
+- route web : [routes/web.php](c:/Users/malik/M1_DFS_2025_2026/DEV/api_wiki_builder/routes/web.php)
+- controller : [HomeController.php](c:/Users/malik/M1_DFS_2025_2026/DEV/api_wiki_builder/app/Http/Controllers/HomeController.php)
+- vue : [welcome.blade.php](c:/Users/malik/M1_DFS_2025_2026/DEV/api_wiki_builder/resources/views/welcome.blade.php)
+
+Donc :
+- pas de `npm install`
+- pas de `npm run dev`
+- pas de front React/Vue séparé
+- tu ouvres juste `http://localhost:8000`
+
+## Données
+
+### Dataset minimal garanti au démarrage Docker
+
+```powershell
+docker compose up -d --build
+```
+
+Au premier démarrage ou si BO7 est absent :
+- mode `live` : tentative d'import complet CODMunity
+- si échec réseau/TLS : BO7 offline chargé automatiquement
+
+### Dataset de démonstration complet
+
+```powershell
 docker compose exec app php artisan db:seed --force
 ```
 
-Charge les données de démonstration :
-- jeux
-- items
-- modifiers
-- catégories
-- builds
-- dataset BO7 offline
-- utilisateur admin
+Ce que ça charge :
+- jeux BO3 + Steel Horizon
+- utilisateur admin + utilisateur standard
 - clé API de démo
+- catégories, items, modifiers, builds
+- BO7 offline
 
-## URLs utiles
+Attention :
+- `db:seed --force` remet BO7 sur le dataset offline de démo
+- si tu avais un BO7 complet importé depuis CODMunity, il sera remplacé
 
-- `http://localhost:8000` : interface web
-- `http://localhost:8000/api/v1` : racine API JSON
-- `http://localhost:8000/up` : healthcheck Laravel
+### Restaurer ou garantir le vrai dataset BO7
 
-## Commandes utiles
-
-```bash
-docker compose exec app php vendor/bin/pest
+```powershell
+docker compose exec app php artisan bo7:ensure-data --mode=live
 ```
 
-Exécute les tests (PHP 8.4 dans le conteneur).
+Ce que fait cette commande :
+- si BO7 live existe déjà : ne fait rien
+- si BO7 est absent : importe le dataset live
+- si BO7 est retombé sur l'offline : tente de remettre le live
+- si CODMunity ne répond pas : recharge l'offline au lieu de casser
 
-```bash
-docker compose exec app php artisan migrate --force
+### Forcer le rechargement BO7
+
+```powershell
+docker compose exec app php artisan bo7:ensure-data --mode=live --force
 ```
 
-Relance les migrations sans reset.
+### Import strict CODMunity
 
-```bash
-docker compose exec app php artisan codmunity:import-bo7 --fresh
-```
-
-Import BO7 avec fallback automatique vers le dataset offline si CODMunity est indisponible.
-
-```bash
+```powershell
 docker compose exec app php artisan codmunity:import-bo7 --fresh --strict
 ```
 
-Import BO7 strict : échec explicite si CODMunity est indisponible.
+À utiliser si tu veux un échec explicite au lieu d'un fallback offline.
 
-```bash
+## Réseau école / erreur TLS
+
+Si tu vois :
+
+```text
+cURL error 35: OpenSSL SSL_connect: SSL_ERROR_SYSCALL
+```
+
+Le problème vient du réseau vers `codmunity.gg`, pas du projet.
+
+Dans ce cas :
+- utilise `bo7:ensure-data --mode=live` pour garder un fallback sûr
+- ou passe sur un autre réseau / partage de connexion
+- si le réseau est lent mais pas bloqué, augmente `CODMUNITY_REQUEST_TIMEOUT` dans `.env`
+
+## Import déjà en cours
+
+Si tu relances un import BO7 alors que Docker est encore en train d'exécuter le bootstrap BO7 au démarrage, la commande répond maintenant proprement au lieu de provoquer un lock MySQL.
+
+Message attendu :
+
+```text
+A BO7 dataset import is already running. Wait for it to finish before launching another one.
+```
+
+Dans ce cas :
+- attends la fin du démarrage du conteneur `app`
+- puis relance la commande
+
+## Commandes utiles
+
+```powershell
+docker compose exec app php artisan migrate --force
+docker compose exec app php artisan db:seed --force
+docker compose exec app php artisan bo7:ensure-data --mode=live
+docker compose exec app php artisan bo7:ensure-data --mode=offline --force
+docker compose exec app php artisan codmunity:import-bo7 --fresh --strict
+docker compose exec app php artisan categories:backfill-game-scope --dry-run
 docker compose logs -f app
 docker compose down
 docker compose down -v
 ```
 
-Logs, arrêt des conteneurs, puis arrêt + suppression des volumes.
+## Variables Docker BO7
+
+Dans `.env` local :
+
+```dotenv
+BOOTSTRAP_BO7_MODE=live
+BOOTSTRAP_BO7_FORCE=false
+CODMUNITY_REQUEST_TIMEOUT=120
+CODMUNITY_CONNECT_TIMEOUT=15
+CODMUNITY_RETRY_ATTEMPTS=3
+CODMUNITY_RETRY_SLEEP_MS=500
+```
+
+Valeurs possibles pour `BOOTSTRAP_BO7_MODE` :
+- `live` : import live si absent ou si BO7 est en offline, sinon ne touche à rien
+- `live-strict` : import live obligatoire, échec si CODMunity est inaccessible
+- `offline` : garantit seulement le dataset offline
+- `skip` : ne fait rien au démarrage
+
+`BOOTSTRAP_BO7_FORCE=true` :
+- force un refresh BO7 au démarrage
+- à éviter en local si tu veux conserver un import déjà fait
+
+Variables CODMunity :
+- `CODMUNITY_REQUEST_TIMEOUT` : timeout total HTTP, utile si le payload `attachments-data` est lent
+- `CODMUNITY_CONNECT_TIMEOUT` : timeout de connexion initiale
+- `CODMUNITY_RETRY_ATTEMPTS` : nombre de tentatives
+- `CODMUNITY_RETRY_SLEEP_MS` : pause entre tentatives
 
 ## Exemples API
 
-```bash
-curl http://localhost:8000/api/v1
+```powershell
+curl.exe http://localhost:8000/api/v1
 ```
 
-Affiche la racine API.
-
-```bash
-curl "http://localhost:8000/api/v1/games/1/items?per_page=20&sort_by=score&sort_dir=desc"
+```powershell
+curl.exe "http://localhost:8000/api/v1/games"
 ```
 
-Liste les items du jeu `1`.
+```powershell
+curl.exe "http://localhost:8000/api/v1/categories?game_id=1"
+```
 
 ```powershell
 curl.exe -X POST http://localhost:8000/api/v1/builds `
@@ -89,33 +189,9 @@ curl.exe -X POST http://localhost:8000/api/v1/builds `
   -d "{\"game_id\":1,\"title\":\"BO3 Flex\",\"items\":[{\"item_id\":1,\"position\":1}]}"
 ```
 
-Crée un build de test.
+## À retenir
 
-## Important
-
-- Ne pas utiliser `php artisan ...` directement sur Windows si PHP local n’est pas en `8.4`.
-- Le projet requiert PHP `^8.4` : utiliser Docker pour l’app, les migrations et les tests.
-
-## Workflow BO7 recommandé
-
-### Démo stable (sans dépendance réseau)
-
-```bash
-docker compose exec app php artisan db:seed --force
-```
-
-### Dataset BO7 complet (réseau requis)
-
-```bash
-docker compose exec app php artisan codmunity:import-bo7 --fresh --strict
-```
-
-Si erreur `cURL error 35`, vérifier l’accès à `codmunity.gg` / `api.codmunity.gg` ou changer de réseau (ex. partage 4G/5G).
-
-### Mode tolérant (fallback offline automatique)
-
-```bash
-docker compose exec app php artisan codmunity:import-bo7 --fresh
-```
-
-Après un import BO7 complet réussi, ne pas relancer `db:seed --force` pour éviter d’écraser les données importées.
+- pour démarrer vite : `docker compose up -d --build`
+- pour avoir tout le dataset de démo : `php artisan db:seed --force`
+- si `db:seed` a remplacé ton vrai BO7 : `php artisan bo7:ensure-data --mode=live`
+- pour voir l'interface : `http://localhost:8000`

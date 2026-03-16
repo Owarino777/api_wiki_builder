@@ -173,12 +173,12 @@ class CodmunityBo7Importer
                 $slotMap = $this->syncItemSlots($item, $slotLabels);
 
                 $tagIdList = [
-                    $this->firstOrCreateTagId($tagIds, 'bo7'),
-                    $this->firstOrCreateTagId($tagIds, $this->normalizeTagLabel($weapon['Category'] ?? 'weapon')),
+                    $this->firstOrCreateTagId($tagIds, $game->id, 'bo7'),
+                    $this->firstOrCreateTagId($tagIds, $game->id, $this->normalizeTagLabel($weapon['Category'] ?? 'weapon')),
                 ];
 
                 foreach ($playstyles as $playstyle) {
-                    $tagIdList[] = $this->firstOrCreateTagId($tagIds, $this->normalizeTagLabel($playstyle));
+                    $tagIdList[] = $this->firstOrCreateTagId($tagIds, $game->id, $this->normalizeTagLabel($playstyle));
                 }
 
                 $item->categories()->syncWithoutDetaching(array_values(array_unique($tagIdList)));
@@ -245,7 +245,7 @@ class CodmunityBo7Importer
                 'modifiers' => EquipmentModifier::query()->where('game_id', $game->id)->count(),
                 'builds' => $withBuilds ? Build::query()->where('game_id', $game->id)->count() : 0,
                 'profiles' => BuildProfile::query()->where('game_id', $game->id)->count(),
-                'categories' => Tag::query()->count(),
+                'categories' => Tag::query()->where('game_id', $game->id)->count(),
                 'processed_modifier_links' => $modifierCount,
                 'processed_build_links' => $buildCount,
                 'skipped_build_imports' => $skippedBuildImports,
@@ -259,14 +259,15 @@ class CodmunityBo7Importer
         EquipmentItem::query()->where('game_id', $gameId)->delete();
         EquipmentModifier::query()->where('game_id', $gameId)->delete();
         BuildProfile::query()->where('game_id', $gameId)->delete();
+        Tag::query()->where('game_id', $gameId)->delete();
     }
 
     private function getJson(string $url): array
     {
         $response = $this->httpClient()
-            ->timeout(30)
-            ->connectTimeout(10)
-            ->retry(3, 300)
+            ->timeout($this->requestTimeout())
+            ->connectTimeout($this->connectTimeout())
+            ->retry($this->retryAttempts(), $this->retrySleepMilliseconds())
             ->get($url)
             ->throw();
 
@@ -293,6 +294,26 @@ class CodmunityBo7Importer
                 'verify' => true,
                 'curl' => $curlOptions,
             ]);
+    }
+
+    private function requestTimeout(): int
+    {
+        return max(30, (int) env('CODMUNITY_REQUEST_TIMEOUT', 120));
+    }
+
+    private function connectTimeout(): int
+    {
+        return max(5, (int) env('CODMUNITY_CONNECT_TIMEOUT', 15));
+    }
+
+    private function retryAttempts(): int
+    {
+        return max(1, (int) env('CODMUNITY_RETRY_ATTEMPTS', 3));
+    }
+
+    private function retrySleepMilliseconds(): int
+    {
+        return max(0, (int) env('CODMUNITY_RETRY_SLEEP_MS', 500));
     }
 
     private function safeGetJson(string $url): ?array
@@ -353,20 +374,27 @@ class CodmunityBo7Importer
         return $slotMap;
     }
 
-    private function firstOrCreateTagId(array &$cache, string $label): int
+    private function firstOrCreateTagId(array &$cache, int $gameId, string $label): int
     {
         $slug = $this->normalizeTagSlug($label);
+        $cacheKey = $gameId.'|'.$slug;
 
-        if (isset($cache[$slug])) {
-            return $cache[$slug];
+        if (isset($cache[$cacheKey])) {
+            return $cache[$cacheKey];
         }
 
         $tag = Tag::query()->firstOrCreate(
-            ['slug' => $slug],
-            ['label' => $label]
+            [
+                'game_id' => $gameId,
+                'slug' => $slug,
+            ],
+            [
+                'label' => $label,
+                'source_type' => 'system',
+            ]
         );
 
-        return $cache[$slug] = (int) $tag->id;
+        return $cache[$cacheKey] = (int) $tag->id;
     }
 
     private function upsertModifier(

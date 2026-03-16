@@ -41,12 +41,14 @@ class Bo7OfflineSeeder extends Seeder
 
             DB::table('categories')->upsert(
                 array_map(fn (array $category) => [
+                    'game_id' => $gameId,
                     ...$category,
+                    'source_type' => 'system',
                     'created_at' => $now,
                     'updated_at' => $now,
                 ], $categories),
-                ['slug'],
-                ['label', 'updated_at']
+                ['game_id', 'slug'],
+                ['label', 'source_type', 'updated_at']
             );
 
             $weapons = [
@@ -320,6 +322,7 @@ class Bo7OfflineSeeder extends Seeder
                 ->value('id');
 
             $categoryIds = DB::table('categories')
+                ->where('game_id', $gameId)
                 ->whereIn('slug', array_column($categories, 'slug'))
                 ->pluck('id', 'slug');
 
@@ -516,6 +519,7 @@ class Bo7OfflineSeeder extends Seeder
         DB::table('items')->where('game_id', $gameId)->delete();
         DB::table('modifiers')->where('game_id', $gameId)->delete();
         DB::table('archetypes')->where('game_id', $gameId)->delete();
+        DB::table('categories')->where('game_id', $gameId)->delete();
     }
 
     private function validateFixtures(array $weapons): void
