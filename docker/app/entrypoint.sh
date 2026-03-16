@@ -43,6 +43,13 @@ if ! has_app_key; then
     fi
 fi
 
+# In local/dev, clear cached package/provider manifests before running artisan commands.
+# This avoids boot failures when cached manifests reference unavailable packages.
+if [ "${APP_ENV:-production}" != "production" ]; then
+    rm -f bootstrap/cache/*.php || true
+    php artisan optimize:clear || true
+fi
+
 if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
     php artisan migrate --force --no-interaction
 fi

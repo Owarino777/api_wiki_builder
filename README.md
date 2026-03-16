@@ -1,145 +1,117 @@
 # Wiki Builder API
 
-API REST Laravel 12 pour un wiki builder multi-jeux.
+## Commandes de base
 
-Le projet couvre trois besoins clairs :
-- exposer un catalogue de jeux, items, modifiers et categories
-- retourner le detail complet d un item avec ses slots et ses compatibilites
-- permettre de composer, resumer et comparer des builds
+`Copy-Item .env.example .env`
 
-## Entrees utiles
+Crée le fichier de config local.
 
-- racine web : `/`
-- root API JSON : `/api/v1`
-- healthcheck Laravel : `/up`
+`docker compose up -d --build`
 
-La racine web sert de vitrine fonctionnelle : choix du jeu, filtre du catalogue, chargement de 1 a 3 armes, selection des modifiers par slot et lecture rapide des ecarts de stats.
+Construit l'image, démarre `db`, `app`, `web`, génère la clé Laravel si besoin et lance les migrations.
 
-## Docker local
+`docker compose exec app php artisan db:seed --force`
 
-1. `copy .env.example .env`
-2. `docker compose up -d --build`
-3. `docker compose exec app php artisan db:seed --force`
+Charge les données de démo :
+- jeux
+- items
+- modifiers
+- categories
+- builds
+- BO7 hors ligne
+- utilisateur admin
+- clé API de démo
 
-Notes :
-- la cle app est generee automatiquement si `.env` existe et que `APP_KEY` est vide
-- les migrations tournent au boot en local
-- la base n est plus detruite a chaque redemarrage
-- le port expose est `http://localhost:8000`
-- l image Docker utilise PHP 8.4
+## URLs à ouvrir
 
-## Import BO7
+`http://localhost:8000`
 
-Pour importer Black Ops 7 depuis l API publique CODMunity :
+Interface web du builder.
 
-```bash
-php artisan codmunity:import-bo7 --fresh
-```
+`http://localhost:8000/api/v1`
 
-Notes :
-- importe les armes, slots, attachments compatibles et builds publics BO7
-- stocke les URLs d images distantes dans les metadatas
-- `--skip-builds` importe seulement le catalogue
-- `--limit=5` permet un test rapide
+Racine JSON de l'API.
 
-## Docker prod
+`http://localhost:8000/up`
 
-Prerequis :
-- Docker Desktop demarre sur Windows ou macOS
-- Docker Engine actif sur Linux
-- le port `80` doit etre libre
-- verifier `.env.production` avant le premier lancement, au minimum :
-  `APP_URL`
-  `DB_DATABASE`
-  `DB_USERNAME`
+Healthcheck Laravel.
 
-Fichiers attendus apres preparation :
-- `.env.production`
-- `docker/secrets/app_key`
-- `docker/secrets/db_password`
-- `docker/secrets/db_root_password`
+## Commandes utiles
 
-### Windows PowerShell
+`docker compose exec app php vendor/bin/pest`
+
+Lance les tests dans le conteneur PHP 8.4.
+
+`docker compose exec app php artisan migrate --force`
+
+Relance les migrations sans reset.
+
+`docker compose exec app php artisan codmunity:import-bo7 --fresh`
+
+Tente l'import complet BO7 depuis CODMunity. Si CODMunity est indisponible ou si le TLS plante, la commande ne casse plus et recharge automatiquement le dataset offline BO7.
+
+`docker compose exec app php artisan codmunity:import-bo7 --fresh --strict`
+
+Import BO7 en mode strict : échoue avec code erreur si CODMunity est indisponible.
+
+`docker compose logs -f app`
+
+Affiche les logs Laravel / PHP.
+
+`docker compose down`
+
+Arrête les conteneurs.
+
+`docker compose down -v`
+
+Arrête les conteneurs et supprime les volumes Docker, donc la base locale.
+
+## Commandes de démo API
+
+`curl http://localhost:8000/api/v1`
+
+Affiche la racine API et les endpoints utiles.
+
+`curl "http://localhost:8000/api/v1/games/1/items?per_page=20&sort_by=score&sort_dir=desc"`
+
+Liste les items du jeu `1`.
 
 ```powershell
-Copy-Item .env.production.example .env.production -Force
-notepad .env.production
-$appKey = "base64:" + [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
-$dbPassword = -join ((48..57 + 65..90 + 97..122) | Get-Random -Count 24 | ForEach-Object { [char]$_ })
-$dbRootPassword = -join ((48..57 + 65..90 + 97..122) | Get-Random -Count 24 | ForEach-Object { [char]$_ })
-Set-Content docker/secrets/app_key $appKey
-Set-Content docker/secrets/db_password $dbPassword
-Set-Content docker/secrets/db_root_password $dbRootPassword
-docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
-docker compose --env-file .env.production -f docker-compose.prod.yml exec app php artisan migrate --force
-docker compose --env-file .env.production -f docker-compose.prod.yml exec app php artisan db:seed --force
-```
-
-### macOS / Linux
-
-```bash
-cp .env.production.example .env.production
-nano .env.production
-openssl rand -base64 32 | sed 's/^/base64:/' > docker/secrets/app_key
-openssl rand -base64 24 > docker/secrets/db_password
-openssl rand -base64 24 > docker/secrets/db_root_password
-docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
-docker compose --env-file .env.production -f docker-compose.prod.yml exec app php artisan migrate --force
-docker compose --env-file .env.production -f docker-compose.prod.yml exec app php artisan db:seed --force
-```
-
-Important :
-- remplir `.env.production` avant `docker compose ... up -d --build`
-- les 3 fichiers dans `docker/secrets/` sont generes localement
-- ne commit jamais les secrets reels
-- `db:seed --force` est utile pour charger le dataset de demo du builder
-
-Notes :
-- `APP_DEBUG=false`
-- pas de `key:generate` automatique
-- pas de `migrate:fresh`
-- Nginx sert `public/` et passe PHP a `php-fpm`
-- les secrets ne sont pas commits
-- l image Docker utilise PHP 8.4
-
-## API
-
-Public :
-- `GET /api/v1`
-- `GET /api/v1/games`
-- `GET /api/v1/games/{id}/archetypes`
-- `GET /api/v1/games/{id}/items`
-- `GET /api/v1/items/{id}`
-- `GET /api/v1/builds`
-- `GET /api/v1/builds/{id}/summary`
-- `POST /api/v1/builds/compare`
-
-Protege :
-- header ecriture : `API-KEY`
-- header admin : `X-USER-ID`
-
-Exemple lecture :
-
-```bash
-curl http://localhost:8000/api/v1
-curl "http://localhost:8000/api/v1/games/1/items?per_page=20&sort_by=score&sort_dir=desc"
-```
-
-Exemple creation de build :
-
-```bash
-curl -X POST http://localhost:8000/api/v1/builds \
-  -H "Content-Type: application/json" \
-  -H "API-KEY: dev-wiki-builder-key-1234567890abcdef" \
+curl.exe -X POST http://localhost:8000/api/v1/builds `
+  -H "Content-Type: application/json" `
+  -H "API-KEY: dev-wiki-builder-key-1234567890abcdef" `
   -d "{\"game_id\":1,\"title\":\"BO3 Flex\",\"items\":[{\"item_id\":1,\"position\":1}]}"
 ```
 
-## Coherence projet
+Crée un build de test.
 
-Le projet reste bien aligne avec un objectif de builder :
-- le modele est data-driven par jeu
-- les slots internes vivent dans `item_slots`
-- les compatibilites vivent dans `item_modifiers`
-- les equips reels d un build vivent dans `build_slots`
+## Important
 
-Le schema detaille reste dans [doc/architecture_modifications.md](/c:/Users/malik/Dev/api_wiki_builder/doc/architecture_modifications.md).
+N'utilise pas `php artisan ...` directement sur ton Windows si ton PHP local n'est pas en `8.4`.
+
+Le projet demande PHP `^8.4`, donc passe par Docker pour lancer l'app, les migrations et les tests.
+
+Pour BO7 :
+- `docker compose exec app php artisan db:seed --force` charge le dataset offline de démo
+- `docker compose exec app php artisan codmunity:import-bo7 --fresh` tente l'import complet en ligne avec fallback offline automatique
+- `docker compose exec app php artisan codmunity:import-bo7 --fresh --strict` force un vrai échec si l'import réseau ne passe pas
+
+## Workflow BO7 recommandé
+
+Pour une démo garantie :
+- `docker compose exec app php artisan db:seed --force`
+
+Pour récupérer le vrai dataset BO7 complet :
+- `docker compose exec app php artisan codmunity:import-bo7 --fresh --strict`
+
+Si `--strict` échoue avec `cURL error 35` :
+- le réseau bloque probablement `codmunity.gg` ou `api.codmunity.gg`
+- essaie un autre réseau, par exemple un partage de connexion 4G/5G
+
+Si tu veux une démo qui ne casse jamais, même sans réseau :
+- `docker compose exec app php artisan codmunity:import-bo7 --fresh`
+- cette commande bascule automatiquement sur le dataset offline BO7 si CODMunity est inaccessible
+
+Important après un import complet BO7 réussi :
+- ne relance pas `docker compose exec app php artisan db:seed --force`
+- sinon tu remplaces le dataset BO7 complet par le dataset offline de démo

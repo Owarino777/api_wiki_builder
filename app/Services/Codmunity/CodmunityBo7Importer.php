@@ -13,6 +13,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -262,13 +263,36 @@ class CodmunityBo7Importer
 
     private function getJson(string $url): array
     {
-        $response = Http::acceptJson()
+        $response = $this->httpClient()
             ->timeout(30)
+            ->connectTimeout(10)
             ->retry(3, 300)
             ->get($url)
             ->throw();
 
         return $response->json();
+    }
+
+    private function httpClient(): PendingRequest
+    {
+        $curlOptions = [];
+
+        if (defined('CURLOPT_IPRESOLVE') && defined('CURL_IPRESOLVE_V4')) {
+            $curlOptions[CURLOPT_IPRESOLVE] = CURL_IPRESOLVE_V4;
+        }
+
+        if (defined('CURLOPT_HTTP_VERSION') && defined('CURL_HTTP_VERSION_1_1')) {
+            $curlOptions[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_1_1;
+        }
+
+        return Http::acceptJson()
+            ->withHeaders([
+                'User-Agent' => 'api_wiki_builder/bo7-importer',
+            ])
+            ->withOptions([
+                'verify' => true,
+                'curl' => $curlOptions,
+            ]);
     }
 
     private function safeGetJson(string $url): ?array

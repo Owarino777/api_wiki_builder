@@ -10,6 +10,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             WikiBuilderSeeder::class,
+            Bo7OfflineSeeder::class,
         ]);
     }
 }

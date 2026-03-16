@@ -232,3 +232,28 @@ it('imports bo7 weapons, modifiers, slots and builds from codmunity endpoints', 
         ->where('item_id', $item->id)
         ->count())->toBe(2);
 });
+
+it('falls back to the offline bo7 dataset when codmunity is unavailable', function (): void {
+    Http::fake(fn () => Http::failedConnection());
+
+    $exitCode = Artisan::call('codmunity:import-bo7', ['--fresh' => true]);
+
+    expect($exitCode)->toBe(0);
+
+    $gameId = DB::table('games')
+        ->where('slug', 'call-of-duty-black-ops-7')
+        ->value('id');
+
+    expect($gameId)->not->toBeNull();
+
+    expect(DB::table('items')
+        ->where('game_id', $gameId)
+        ->count())->toBeGreaterThanOrEqual(3);
+
+    expect(DB::table('builds')
+        ->where('game_id', $gameId)
+        ->where('is_public', true)
+        ->count())->toBeGreaterThanOrEqual(3);
+
+    expect(Artisan::output())->toContain('offline BO7 dataset was loaded instead');
+});
