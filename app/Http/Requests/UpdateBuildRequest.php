@@ -8,7 +8,6 @@ class UpdateBuildRequest extends ApiFormRequest
     {
         return [
             'game_id' => ['sometimes', 'integer', 'exists:games,id'],
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'archetype_id' => ['nullable', 'integer', 'exists:archetypes,id'],
             'title' => ['sometimes', 'string', 'max:140'],
             'description' => ['nullable', 'string'],

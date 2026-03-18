@@ -8,6 +8,12 @@ use App\Http\Controllers\Api\EquipmentItemController;
 use App\Http\Controllers\Api\EquipmentItemTagController;
 use App\Http\Controllers\Api\EquipmentModifierController;
 use App\Http\Controllers\Api\GameController;
+use App\Http\Controllers\Api\GameDrafts\GameCategoryController;
+use App\Http\Controllers\Api\GameDrafts\GameDraftArchetypeController;
+use App\Http\Controllers\Api\GameDrafts\GameDraftCategoryController;
+use App\Http\Controllers\Api\GameDrafts\GameDraftController;
+use App\Http\Controllers\Api\GameDrafts\GameDraftItemController;
+use App\Http\Controllers\Api\GameDrafts\GameDraftModifierController;
 use App\Http\Controllers\Api\RgpdController;
 use App\Http\Controllers\Api\TagController;
 use Illuminate\Support\Facades\Route;
@@ -17,11 +23,18 @@ Route::pattern('itemId', '[0-9]+');
 Route::pattern('modifierId', '[0-9]+');
 Route::pattern('categoryId', '[0-9]+');
 Route::pattern('shareToken', '[A-Za-z0-9]+');
+Route::pattern('key', '[A-Za-z0-9_-]+');
+Route::pattern('archetypeId', '[0-9]+');
+Route::pattern('draftCategoryId', '[0-9]+');
+Route::pattern('draftItemId', '[0-9]+');
+Route::pattern('draftModifierId', '[0-9]+');
 
 Route::prefix('v1')
-    ->middleware('throttle:60,1')
+    ->middleware(['throttle:60,1', 'resolve.request.user'])
     ->group(function (): void {
         Route::get('/', ApiHomeController::class);
+        Route::get('/game-categories', [GameCategoryController::class, 'index']);
+        Route::get('/game-categories/{key}', [GameCategoryController::class, 'show']);
 
         Route::get('/games', [GameController::class, 'index']);
         Route::get('/games/{id}', [GameController::class, 'show']);
@@ -40,7 +53,38 @@ Route::prefix('v1')
         Route::get('/builds/share/{shareToken}', [BuildController::class, 'share']);
         Route::post('/builds/compare', [BuildController::class, 'compare']);
 
-        Route::middleware('check.api.key')->group(function (): void {
+        Route::middleware(['check.api.key', 'require.request.user'])->group(function (): void {
+            Route::get('/my/games', [GameController::class, 'myIndex']);
+            Route::get('/my/games/{id}', [GameController::class, 'myShow']);
+
+            Route::get('/game-drafts', [GameDraftController::class, 'index']);
+            Route::post('/game-drafts', [GameDraftController::class, 'store']);
+            Route::get('/game-drafts/{id}', [GameDraftController::class, 'show']);
+            Route::delete('/game-drafts/{id}', [GameDraftController::class, 'destroy']);
+            Route::patch('/game-drafts/{id}/foundation', [GameDraftController::class, 'foundation']);
+            Route::patch('/game-drafts/{id}/structure', [GameDraftController::class, 'structure']);
+            Route::post('/game-drafts/{id}/publish', [GameDraftController::class, 'publish']);
+
+            Route::get('/game-drafts/{id}/archetypes', [GameDraftArchetypeController::class, 'index']);
+            Route::post('/game-drafts/{id}/archetypes', [GameDraftArchetypeController::class, 'store']);
+            Route::put('/game-drafts/{id}/archetypes/{archetypeId}', [GameDraftArchetypeController::class, 'update']);
+            Route::delete('/game-drafts/{id}/archetypes/{archetypeId}', [GameDraftArchetypeController::class, 'destroy']);
+
+            Route::get('/game-drafts/{id}/categories', [GameDraftCategoryController::class, 'index']);
+            Route::post('/game-drafts/{id}/categories', [GameDraftCategoryController::class, 'store']);
+            Route::put('/game-drafts/{id}/categories/{categoryId}', [GameDraftCategoryController::class, 'update']);
+            Route::delete('/game-drafts/{id}/categories/{categoryId}', [GameDraftCategoryController::class, 'destroy']);
+
+            Route::get('/game-drafts/{id}/items', [GameDraftItemController::class, 'index']);
+            Route::post('/game-drafts/{id}/items', [GameDraftItemController::class, 'store']);
+            Route::put('/game-drafts/{id}/items/{itemId}', [GameDraftItemController::class, 'update']);
+            Route::delete('/game-drafts/{id}/items/{itemId}', [GameDraftItemController::class, 'destroy']);
+
+            Route::get('/game-drafts/{id}/modifiers', [GameDraftModifierController::class, 'index']);
+            Route::post('/game-drafts/{id}/modifiers', [GameDraftModifierController::class, 'store']);
+            Route::put('/game-drafts/{id}/modifiers/{modifierId}', [GameDraftModifierController::class, 'update']);
+            Route::delete('/game-drafts/{id}/modifiers/{modifierId}', [GameDraftModifierController::class, 'destroy']);
+
             Route::post('/builds', [BuildController::class, 'store']);
             Route::put('/builds/{id}', [BuildController::class, 'update']);
             Route::delete('/builds/{id}', [BuildController::class, 'destroy']);

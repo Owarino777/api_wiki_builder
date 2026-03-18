@@ -2,6 +2,8 @@
 
 use App\Http\Middleware\CheckApiKey;
 use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\RequireRequestUser;
+use App\Http\Middleware\ResolveRequestUser;
 use App\Support\ApiResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'check.api.key' => CheckApiKey::class,
             'check.role' => CheckRole::class,
+            'resolve.request.user' => ResolveRequestUser::class,
+            'require.request.user' => RequireRequestUser::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

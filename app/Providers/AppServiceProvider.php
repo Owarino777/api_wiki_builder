@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Support\RequestUserHeader;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -17,8 +19,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('api', function (Request $request) {
+            $requestUser = $request->attributes->get('request_user');
+
             return Limit::perMinute(60)->by(
-                $request->header('X-USER-ID') ?? $request->ip()
+                ($request->user()?->id)
+                ?? ($requestUser instanceof User ? $requestUser->id : null)
+                ?? RequestUserHeader::extractUserId($request)
+                ?? $request->ip()
             );
         });
     }

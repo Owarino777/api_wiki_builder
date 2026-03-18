@@ -135,11 +135,30 @@ it('rejects admin routes without an admin user header', function (): void {
             'rarity' => 'rare',
             'score' => 55,
         ],
-        ['API-KEY' => 'dev-wiki-builder-key-1234567890abcdef']
+        [
+            'API-KEY' => 'dev-wiki-builder-key-1234567890abcdef',
+            'X-WIKI-ACTOR-ID' => '2',
+        ]
     );
 
     $response->assertForbidden()
         ->assertJsonPath('success', false);
+});
+
+it('requires an actor header for protected draft routes', function (): void {
+    $response = $this->postJson(
+        '/api/v1/game-drafts',
+        [
+            'category_key' => 'fps',
+            'name' => 'Missing Actor',
+            'slug' => 'missing-actor',
+        ],
+        ['API-KEY' => 'dev-wiki-builder-key-1234567890abcdef']
+    );
+
+    $response->assertUnauthorized()
+        ->assertJsonPath('success', false)
+        ->assertJsonPath('message', 'Authenticated user context is required.');
 });
 
 it('rejects cross game items in a build', function (): void {
@@ -154,7 +173,10 @@ it('rejects cross game items in a build', function (): void {
                 ['item_id' => $crossGameItem->id, 'position' => 1],
             ],
         ],
-        ['API-KEY' => 'dev-wiki-builder-key-1234567890abcdef']
+        [
+            'API-KEY' => 'dev-wiki-builder-key-1234567890abcdef',
+            'X-WIKI-ACTOR-ID' => '2',
+        ]
     );
 
     $response->assertStatus(422)
@@ -186,7 +208,10 @@ it('rejects incompatible modifiers in a build', function (): void {
                 ],
             ],
         ],
-        ['API-KEY' => 'dev-wiki-builder-key-1234567890abcdef']
+        [
+            'API-KEY' => 'dev-wiki-builder-key-1234567890abcdef',
+            'X-WIKI-ACTOR-ID' => '2',
+        ]
     );
 
     $response->assertStatus(422)
@@ -244,7 +269,7 @@ it('returns compare payload inside the standard api envelope for builds from the
         'title' => 'BO3 Entry Test',
         'description' => 'Second BO3 build for compare.',
         'share_token' => 'bo3-entry-test',
-        'is_public' => false,
+        'is_public' => true,
         'created_at' => now(),
         'updated_at' => now(),
     ]);
@@ -289,6 +314,159 @@ it('rejects compare between builds from different games', function (): void {
     $response->assertStatus(422)
         ->assertJsonPath('success', false)
         ->assertJsonPath('message', 'Builds must belong to the same game to be compared.');
+});
+
+it('publishes a user game draft through the protected workflow', function (): void {
+    $headers = [
+        'API-KEY' => 'dev-wiki-builder-key-1234567890abcdef',
+        'X-WIKI-ACTOR-ID' => '2',
+    ];
+
+    $draft = $this->postJson('/api/v1/game-drafts', [
+        'category_key' => 'fps',
+        'name' => 'Test FPS Draft',
+        'slug' => 'test-fps-draft',
+    ], $headers);
+
+    $draft->assertCreated()
+        ->assertJsonPath('success', true);
+
+    $draftId = (int) $draft->json('data.id');
+
+    $this->patchJson("/api/v1/game-drafts/{$draftId}/foundation", [
+        'name' => 'Test FPS Draft',
+        'slug' => 'test-fps-draft',
+        'description' => 'Draft de test pour la publication.',
+        'visibility' => 'private',
+    ], $headers)->assertOk();
+
+    $this->patchJson("/api/v1/game-drafts/{$draftId}/structure", [
+        'supports_modifiers' => true,
+        'supports_archetypes' => true,
+        'allowed_item_slots' => ['weapon', 'secondary', 'equipment'],
+        'allowed_modifier_types' => ['optic', 'muzzle', 'barrel'],
+    ], $headers)->assertOk();
+
+    $this->postJson("/api/v1/game-drafts/{$draftId}/archetypes", [
+        'name' => 'Flex',
+        'slug' => 'flex',
+    ], $headers)->assertCreated();
+
+    $categoryA = $this->postJson("/api/v1/game-drafts/{$draftId}/categories", [
+        'label' => 'Assault',
+        'slug' => 'assault',
+    ], $headers)->assertCreated();
+
+    $categoryB = $this->postJson("/api/v1/game-drafts/{$draftId}/categories", [
+        'label' => 'Utility',
+        'slug' => 'utility',
+    ], $headers)->assertCreated();
+
+    $categoryIds = [
+        (int) $categoryA->json('data.id'),
+        (int) $categoryB->json('data.id'),
+    ];
+
+    $item1 = $this->postJson("/api/v1/game-drafts/{$draftId}/items", [
+        'name' => 'Rifle Alpha',
+        'slug' => 'rifle-alpha',
+        'slot' => 'weapon',
+        'rarity' => 'common',
+        'score' => 80,
+        'attack' => 70,
+        'utility' => 20,
+        'accuracy' => 65,
+        'mobility' => 55,
+        'category_ids' => $categoryIds,
+        'item_slots' => [
+            [
+                'slot_key' => 'optic',
+                'slot_label' => 'Optic',
+                'accepted_modifier_type' => 'optic',
+            ],
+        ],
+    ], $headers)->assertCreated();
+
+    $item2 = $this->postJson("/api/v1/game-drafts/{$draftId}/items", [
+        'name' => 'Rifle Beta',
+        'slug' => 'rifle-beta',
+        'slot' => 'weapon',
+        'rarity' => 'rare',
+        'score' => 82,
+        'attack' => 72,
+        'utility' => 18,
+        'accuracy' => 68,
+        'mobility' => 53,
+        'category_ids' => $categoryIds,
+        'item_slots' => [
+            [
+                'slot_key' => 'muzzle',
+                'slot_label' => 'Muzzle',
+                'accepted_modifier_type' => 'muzzle',
+            ],
+        ],
+    ], $headers)->assertCreated();
+
+    $this->postJson("/api/v1/game-drafts/{$draftId}/items", [
+        'name' => 'Pistol Gamma',
+        'slug' => 'pistol-gamma',
+        'slot' => 'secondary',
+        'rarity' => 'common',
+        'score' => 61,
+        'attack' => 45,
+        'utility' => 16,
+        'accuracy' => 58,
+        'mobility' => 70,
+        'category_ids' => $categoryIds,
+    ], $headers)->assertCreated();
+
+    $this->postJson("/api/v1/game-drafts/{$draftId}/items", [
+        'name' => 'Drone Kit',
+        'slug' => 'drone-kit',
+        'slot' => 'equipment',
+        'rarity' => 'epic',
+        'score' => 66,
+        'attack' => 10,
+        'utility' => 82,
+        'accuracy' => 20,
+        'mobility' => 50,
+        'category_ids' => $categoryIds,
+    ], $headers)->assertCreated();
+
+    $this->postJson("/api/v1/game-drafts/{$draftId}/modifiers", [
+        'name' => 'Red Dot',
+        'slug' => 'red-dot',
+        'modifier_type' => 'optic',
+        'delta_score' => 2,
+        'delta_accuracy' => 4,
+        'compatible_item_ids' => [(int) $item1->json('data.id')],
+    ], $headers)->assertCreated();
+
+    $this->postJson("/api/v1/game-drafts/{$draftId}/modifiers", [
+        'name' => 'Compensator',
+        'slug' => 'compensator',
+        'modifier_type' => 'muzzle',
+        'delta_score' => 2,
+        'delta_attack' => 1,
+        'compatible_item_ids' => [(int) $item2->json('data.id')],
+    ], $headers)->assertCreated();
+
+    $this->postJson("/api/v1/game-drafts/{$draftId}/modifiers", [
+        'name' => 'Long Barrel',
+        'slug' => 'long-barrel',
+        'modifier_type' => 'barrel',
+        'delta_score' => 3,
+        'delta_attack' => 2,
+        'compatible_item_ids' => [(int) $item1->json('data.id'), (int) $item2->json('data.id')],
+    ], $headers)->assertCreated();
+
+    $response = $this->postJson("/api/v1/game-drafts/{$draftId}/publish", [], $headers);
+
+    $response->assertCreated()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.draft.status', 'published')
+        ->assertJsonPath('data.game.owner_user_id', 2)
+        ->assertJsonPath('data.game.visibility', 'private');
 });
 
 it('keeps not found responses uniform on summary endpoint', function (): void {

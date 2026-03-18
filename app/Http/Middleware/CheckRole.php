@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Support\RequestUserHeader;
 use App\Support\ApiResponse;
 use Closure;
 use Illuminate\Http\Request;
@@ -13,14 +14,23 @@ class CheckRole
 {
     public function handle(Request $request, Closure $next, string $role = 'admin'): Response
     {
-        $userId = $request->header('X-USER-ID');
+        $user = $request->attributes->get('request_user');
 
-        if (! is_string($userId) || ! ctype_digit($userId)) {
-            return ApiResponse::error('Forbidden. Missing or invalid X-USER-ID header.', 403);
+        if (! $user instanceof User) {
+            $sessionUser = $request->user();
+            if ($sessionUser instanceof User) {
+                $user = $sessionUser;
+            }
         }
 
-        $user = User::query()->find((int) $userId);
-        if ($user === null || $user->role->value !== $role) {
+        if (! $user instanceof User) {
+            $userId = RequestUserHeader::extractUserId($request);
+            if ($userId !== null) {
+                $user = User::query()->find($userId);
+            }
+        }
+
+        if (! $user instanceof User || $user->role->value !== $role) {
             return ApiResponse::error('Forbidden. Insufficient role.', 403);
         }
 

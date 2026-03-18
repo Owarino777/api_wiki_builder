@@ -39,20 +39,25 @@ Decision recommandee pour le rendu :
 
 ## Starter Kit / Auth
 
-Pour une vraie IHM utilisateur avec :
+Etat actuel implemente :
 
-- inscription
-- connexion / deconnexion
-- espace utilisateur
-- creation de jeux
-- creation d'equipements
-- creation et comparaison de builds
+- inscription / connexion / deconnexion Laravel en session
+- dashboard utilisateur
+- resolution centralisee du user pour les ecritures API
+- creation de drafts de jeux utilisateur
+- publication transactionnelle draft -> runtime
 
-la direction recommandee est :
+Choix actuel :
+
+- auth Laravel maison dans l'existant
+- pas de front separe
+- pas de starter kit ajoute a posteriori pour ne pas destabiliser le projet avant rendu
+
+Evolution recommandee plus tard si on poursuit l'IHM metier :
 
 - Laravel full-stack
 - starter kit Livewire
-- pas de front separe
+- toujours sans front separe
 
 Justification :
 
@@ -154,6 +159,9 @@ curl.exe "http://localhost:8000/api/v1/builds?game_id=1&is_public=true"
 Ouvrir :
 
 - `http://localhost:8000`
+- `http://localhost:8000/login`
+- `http://localhost:8000/register`
+- `http://localhost:8000/dashboard`
 
 ## Point d'attention environnement
 

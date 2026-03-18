@@ -15,6 +15,7 @@ class User extends Authenticatable
     protected $fillable = [
         'username',
         'email',
+        'password',
         'role',
         'first_name',
         'last_name',
@@ -31,10 +32,16 @@ class User extends Authenticatable
         'anonymized_at',
     ];
 
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     protected function casts(): array
     {
         return [
             'role' => UserRole::class,
+            'password' => 'hashed',
             'birth_date' => 'date',
             'is_anonymized' => 'boolean',
             'anonymized_at' => 'datetime',

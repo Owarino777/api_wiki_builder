@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class WikiBuilderSeeder extends Seeder
@@ -12,10 +13,9 @@ class WikiBuilderSeeder extends Seeder
     public function run(): void
     {
         $now = now();
+        $this->truncateTables();
 
         DB::transaction(function () use ($now): void {
-            $this->truncateTables();
-
             DB::table('games')->insert([
                 [
                     'name' => 'Call of Duty: Black Ops III',
@@ -41,6 +41,7 @@ class WikiBuilderSeeder extends Seeder
                 [
                     'username' => 'admin',
                     'email' => 'admin@wikibuilder.local',
+                    'password' => Hash::make('builder123'),
                     'role' => 'admin',
                     'first_name' => 'Ada',
                     'last_name' => 'Admin',
@@ -59,6 +60,7 @@ class WikiBuilderSeeder extends Seeder
                 [
                     'username' => 'player1',
                     'email' => 'player1@wikibuilder.local',
+                    'password' => Hash::make('builder123'),
                     'role' => 'user',
                     'first_name' => 'Noah',
                     'last_name' => 'Player',
@@ -216,19 +218,36 @@ class WikiBuilderSeeder extends Seeder
 
     private function truncateTables(): void
     {
-        DB::table('api_keys')->delete();
-        DB::table('build_slots')->delete();
-        DB::table('build_items')->delete();
-        DB::table('item_slots')->delete();
-        DB::table('item_modifiers')->delete();
-        DB::table('item_categories')->delete();
-        DB::table('builds')->delete();
-        DB::table('modifiers')->delete();
-        DB::table('items')->delete();
-        DB::table('archetypes')->delete();
-        DB::table('categories')->delete();
-        DB::table('users')->delete();
-        DB::table('games')->delete();
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+
+        foreach ([
+            'game_draft_item_modifiers',
+            'game_draft_item_categories',
+            'game_draft_item_slots',
+            'game_draft_modifiers',
+            'game_draft_items',
+            'game_draft_categories',
+            'game_draft_archetypes',
+            'game_draft_steps',
+            'game_drafts',
+            'api_keys',
+            'build_slots',
+            'build_items',
+            'item_slots',
+            'item_modifiers',
+            'item_categories',
+            'builds',
+            'modifiers',
+            'items',
+            'archetypes',
+            'categories',
+            'users',
+            'games',
+        ] as $table) {
+            DB::table($table)->truncate();
+        }
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }
 
     private function blackOpsThreeProfiles(int $gameId, object $now): array

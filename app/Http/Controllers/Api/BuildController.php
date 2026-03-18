@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CompareBuildRequest;
 use App\Http\Requests\StoreBuildRequest;
 use App\Http\Requests\UpdateBuildRequest;
 use App\Http\Resources\BuildResource;
 use App\Models\Build;
+use App\Models\User;
 use App\Services\BuildRuleService;
 use App\Services\BuildSummaryService;
 use App\Support\ApiResponse;
+use App\Support\RequestUserHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -27,12 +30,23 @@ class BuildController extends Controller
     {
         $query = Build::query()->with(['items:id,game_id,name,slug,slot']);
 
+        if (! $request->filled('user_id')) {
+            $query->where('is_public', true);
+        }
+
         if ($request->filled('game_id')) {
             $query->where('game_id', (int) $request->query('game_id'));
         }
 
         if ($request->filled('user_id')) {
-            $query->where('user_id', (int) $request->query('user_id'));
+            $targetUserId = (int) $request->query('user_id');
+            $requestUser = $this->requestUser($request);
+
+            if ($requestUser !== null && ($requestUser->id === $targetUserId || $requestUser->role === UserRole::Admin)) {
+                $query->where('user_id', $targetUserId);
+            } else {
+                $query->where('user_id', $targetUserId)->where('is_public', true);
+            }
         }
 
         if ($request->filled('is_public')) {
@@ -57,6 +71,10 @@ class BuildController extends Controller
             return ApiResponse::error('Build not found.', 404);
         }
 
+        if (! $this->canViewBuild($request, $build)) {
+            return ApiResponse::error('Forbidden. Private build.', 403);
+        }
+
         return ApiResponse::success((new BuildResource($build))->toArray($request));
     }
 
@@ -78,6 +96,11 @@ class BuildController extends Controller
 
     public function store(StoreBuildRequest $request)
     {
+        $requestUser = $this->requestUser($request);
+        if ($requestUser === null) {
+            return ApiResponse::error('Authenticated user context is required.', 401);
+        }
+
         $data = $request->validated();
         $items = $this->normalizeItems($data['items']);
         $slots = $this->normalizeSlots($data['slots'] ?? []);
@@ -93,12 +116,12 @@ class BuildController extends Controller
             return ApiResponse::error('Business rule violation.', 422, $errors);
         }
 
-        $build = DB::transaction(function () use ($data, $items, $slots) {
+        $build = DB::transaction(function () use ($data, $items, $slots, $requestUser) {
             $isPublic = (bool) ($data['is_public'] ?? false);
 
             $build = Build::query()->create([
                 'game_id' => $data['game_id'],
-                'user_id' => $data['user_id'] ?? null,
+                'user_id' => $requestUser->id,
                 'archetype_id' => $data['archetype_id'] ?? null,
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
@@ -122,6 +145,14 @@ class BuildController extends Controller
         $build = Build::query()->find($id);
         if ($build === null) {
             return ApiResponse::error('Build not found.', 404);
+        }
+
+        $requestUser = $this->requestUser($request);
+        if ($requestUser === null) {
+            return ApiResponse::error('Authenticated user context is required.', 401);
+        }
+        if (! $this->canManageBuild($requestUser, $build)) {
+            return ApiResponse::error('Forbidden. You cannot modify this build.', 403);
         }
 
         $data = $request->validated();
@@ -158,7 +189,7 @@ class BuildController extends Controller
 
             $build->update([
                 'game_id' => $data['game_id'] ?? $build->game_id,
-                'user_id' => array_key_exists('user_id', $data) ? $data['user_id'] : $build->user_id,
+                'user_id' => $build->user_id,
                 'archetype_id' => array_key_exists('archetype_id', $data) ? $data['archetype_id'] : $build->archetype_id,
                 'title' => $data['title'] ?? $build->title,
                 'description' => array_key_exists('description', $data) ? $data['description'] : $build->description,
@@ -175,11 +206,19 @@ class BuildController extends Controller
         return ApiResponse::success((new BuildResource($build))->toArray($request), 'Build updated.');
     }
 
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
         $build = Build::query()->find($id);
         if ($build === null) {
             return ApiResponse::error('Build not found.', 404);
+        }
+
+        $requestUser = $this->requestUser($request);
+        if ($requestUser === null) {
+            return ApiResponse::error('Authenticated user context is required.', 401);
+        }
+        if (! $this->canManageBuild($requestUser, $build)) {
+            return ApiResponse::error('Forbidden. You cannot delete this build.', 403);
         }
 
         DB::transaction(function () use ($build): void {
@@ -191,11 +230,15 @@ class BuildController extends Controller
         return ApiResponse::success(null, 'Build deleted.');
     }
 
-    public function summary(int $id)
+    public function summary(Request $request, int $id)
     {
         $build = Build::query()->find($id);
         if ($build === null) {
             return ApiResponse::error('Build not found.', 404);
+        }
+
+        if (! $this->canViewBuild($request, $build)) {
+            return ApiResponse::error('Forbidden. Private build.', 403);
         }
 
         return ApiResponse::success($this->buildSummaryService->summary($build));
@@ -213,6 +256,10 @@ class BuildController extends Controller
 
         if ((int) $left->game_id !== (int) $right->game_id) {
             return ApiResponse::error('Builds must belong to the same game to be compared.', 422);
+        }
+
+        if (! $left->is_public || ! $right->is_public) {
+            return ApiResponse::error('Only public builds can be compared through this endpoint.', 403);
         }
 
         return ApiResponse::success($this->buildSummaryService->compare($left, $right));
@@ -393,5 +440,42 @@ class BuildController extends Controller
         } while (Build::query()->where('share_token', $token)->exists());
 
         return $token;
+    }
+
+    private function requestUser(Request $request): ?User
+    {
+        $user = $request->attributes->get('request_user');
+
+        if ($user instanceof User) {
+            return $user;
+        }
+
+        $userId = RequestUserHeader::extractUserId($request);
+        if ($userId === null) {
+            return null;
+        }
+
+        $user = User::query()->find($userId);
+        if ($user instanceof User) {
+            $request->attributes->set('request_user', $user);
+        }
+
+        return $user;
+    }
+
+    private function canManageBuild(User $user, Build $build): bool
+    {
+        return $user->role === UserRole::Admin || $build->user_id === $user->id;
+    }
+
+    private function canViewBuild(Request $request, Build $build): bool
+    {
+        if ($build->is_public) {
+            return true;
+        }
+
+        $user = $this->requestUser($request);
+
+        return $user !== null && $this->canManageBuild($user, $build);
     }
 }
