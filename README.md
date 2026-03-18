@@ -1,10 +1,48 @@
 # Wiki Builder API
 
-## Lancer le projet
+## Version et perimetre
 
+- version projet : Laravel 12
+- version officielle plus recente disponible cote documentation : Laravel 13
+- decision actuelle : rester sur Laravel 12 pour stabiliser le rendu, tout en documentant l'existence de Laravel 13
+
+References officielles :
+
+- installation Laravel 12 : https://laravel.com/docs/12.x/installation
+- configuration Laravel 12 : https://laravel.com/docs/12.x/configuration
+- configuration Laravel 13 : https://laravel.com/docs/13.x/configuration
+- starter kits Laravel : https://laravel.com/docs/13.x/starter-kits
+
+Documentation de rendu professeur :
+
+- [rendu_final_prof.md](c:/Users/malik/M1_DFS_2025_2026/DEV/api_wiki_builder/doc/rendu_final_prof.md)
+
+## Prerequis
+
+- Docker Desktop
+- Docker Compose
+- si tu lances PHP hors Docker : PHP 8.4 requis par le projet
+
+Important :
+
+- le projet declare `php ^8.4` dans `composer.json`
+- si ta machine locale est en PHP 8.2, privilegie Docker pour l'execution
+- la voie de reference pour le rendu est donc l'execution via Docker
+
+## Lancer le projet
+(ceci suppose que le lancement est effectué via un clone du repo GitHub, pas via un téléchargement ZIP)
 ```powershell
 Copy-Item .env.example .env
 docker compose up -d --build
+```
+
+pour fermer docker sans perdre les données :
+```powershell
+docker compose down
+```
+pour fermer docker et supprimer les données :
+```powershell
+docker compose down -v
 ```
 
 Ce que fait `docker compose up -d --build` :
@@ -40,6 +78,24 @@ Donc :
 - pas de `npm run dev`
 - pas de front React/Vue séparé
 - tu ouvres juste `http://localhost:8000`
+
+## Orientation auth / parcours utilisateur
+
+Pour faire evoluer le projet vers un vrai parcours utilisateur avec :
+
+- inscription / connexion / deconnexion
+- espace personnel
+- creation de jeux
+- creation d'equipements
+- creation et comparaison de builds
+
+la direction recommandee est :
+
+- Laravel full-stack
+- starter kit Livewire
+- pas de front separe
+
+Cette evolution n'est pas obligatoire pour demarrer le projet actuel, mais c'est la direction la plus coherente si le rendu final inclut une vraie IHM d'authentification et de creation guidee.
 
 ## Données
 
