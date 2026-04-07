@@ -2,8 +2,8 @@
     <section class="panel card" style="max-width:620px;margin:0 auto;">
         <span class="pill">Inscription</span>
         <div>
-            <h1 style="font-size:36px;line-height:1;">Creer un compte utilisateur</h1>
-            <p class="helper" style="margin-top:10px;">Le compte cree te donne un espace persistant pour tes drafts de jeux, tes builds et tes futures publications.</p>
+            <h1 style="font-size:36px;line-height:1;">Créer un compte utilisateur</h1>
+            <p class="helper" style="margin-top:10px;">Le compte créé te donne un espace persistant pour tes drafts de jeux, tes builds et tes futures publications.</p>
         </div>
 
         <form method="POST" action="{{ route('register.store') }}">
@@ -18,7 +18,7 @@
                 </div>
 
                 <div class="field">
-                    <label for="display_name">Nom affiche</label>
+                    <label for="display_name">Nom affiché</label>
                     <input id="display_name" name="display_name" type="text" value="{{ old('display_name') }}" autocomplete="nickname">
                     @error('display_name')
                         <span class="error">{{ $message }}</span>
@@ -49,7 +49,7 @@
                 </div>
             </div>
 
-            <button class="btn primary" type="submit">Creer mon compte</button>
+            <button class="btn primary" type="submit">Créer mon compte</button>
         </form>
     </section>
 </x-layouts.app>

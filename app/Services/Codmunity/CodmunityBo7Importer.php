@@ -12,6 +12,7 @@ use App\Models\Tag;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Str;
@@ -23,13 +24,20 @@ class CodmunityBo7Importer
     private const GAME_SLUG = 'call-of-duty-black-ops-7';
     private const GAME_CODE = 'bo7';
     private const RARITY = 'standard-issue';
+    private const SNAPSHOT_VERSION = 1;
 
-    public function import(bool $fresh = false, bool $withBuilds = true, ?int $limit = null): array
+    public function import(
+        bool $fresh = false,
+        bool $withBuilds = true,
+        ?int $limit = null,
+        string $source = 'live',
+    ): array
     {
-        $meta = $this->getJson('https://api.codmunity.gg/website/assets/meta-ranking/one/bo7');
-        $attachmentsPayload = $this->getJson('https://api.codmunity.gg/website/assets/attachments-data');
-        $weaponStats = $this->getJson('https://api.codmunity.gg/weapon-stats');
-        $attachmentStats = $this->getJson('https://api.codmunity.gg/attachment-stats');
+        $bundle = $this->loadPayloadBundle($this->normalizeSource($source), $withBuilds);
+        $meta = $bundle['meta'];
+        $attachmentsPayload = $bundle['attachments_payload'];
+        $weaponStats = $bundle['weapon_stats'];
+        $attachmentStats = $bundle['attachment_stats'];
 
         $weapons = collect($attachmentsPayload['weapons'] ?? [])
             ->filter(fn (array $weapon): bool => ($weapon['appGame'] ?? $weapon['game'] ?? null) === self::GAME_CODE)
@@ -66,7 +74,8 @@ class CodmunityBo7Importer
                 $row['attachment'] ?? ''
             ));
 
-        return DB::transaction(function () use (
+        $summary = DB::transaction(function () use (
+            $bundle,
             $fresh,
             $withBuilds,
             $weapons,
@@ -98,9 +107,7 @@ class CodmunityBo7Importer
                 $weaponName = (string) ($weapon['WeaponName'] ?? $weapon['name'] ?? 'Unknown Weapon');
                 $weaponSlug = (string) ($weapon['slug'] ?? Str::slug($weaponName));
                 $weaponStatsRow = $weaponStatsByName->get($this->normalizeLookupKey($weaponName));
-                $detail = $withBuilds
-                    ? $this->safeGetJson("https://api.codmunity.gg/website/assets/weapon/bo7/{$weaponSlug}")
-                    : null;
+                $detail = $withBuilds ? $this->getWeaponDetail($bundle, $weaponSlug) : null;
                 $popularity = (float) $weaponPopularity->get($weaponSlug, 0);
 
                 $playstyles = $this->collectPlaystyles($detail);
@@ -241,6 +248,7 @@ class CodmunityBo7Importer
 
             return [
                 'game' => $game->name,
+                'source' => $bundle['source'],
                 'weapons' => $weapons->count(),
                 'modifiers' => EquipmentModifier::query()->where('game_id', $game->id)->count(),
                 'builds' => $withBuilds ? Build::query()->where('game_id', $game->id)->count() : 0,
@@ -251,6 +259,214 @@ class CodmunityBo7Importer
                 'skipped_build_imports' => $skippedBuildImports,
             ];
         });
+
+        if ($bundle['source'] === 'live' && $withBuilds && $limit === null) {
+            $this->writeSnapshotManifest(
+                $weapons
+                    ->pluck('slug')
+                    ->filter(fn (mixed $slug): bool => is_string($slug) && trim($slug) !== '')
+                    ->values()
+                    ->all()
+            );
+        }
+
+        return $summary;
+    }
+
+    private function loadPayloadBundle(string $source, bool $withBuilds): array
+    {
+        if ($source === 'snapshot') {
+            return $this->readSnapshotBundle();
+        }
+
+        if ($source === 'prefer-snapshot') {
+            $snapshot = $this->readSnapshotBundle(silent: true);
+
+            if ($snapshot !== null) {
+                return $snapshot;
+            }
+        }
+
+        return $this->fetchLiveBundle();
+    }
+
+    private function fetchLiveBundle(): array
+    {
+        $meta = $this->getJson('https://api.codmunity.gg/website/assets/meta-ranking/one/bo7');
+        $attachmentsPayload = $this->getJson('https://api.codmunity.gg/website/assets/attachments-data');
+        $weaponStats = $this->getJson('https://api.codmunity.gg/weapon-stats');
+        $attachmentStats = $this->getJson('https://api.codmunity.gg/attachment-stats');
+
+        $bundle = [
+            'source' => 'live',
+            'meta' => $meta,
+            'attachments_payload' => $attachmentsPayload,
+            'weapon_stats' => $weaponStats,
+            'attachment_stats' => $attachmentStats,
+        ];
+
+        $this->writeSnapshotBundle($bundle);
+
+        return $bundle;
+    }
+
+    private function readSnapshotBundle(bool $silent = false): ?array
+    {
+        if (!$this->snapshotExists()) {
+            if ($silent) {
+                return null;
+            }
+
+            throw new \RuntimeException('No local CODMunity BO7 snapshot is available yet.');
+        }
+
+        $path = $this->snapshotPath();
+
+        try {
+            $payload = json_decode(File::get($path), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $exception) {
+            if ($silent) {
+                return null;
+            }
+
+            throw new \RuntimeException('The local CODMunity BO7 snapshot is unreadable.', 0, $exception);
+        }
+
+        if (($payload['version'] ?? null) !== self::SNAPSHOT_VERSION) {
+            if ($silent) {
+                return null;
+            }
+
+            throw new \RuntimeException('The local CODMunity BO7 snapshot version is not supported.');
+        }
+
+        return [
+            'source' => 'snapshot',
+            'meta' => $payload['meta'] ?? [],
+            'attachments_payload' => $payload['attachments_payload'] ?? [],
+            'weapon_stats' => $payload['weapon_stats'] ?? [],
+            'attachment_stats' => $payload['attachment_stats'] ?? [],
+        ];
+    }
+
+    private function writeSnapshotBundle(array $bundle): void
+    {
+        $directory = $this->snapshotDirectory();
+
+        if (!File::isDirectory($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $payload = [
+            'version' => self::SNAPSHOT_VERSION,
+            'saved_at' => now()->toIso8601String(),
+            'meta' => $bundle['meta'],
+            'attachments_payload' => $bundle['attachments_payload'],
+            'weapon_stats' => $bundle['weapon_stats'],
+            'attachment_stats' => $bundle['attachment_stats'],
+        ];
+
+        $this->writeSnapshotJson($this->snapshotPath(), $payload);
+        File::delete($this->snapshotManifestPath());
+    }
+
+    private function snapshotPath(): string
+    {
+        return storage_path('app/private/codmunity/bo7-live-snapshot.json');
+    }
+
+    private function getWeaponDetail(array $bundle, string $weaponSlug): ?array
+    {
+        if ($bundle['source'] === 'snapshot') {
+            return $this->readSnapshotWeaponDetail($weaponSlug);
+        }
+
+        return $this->fetchLiveWeaponDetail($weaponSlug);
+    }
+
+    private function fetchLiveWeaponDetail(string $weaponSlug): ?array
+    {
+        $detail = $this->safeGetJson("https://api.codmunity.gg/website/assets/weapon/bo7/{$weaponSlug}");
+
+        if (!is_array($detail)) {
+            return null;
+        }
+
+        $this->writeSnapshotJson($this->snapshotWeaponDetailPath($weaponSlug), $detail);
+
+        return $detail;
+    }
+
+    private function readSnapshotWeaponDetail(string $weaponSlug): ?array
+    {
+        if (!$this->snapshotExists()) {
+            return null;
+        }
+
+        $path = $this->snapshotWeaponDetailPath($weaponSlug);
+
+        if (!File::exists($path)) {
+            return null;
+        }
+
+        try {
+            return json_decode(File::get($path), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return null;
+        }
+    }
+
+    private function writeSnapshotManifest(array $weaponSlugs): void
+    {
+        $this->writeSnapshotJson($this->snapshotManifestPath(), [
+            'version' => self::SNAPSHOT_VERSION,
+            'saved_at' => now()->toIso8601String(),
+            'weapon_slugs' => array_values(array_unique($weaponSlugs)),
+        ]);
+    }
+
+    private function snapshotExists(): bool
+    {
+        return File::exists($this->snapshotPath()) && File::exists($this->snapshotManifestPath());
+    }
+
+    private function snapshotManifestPath(): string
+    {
+        return $this->snapshotDirectory().DIRECTORY_SEPARATOR.'manifest.json';
+    }
+
+    private function snapshotWeaponDetailPath(string $weaponSlug): string
+    {
+        return $this->snapshotDirectory().DIRECTORY_SEPARATOR.'weapons'.DIRECTORY_SEPARATOR.$weaponSlug.'.json';
+    }
+
+    private function snapshotDirectory(): string
+    {
+        return storage_path('app/private/codmunity/bo7-live-snapshot');
+    }
+
+    private function writeSnapshotJson(string $path, array $payload): void
+    {
+        $directory = dirname($path);
+
+        if (!File::isDirectory($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        File::put($path, json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
+    }
+
+    private function normalizeSource(string $source): string
+    {
+        $normalized = trim(strtolower($source));
+
+        if (!in_array($normalized, ['live', 'snapshot', 'prefer-snapshot'], true)) {
+            throw new \InvalidArgumentException(
+                sprintf('Invalid BO7 import source "%s". Expected live, snapshot or prefer-snapshot.', $source)
+            );
+        }
+
+        return $normalized;
     }
 
     private function clearGame(int $gameId): void

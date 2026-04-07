@@ -32,6 +32,6 @@
             <button class="btn primary" type="submit">Se connecter</button>
         </form>
 
-        <p class="helper">Comptes seed de demo : <strong>admin</strong> / <strong>player1</strong> avec le mot de passe <code>builder123</code>.</p>
+        <p class="helper">Aucun compte de démonstration n'est créé par défaut. Utilise l'inscription pour créer un compte ou lance un seed de développement si tu veux des comptes déjà prêts.</p>
     </section>
 </x-layouts.app>

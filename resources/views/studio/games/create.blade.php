@@ -1,4 +1,4 @@
-<x-layouts.app :title="'Creer un jeu - Wiki Builder API'">
+<x-layouts.app :title="'Créer un jeu - Wiki Builder API'">
     <style>
         .studio-grid,.entity-grid,.summary-grid{display:grid;gap:16px}
         .studio-grid{grid-template-columns:minmax(300px,.85fr) minmax(0,1.15fr);align-items:start}
@@ -34,15 +34,15 @@
     </style>
 
     <section class="panel card">
-        <span class="pill">Studio de creation</span>
+        <span class="pill">Studio de création</span>
         <div>
-            <h1 style="font-size:40px;line-height:1;">Creer un jeu et ses equipements</h1>
-            <p class="helper" style="margin-top:10px;">Cette vue remplace les widgets de demo qui brouillaient le besoin. Ici, on suit le workflow de la spec : creation d un draft, completude structurelle, ajout des archetypes, categories, items, modifiers, puis publication.</p>
+            <h1 style="font-size:40px;line-height:1;">Créer un jeu et ses équipements</h1>
+            <p class="helper" style="margin-top:10px;">Cette vue remplace les widgets de démo qui brouillaient le besoin. Ici, on suit le workflow de la spec : création d'un draft, complétude structurelle, ajout des archétypes, catégories, items, modifiers, puis publication.</p>
         </div>
         <div class="actions">
             <a class="btn" href="{{ route('dashboard') }}">Retour au dashboard</a>
-            <a class="btn" href="{{ route('home') }}">Retour a l accueil</a>
-            <a class="btn ghost" href="/api/v1">Voir l API</a>
+            <a class="btn" href="{{ route('home') }}">Retour à l'accueil</a>
+            <a class="btn ghost" href="/api/v1">Voir l'API</a>
         </div>
     </section>
 
@@ -51,13 +51,13 @@
             <div class="section-head">
                 <div>
                     <h2>Mes brouillons</h2>
-                    <p class="helper" style="margin-top:8px;">Un brouillon par parcours, selectionnable a tout moment.</p>
+                    <p class="helper" style="margin-top:8px;">Un brouillon par parcours, sélectionnable à tout moment.</p>
                 </div>
             </div>
 
             @if (! $writeApiKey)
                 <div class="note danger">
-                    Aucun `API-KEY` actif n a ete trouve. La page reste visible, mais la creation de draft ne pourra pas envoyer les ecritures tant qu une cle active n est pas seedee.
+                    Aucune `API-KEY` active n'a été trouvée. La page reste visible, mais la création de draft ne pourra pas envoyer les écritures tant qu'une clé active n'aura pas été seedée.
                 </div>
             @endif
 
@@ -78,17 +78,17 @@
                     <label for="create-slug">Slug</label>
                     <input id="create-slug" type="text" placeholder="mon-arena-shooter">
                 </div>
-                <button class="btn primary" type="submit">Creer le brouillon</button>
+                <button class="btn primary" type="submit">Créer le brouillon</button>
             </form>
 
             <div id="draft-list" class="stack"></div>
         </aside>
 
         <section class="panel card">
-            <div id="studio-status" class="note">Selectionne un brouillon ou cree un nouveau draft pour commencer.</div>
+            <div id="studio-status" class="note">Sélectionne un brouillon ou crée un nouveau draft pour commencer.</div>
 
             <div id="editor-empty" class="empty-state">
-                Aucun draft n est encore charge. Une fois un brouillon selectionne, la page affiche son etat global puis les formulaires pour completer foundation, structure, items et modifiers.
+                Aucun draft n'est encore chargé. Une fois un brouillon sélectionné, la page affiche son état global puis les formulaires pour compléter foundation, structure, items et modifiers.
             </div>
 
             <div id="editor-root" class="stack" style="display:none;">
@@ -107,11 +107,11 @@
                     <div class="summary-grid">
                         <article class="meta-box">
                             <strong id="draft-progress">0%</strong>
-                            <span>Completion</span>
+                            <span>Complétion</span>
                         </article>
                         <article class="meta-box">
                             <strong id="draft-step">foundation</strong>
-                            <span>Etape courante</span>
+                            <span>Étape courante</span>
                         </article>
                         <article class="meta-box">
                             <strong id="draft-status">draft</strong>
@@ -138,12 +138,12 @@
                         </div>
                         <div class="field two">
                             <label for="foundation-description">Description</label>
-                            <textarea id="foundation-description" placeholder="Positionnement, fantasy, regles principales..."></textarea>
+                            <textarea id="foundation-description" placeholder="Positionnement, fantasy, règles principales..."></textarea>
                         </div>
                         <div class="field">
-                            <label for="foundation-visibility">Visibilite cible</label>
+                            <label for="foundation-visibility">Visibilité cible</label>
                             <select id="foundation-visibility">
-                                <option value="private">Prive</option>
+                                <option value="private">Privé</option>
                                 <option value="public">Public</option>
                             </select>
                         </div>
@@ -158,7 +158,7 @@
                         <div>
                             <span class="pill">2. Structure</span>
                             <h3 style="margin-top:10px;">Cadre du template</h3>
-                            <p class="helper" style="margin-top:8px;">Une fois des items ou modifiers ajoutes, le backend verrouille les changements cassants.</p>
+                            <p class="helper" style="margin-top:8px;">Une fois des items ou modifiers ajoutés, le backend verrouille les changements cassants.</p>
                         </div>
                     </div>
                     <form id="structure-form" class="stack">
@@ -173,13 +173,13 @@
                             <label class="check-option">
                                 <input id="supports-archetypes" type="checkbox">
                                 <span>
-                                    <strong>Supports archetypes</strong>
+                                    <strong>Supporte les archétypes</strong>
                                     <small class="helper">Active les profils ou classes du jeu.</small>
                                 </span>
                             </label>
                         </div>
                         <div>
-                            <label>Slots d items actifs</label>
+                            <label>Slots d'items actifs</label>
                             <div id="structure-item-slots" class="check-grid" style="margin-top:10px;"></div>
                         </div>
                         <div>
@@ -210,10 +210,10 @@
                         </div>
                         <div class="field two">
                             <label for="archetype-description">Description</label>
-                            <textarea id="archetype-description" placeholder="Role, positionnement, identite..."></textarea>
+                            <textarea id="archetype-description" placeholder="Rôle, positionnement, identité..."></textarea>
                         </div>
                         <div class="field" style="align-self:end;">
-                            <button class="btn primary" type="submit">Ajouter un archetype</button>
+                            <button class="btn primary" type="submit">Ajouter un archétype</button>
                         </div>
                     </form>
                     <div id="archetype-list" class="stack"></div>
@@ -237,10 +237,10 @@
                         </div>
                         <div class="field two">
                             <label for="category-description">Description</label>
-                            <textarea id="category-description" placeholder="Critere de regroupement des items..."></textarea>
+                            <textarea id="category-description" placeholder="Critère de regroupement des items..."></textarea>
                         </div>
                         <div class="field" style="align-self:end;">
-                            <button class="btn primary" type="submit">Ajouter une categorie</button>
+                            <button class="btn primary" type="submit">Ajouter une catégorie</button>
                         </div>
                     </form>
                     <div id="category-list" class="stack"></div>
@@ -250,8 +250,8 @@
                     <div class="section-head">
                         <div>
                             <span class="pill">5. Items</span>
-                            <h3 style="margin-top:10px;">Equipements du jeu</h3>
-                            <p class="helper" style="margin-top:8px;">On cree ici les armes, pieces d armure ou objets equipables du draft.</p>
+                            <h3 style="margin-top:10px;">Équipements du jeu</h3>
+                            <p class="helper" style="margin-top:8px;">On crée ici les armes, pièces d'armure ou objets équipables du draft.</p>
                         </div>
                     </div>
                     <form id="item-form" class="entity-grid">
@@ -268,7 +268,7 @@
                             <select id="item-slot"></select>
                         </div>
                         <div class="field">
-                            <label for="item-rarity">Rarete</label>
+                            <label for="item-rarity">Rareté</label>
                             <select id="item-rarity">
                                 <option value="standard">standard</option>
                                 <option value="rare">rare</option>
@@ -372,7 +372,7 @@
                             <button class="btn primary" type="submit">Ajouter un modifier</button>
                         </div>
                     </form>
-                    <div id="modifier-disabled" class="note" style="display:none;">Les modifiers sont actuellement desactives dans la structure du draft.</div>
+                    <div id="modifier-disabled" class="note" style="display:none;">Les modifiers sont actuellement désactivés dans la structure du draft.</div>
                     <div id="modifier-list" class="stack"></div>
                 </section>
 
@@ -380,7 +380,7 @@
                     <div class="section-head">
                         <div>
                             <span class="pill">7. Revue</span>
-                            <h3 style="margin-top:10px;">Etat des etapes et publication</h3>
+                            <h3 style="margin-top:10px;">État des étapes et publication</h3>
                         </div>
                         <div class="inline-actions">
                             <button id="publish-draft" class="btn primary" type="button">Publier le jeu</button>
@@ -393,8 +393,8 @@
     </div>
 
     <section class="panel card">
-        <h2>Mes jeux publies recents</h2>
-        <p class="helper">Ils apparaissent ici une fois la publication finalisee. L endpoint owner equivalent reste `GET /api/v1/my/games`.</p>
+        <h2>Mes jeux publiés récents</h2>
+        <p class="helper">Ils apparaissent ici une fois la publication finalisée. L'endpoint owner équivalent reste `GET /api/v1/my/games`.</p>
         <div class="stack">
             @forelse ($publishedGames as $game)
                 <article class="draft-card">
@@ -406,7 +406,7 @@
                     </div>
                 </article>
             @empty
-                <div class="empty-state">Aucun jeu utilisateur publie pour le moment.</div>
+                <div class="empty-state">Aucun jeu utilisateur publié pour le moment.</div>
             @endforelse
         </div>
     </section>
@@ -565,7 +565,7 @@
 
         async function api(path, options = {}) {
             if (!S.apiKey) {
-                throw new Error('Aucune API key active n est disponible pour les ecritures.');
+                throw new Error('Aucune clé API active n’est disponible pour les écritures.');
             }
 
             const headers = {
@@ -601,7 +601,7 @@
             renderDrafts();
         }
 
-        async function loadDraft(id, message = 'Brouillon charge.', preservePublishResult = false) {
+        async function loadDraft(id, message = 'Brouillon chargé.', preservePublishResult = false) {
             const payload = await api(`/api/v1/game-drafts/${id}`);
             S.draft = payload.data ?? null;
             S.selectedDraftId = S.draft?.id ?? null;
@@ -613,7 +613,7 @@
             status(message);
         }
 
-        async function refresh(id = S.selectedDraftId, message = 'Brouillon mis a jour.') {
+        async function refresh(id = S.selectedDraftId, message = 'Brouillon mis à jour.') {
             await loadDrafts();
 
             if (id) {
@@ -643,7 +643,7 @@
                         <span class="pill">${E(draft.status)}</span>
                         <span class="pill">${E(draft.current_step ?? 'foundation')}</span>
                     </div>
-                    <p>Completion : ${E(draft.completion_percent ?? 0)}%</p>
+                    <p>Complétion : ${E(draft.completion_percent ?? 0)}%</p>
                     <button class="btn" type="button" data-action="select-draft" data-id="${draft.id}">Ouvrir ce draft</button>
                 </article>`;
             }).join('');
@@ -660,7 +660,7 @@
 
         function renderEntityList(container, entities, type) {
             if (!entities.length) {
-                container.innerHTML = `<div class="empty-state">Aucun ${E(type)} ajoute pour le moment.</div>`;
+                container.innerHTML = `<div class="empty-state">Aucun ${E(type)} ajouté pour le moment.</div>`;
                 return;
             }
 
@@ -719,7 +719,7 @@
             }).join('');
 
             const publishCard = S.publishResult
-                ? `<article class="note"><strong>${E(S.publishResult.game?.name ?? 'Publication reussie')}</strong><p>Le draft a ete converti en runtime et rattache au jeu ${E(S.publishResult.game?.slug ?? '')}.</p></article>`
+                ? `<article class="note"><strong>${E(S.publishResult.game?.name ?? 'Publication réussie')}</strong><p>Le draft a été converti en runtime et rattaché au jeu ${E(S.publishResult.game?.slug ?? '')}.</p></article>`
                 : '';
 
             N.reviewList.innerHTML = cards + publishCard;
@@ -780,11 +780,11 @@
 
             N.itemCategoryOptions.innerHTML = (draft.categories ?? []).length
                 ? draft.categories.map((category) => `<label class="check-option"><input type="checkbox" name="item-category" value="${category.id}"><span><strong>${E(category.label)}</strong><small class="helper">${E(category.slug)}</small></span></label>`).join('')
-                : '<div class="empty-state">Ajoute d abord des categories pour pouvoir classer les items.</div>';
+                : '<div class="empty-state">Ajoute d’abord des catégories pour pouvoir classer les items.</div>';
 
             N.modifierItemOptions.innerHTML = (draft.items ?? []).length
                 ? draft.items.map((item) => `<label class="check-option"><input type="checkbox" name="modifier-item" value="${item.id}"><span><strong>${E(item.name)}</strong><small class="helper">${E(item.slot)}</small></span></label>`).join('')
-                : '<div class="empty-state">Ajoute d abord des items pour declarer leurs compatibilites.</div>';
+                : '<div class="empty-state">Ajoute d’abord des items pour déclarer leurs compatibilités.</div>';
 
             N.modifierDisabled.style.display = settings.supports_modifiers ? 'none' : 'block';
             N.modifierForm.style.display = settings.supports_modifiers ? 'grid' : 'none';
@@ -800,7 +800,7 @@
             N.publishDraft.disabled = isPublished;
 
             if (isPublished) {
-                status('Ce draft est deja publie. Les formulaires sont figes pour eviter les modifications destructives.');
+                status('Ce draft est déjà publié. Les formulaires sont figés pour éviter les modifications destructives.');
             }
         }
 
@@ -823,7 +823,7 @@
             });
 
             resetForm(N.createDraftForm);
-            await refresh(payload?.data?.id ?? null, 'Brouillon cree.');
+            await refresh(payload?.data?.id ?? null, 'Brouillon créé.');
         }
 
         async function saveFoundation(event) {
@@ -842,7 +842,7 @@
                 },
             });
 
-            await refresh(S.selectedDraftId, 'Foundation enregistree.');
+            await refresh(S.selectedDraftId, 'Foundation enregistrée.');
         }
 
         async function saveStructure(event) {
@@ -861,7 +861,7 @@
                 },
             });
 
-            await refresh(S.selectedDraftId, 'Structure enregistree.');
+            await refresh(S.selectedDraftId, 'Structure enregistrée.');
         }
 
         async function addArchetype(event) {
@@ -880,7 +880,7 @@
             });
 
             resetForm(N.archetypeForm);
-            await refresh(S.selectedDraftId, 'Archetype ajoute.');
+            await refresh(S.selectedDraftId, 'Archetype ajouté.');
         }
 
         async function addCategory(event) {
@@ -899,7 +899,7 @@
             });
 
             resetForm(N.categoryForm);
-            await refresh(S.selectedDraftId, 'Categorie ajoutee.');
+            await refresh(S.selectedDraftId, 'Catégorie ajoutée.');
         }
 
         async function addItem(event) {
@@ -927,7 +927,7 @@
             });
 
             resetForm(N.itemForm);
-            await refresh(S.selectedDraftId, 'Item ajoute.');
+            await refresh(S.selectedDraftId, 'Item ajouté.');
         }
 
         async function addModifier(event) {
@@ -954,7 +954,7 @@
             });
 
             resetForm(N.modifierForm);
-            await refresh(S.selectedDraftId, 'Modifier ajoute.');
+            await refresh(S.selectedDraftId, 'Modifier ajouté.');
         }
 
         async function publishDraft() {
@@ -966,7 +966,7 @@
                 method: 'POST',
             });
 
-            await refresh(S.selectedDraftId, 'Draft publie.');
+            await refresh(S.selectedDraftId, 'Draft publié.');
             S.publishResult = payload.data ?? null;
             renderReview();
         }
@@ -981,7 +981,7 @@
             });
 
             const nextDraft = S.drafts.find((draft) => Number(draft.id) !== Number(S.selectedDraftId));
-            await refresh(nextDraft?.id ?? null, 'Draft supprime.');
+            await refresh(nextDraft?.id ?? null, 'Draft supprimé.');
         }
 
         async function deleteEntity(type, id) {
@@ -1004,7 +1004,7 @@
                 method: 'DELETE',
             });
 
-            await refresh(S.selectedDraftId, `${type} supprime.`);
+            await refresh(S.selectedDraftId, `${type} supprimé.`);
         }
 
         document.addEventListener('click', async (event) => {
@@ -1015,7 +1015,7 @@
 
             try {
                 if (target.dataset.action === 'select-draft') {
-                    await loadDraft(Number(target.dataset.id), 'Brouillon charge.');
+                    await loadDraft(Number(target.dataset.id), 'Brouillon chargé.');
                 }
 
                 if (target.dataset.action === 'delete-entity') {
@@ -1129,10 +1129,10 @@
                 renderDrafts();
 
                 if (S.selectedDraftId) {
-                    await loadDraft(S.selectedDraftId, 'Brouillon charge.');
+                    await loadDraft(S.selectedDraftId, 'Brouillon chargé.');
                 } else {
                     renderEditor();
-                    status('Cree un draft ou ouvre un brouillon existant pour lancer le parcours de creation.');
+                    status('Crée un draft ou ouvre un brouillon existant pour lancer le parcours de création.');
                 }
 
                 await loadDrafts();

@@ -6,6 +6,8 @@
 node_modules
 vendor
 storage/logs
+storage/app/private/codmunity/bo7-live-snapshot.json
+storage/app/private/codmunity/bo7-live-snapshot
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/testing/*

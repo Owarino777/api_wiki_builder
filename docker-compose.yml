@@ -19,8 +19,9 @@ services:
       INSTALL_COMPOSER_DEPENDENCIES: "true"
       GENERATE_APP_KEY: "true"
       RUN_MIGRATIONS: "true"
-      SEED_DATABASE: "false"
+      SEED_DATABASE: "${SEED_DATABASE:-false}"
       BOOTSTRAP_BO7_MODE: "${BOOTSTRAP_BO7_MODE:-live}"
+      BOOTSTRAP_BO7_SOURCE: "${BOOTSTRAP_BO7_SOURCE:-prefer-snapshot}"
       BOOTSTRAP_BO7_FORCE: "${BOOTSTRAP_BO7_FORCE:-false}"
     volumes:
       - ./:/var/www/html
@@ -28,11 +29,18 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "php", "-r", "$$connection = @fsockopen('127.0.0.1', 9000); exit($$connection ? 0 : 1);"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
 
   web:
     image: nginx:1.27-alpine
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     ports:
       - "8000:80"
     volumes:

@@ -13,7 +13,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Artisan::command('codmunity:import-bo7 {--fresh : Reset imported BO7 game data before import} {--skip-builds : Import weapons and attachments only} {--limit= : Limit the number of weapons for a dry run} {--strict : Fail instead of falling back to the offline BO7 dataset when CODMunity is unavailable}', function () {
+Artisan::command('codmunity:import-bo7 {--fresh : Reset imported BO7 game data before import} {--skip-builds : Import weapons and attachments only} {--limit= : Limit the number of weapons for a dry run} {--source=live : live, snapshot or prefer-snapshot} {--strict : Fail instead of falling back to the offline BO7 dataset when CODMunity is unavailable}', function () {
     try {
         return app(Bo7OperationLockService::class)->runExclusive(function () {
             try {
@@ -21,9 +21,11 @@ Artisan::command('codmunity:import-bo7 {--fresh : Reset imported BO7 game data b
                     fresh: (bool) $this->option('fresh'),
                     withBuilds: !$this->option('skip-builds'),
                     limit: $this->option('limit') !== null ? (int) $this->option('limit') : null,
+                    source: (string) $this->option('source'),
                 );
 
                 $this->info('CODMunity BO7 import completed.');
+                $this->line("Source: {$summary['source']}");
                 $this->line("Game: {$summary['game']}");
                 $this->line("Weapons: {$summary['weapons']}");
                 $this->line("Modifiers: {$summary['modifiers']}");
@@ -59,11 +61,12 @@ Artisan::command('codmunity:import-bo7 {--fresh : Reset imported BO7 game data b
     }
 })->purpose('Import Black Ops 7 weapons, attachments and public loadouts from CODMunity, with offline fallback by default');
 
-Artisan::command('bo7:ensure-data {--mode=live : skip, offline, live or live-strict} {--force : Refresh the BO7 dataset even if compatible data already exists}', function () {
+Artisan::command('bo7:ensure-data {--mode=live : skip, offline, live or live-strict} {--source= : live, snapshot or prefer-snapshot} {--force : Refresh the BO7 dataset even if compatible data already exists}', function () {
     try {
         $result = app(Bo7OperationLockService::class)->runExclusive(fn () => app(Bo7DatasetBootstrapService::class)->ensure(
             mode: (string) $this->option('mode'),
             force: (bool) $this->option('force'),
+            source: $this->option('source') !== null ? (string) $this->option('source') : null,
         ));
     } catch (\RuntimeException $exception) {
         $this->warn($exception->getMessage());
@@ -85,9 +88,10 @@ Artisan::command('bo7:ensure-data {--mode=live : skip, offline, live or live-str
 
     $after = $result['after'];
     $this->table(
-        ['mode', 'dataset_flavor', 'items', 'modifiers', 'builds', 'categories'],
+        ['mode', 'source', 'dataset_flavor', 'items', 'modifiers', 'builds', 'categories'],
         [[
             $result['mode'],
+            $result['source'],
             $after['dataset_flavor'],
             $after['items'],
             $after['modifiers'],

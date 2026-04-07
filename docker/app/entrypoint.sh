@@ -59,10 +59,23 @@ if [ "${SEED_DATABASE:-false}" = "true" ]; then
 fi
 
 if [ "${BOOTSTRAP_BO7_MODE:-skip}" != "skip" ]; then
+    bootstrap_args="--mode=${BOOTSTRAP_BO7_MODE} --no-interaction"
+
+    if [ -n "${BOOTSTRAP_BO7_SOURCE:-}" ]; then
+        bootstrap_args="${bootstrap_args} --source=${BOOTSTRAP_BO7_SOURCE}"
+    fi
+
     if [ "${BOOTSTRAP_BO7_FORCE:-false}" = "true" ]; then
-        php artisan bo7:ensure-data "--mode=${BOOTSTRAP_BO7_MODE}" --force --no-interaction
-    else
-        php artisan bo7:ensure-data "--mode=${BOOTSTRAP_BO7_MODE}" --no-interaction
+        bootstrap_args="${bootstrap_args} --force"
+    fi
+
+    # Do not block php-fpm startup on a third-party dataset import in local/dev.
+    if ! php artisan bo7:ensure-data ${bootstrap_args}; then
+        if [ "${APP_ENV:-production}" = "production" ]; then
+            exit 1
+        fi
+
+        echo "BO7 bootstrap failed during container startup; continuing without blocking php-fpm." >&2
     fi
 fi
 

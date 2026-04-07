@@ -2,70 +2,99 @@
 
 ## Objectif
 
-Ce document sert de checklist de rendu pour le zip final demande dans Teams.
+Ce document sert de checklist de rendu pour le ZIP final déposé sur Teams.
 
 Nom attendu :
 
 - `<nom_prenom.zip>`
 
-Le zip doit contenir le projet complet avec son dossier `doc`, le code, le `README`, Docker et le dump SQL.
+Le ZIP doit contenir le projet complet avec :
+
+- le code source
+- le dossier `doc/`
+- le `README.md`
+- la configuration Docker
+- le snapshot BO7 local
+- le dump SQL `dump/wiki_builder.sql` à titre d'archive de rendu
+
+Important :
+
+- le ZIP n'embarque pas le volume MySQL Docker déjà lancé sur la machine de développement
+- sur la machine du prof, la base sera recréée automatiquement au démarrage
+
+## Vérification simple attendue
+
+Le scénario cible pour le prof est :
+
+```powershell
+docker compose up -d --build
+```
+
+Puis ouvrir :
+
+- `http://localhost:8000`
+- `http://localhost:8000/api/v1`
+
+Il ne doit pas y avoir d'autre commande obligatoire pour obtenir l'application fonctionnelle en lecture.
+
+## Ce que fait le démarrage Docker
+
+La commande `docker compose up -d --build` :
+
+- construit l'image PHP
+- démarre `db`, `app` et `web`
+- génère `APP_KEY` si besoin
+- lance les migrations
+- recrée la base MySQL Docker si nécessaire
+- importe automatiquement le dataset BO7 réel depuis le snapshot local inclus dans le projet
+
+Conséquence :
+
+- le prof n'a pas besoin de récupérer les données BO7 via Internet si le snapshot est présent dans le ZIP
+- si le volume MySQL est supprimé, un nouveau démarrage reconstruit la base
 
 ## Version Laravel
 
-Etat actuel du projet :
+État actuel du projet :
 
-- application basee sur Laravel 12
-- dependance declaree : `laravel/framework ^12.0`
+- application basée sur Laravel 12
+- dépendance déclarée : `laravel/framework ^12.0`
 - PHP requis par le projet : `^8.4`
 
-Point de veille documentation :
+Point de veille :
 
-- la documentation officielle Laravel 13.x est disponible
+- la documentation officielle Laravel 13.x existe
 - le projet n'a pas besoin de migrer vers Laravel 13 pour le rendu
-- si un switch est envisage plus tard, il faudra documenter le choix et suivre l'upgrade guide officiel
 
-Sources officielles consultees :
+Sources officielles consultées :
 
 - Laravel 12 Installation : https://laravel.com/docs/12.x/installation
 - Laravel 12 Configuration : https://laravel.com/docs/12.x/configuration
 - Laravel 13 Configuration : https://laravel.com/docs/13.x/configuration
 - Laravel Starter Kits : https://laravel.com/docs/13.x/starter-kits
 
-Decision recommandee pour le rendu :
+Décision retenue :
 
-- conserver Laravel 12 pour stabilite
-- documenter que Laravel 13 existe
-- ne migrer que si un besoin fonctionnel ou pedagogique le justifie
+- conserver Laravel 12 pour stabiliser le rendu
+- documenter l'existence de Laravel 13 sans migrer à la dernière minute
 
-## Starter Kit / Auth
+## Auth et interface
 
-Etat actuel implemente :
+État actuel implémenté :
 
-- inscription / connexion / deconnexion Laravel en session
+- interface publique BO7 intégrée dans Laravel
+- inscription, connexion et déconnexion web
 - dashboard utilisateur
-- resolution centralisee du user pour les ecritures API
-- creation de drafts de jeux utilisateur
-- publication transactionnelle draft -> runtime
+- création de drafts de jeux utilisateur
+- publication transactionnelle draft vers runtime
 
 Choix actuel :
 
-- auth Laravel maison dans l'existant
-- pas de front separe
-- pas de starter kit ajoute a posteriori pour ne pas destabiliser le projet avant rendu
+- auth Laravel dans l'existant
+- pas de front séparé
+- pas de starter kit ajouté tardivement pour éviter de déstabiliser le rendu
 
-Evolution recommandee plus tard si on poursuit l'IHM metier :
-
-- Laravel full-stack
-- starter kit Livewire
-- toujours sans front separe
-
-Justification :
-
-- Livewire reste dans l'ecosysteme Laravel / Blade / PHP
-- il est adapte aux parcours wizard et formulaires metier
-- il est plus simple a integrer qu'une SPA React / Vue pour ce projet
-
-## Correspondance avec les attendus du prof
+## Correspondance avec les attendus
 
 ### 1. Specs fonctionnelles et techniques
 
@@ -89,7 +118,7 @@ Fichiers :
 
 Contenu :
 
-- tout le depot
+- tout le dépôt
 
 ### 4. README d'installation
 
@@ -97,7 +126,7 @@ Fichier :
 
 - `README.md`
 
-### 5. Docker fonctionnel avec dump SQL
+### 5. Docker fonctionnel
 
 Fichiers :
 
@@ -105,16 +134,20 @@ Fichiers :
 - `docker-compose.prod.yml`
 - `Dockerfile`
 - `docker/`
+
+Archive de rendu complémentaire :
+
 - `dump/wiki_builder.sql`
 
-### 6. Front si il y en a un
+### 6. Front
 
-Etat actuel :
+État actuel :
 
-- front de demo integre dans Laravel
+- front intégré dans Laravel
 - vue principale : `resources/views/welcome.blade.php`
+- layout auth : `resources/views/components/layouts/app.blade.php`
 
-### 7. Documentation API / Endpoint
+### 7. Documentation API / endpoints
 
 Sources :
 
@@ -122,7 +155,7 @@ Sources :
 - `routes/api.php`
 - `app/Http/Controllers/Api/ApiHomeController.php`
 
-### 8. L'API
+### 8. API
 
 Sources :
 
@@ -131,22 +164,15 @@ Sources :
 - `app/Http/Requests/`
 - `app/Http/Resources/`
 
-## Commandes de verification
+## Commandes de vérification
 
-### Demarrage cle en main via Docker
+### Démarrage clé en main via Docker
 
 ```powershell
-Copy-Item .env.example .env
 docker compose up -d --build
 ```
 
-### Seed complet de demonstration
-
-```powershell
-docker compose exec app php artisan db:seed --force
-```
-
-### Verification rapide API
+### Vérification rapide de l'API
 
 ```powershell
 curl.exe http://localhost:8000/api/v1
@@ -154,31 +180,38 @@ curl.exe "http://localhost:8000/api/v1/games"
 curl.exe "http://localhost:8000/api/v1/builds?game_id=1&is_public=true"
 ```
 
-### Verification interface
+### Vérification de l'interface
 
 Ouvrir :
 
 - `http://localhost:8000`
 - `http://localhost:8000/login`
 - `http://localhost:8000/register`
-- `http://localhost:8000/dashboard`
+
+### Vérification facultative des seeds de développement
+
+Cette étape n'est pas requise pour le rendu minimal, mais elle peut servir si l'on veut charger des comptes et des clés API de démonstration :
+
+```powershell
+docker compose exec app php artisan db:seed --force
+```
 
 ## Point d'attention environnement
 
-Le projet demande PHP 8.4 si tu l'executes hors Docker.
+Le projet demande PHP 8.4 si on l'exécute hors Docker.
 
-Si la machine locale est en PHP 8.2, les commandes `php artisan ...` et `vendor/bin/pest` lancees hors conteneur peuvent echouer meme si Docker fonctionne correctement.
+Si la machine locale est en PHP 8.2, les commandes `php artisan ...` lancées hors conteneur peuvent échouer même si Docker fonctionne correctement.
 
-Pour le rendu, la voie de reference a documenter est donc :
+Pour le rendu, la voie de référence à documenter est donc :
 
-- execution via Docker
+- exécution via Docker
 
-## Checklist avant zip
+## Checklist avant ZIP
 
-- verifier que le `README.md` est a jour
-- verifier que `dump/wiki_builder.sql` est present
-- verifier que les documents du dossier `doc/` sont bien inclus
-- verifier que Docker demarre sans etape manquante
-- verifier que l'API repond sur `/api/v1`
-- verifier que l'interface web repond sur `/`
+- vérifier que le `README.md` est à jour
+- vérifier que les documents du dossier `doc/` sont inclus
+- vérifier que le snapshot BO7 dans `storage/app/private/codmunity/` est bien présent
+- vérifier que Docker démarre sans étape manquante
+- vérifier que l'API répond sur `/api/v1`
+- vérifier que l'interface web répond sur `/`
 - zipper tout le projet sous le nom attendu

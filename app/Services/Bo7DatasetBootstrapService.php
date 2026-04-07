@@ -44,9 +44,10 @@ class Bo7DatasetBootstrapService
         ];
     }
 
-    public function ensure(string $mode = 'offline', bool $force = false): array
+    public function ensure(string $mode = 'offline', bool $force = false, ?string $source = null): array
     {
         $mode = $this->normalizeMode($mode);
+        $source = $this->normalizeSource($source ?? (string) env('BOOTSTRAP_BO7_SOURCE', 'prefer-snapshot'));
         $before = $this->inspect();
 
         if ($mode === 'skip') {
@@ -54,6 +55,7 @@ class Bo7DatasetBootstrapService
                 'action' => 'skipped',
                 'reason' => 'mode_skip',
                 'mode' => $mode,
+                'source' => $source,
                 'before' => $before,
                 'after' => $before,
             ];
@@ -64,6 +66,7 @@ class Bo7DatasetBootstrapService
                 'action' => 'skipped',
                 'reason' => 'already_satisfied',
                 'mode' => $mode,
+                'source' => $source,
                 'before' => $before,
                 'after' => $before,
             ];
@@ -75,6 +78,7 @@ class Bo7DatasetBootstrapService
             return [
                 'action' => 'seeded_offline',
                 'mode' => $mode,
+                'source' => $source,
                 'before' => $before,
                 'after' => $this->inspect(),
             ];
@@ -85,11 +89,13 @@ class Bo7DatasetBootstrapService
                 fresh: true,
                 withBuilds: true,
                 limit: null,
+                source: $source,
             );
 
             return [
                 'action' => 'imported_live',
                 'mode' => $mode,
+                'source' => $summary['source'] ?? $source,
                 'before' => $before,
                 'after' => $this->inspect(),
                 'summary' => $summary,
@@ -104,6 +110,7 @@ class Bo7DatasetBootstrapService
             return [
                 'action' => 'fallback_offline',
                 'mode' => $mode,
+                'source' => $source,
                 'before' => $before,
                 'after' => $this->inspect(),
                 'error' => $exception->getMessage(),
@@ -185,6 +192,19 @@ class Bo7DatasetBootstrapService
         if (!in_array($normalized, ['skip', 'offline', 'live', 'live-strict'], true)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid BO7 bootstrap mode "%s". Expected skip, offline, live or live-strict.', $mode)
+            );
+        }
+
+        return $normalized;
+    }
+
+    private function normalizeSource(string $source): string
+    {
+        $normalized = trim(strtolower($source));
+
+        if (!in_array($normalized, ['live', 'snapshot', 'prefer-snapshot'], true)) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid BO7 import source "%s". Expected live, snapshot or prefer-snapshot.', $source)
             );
         }
 

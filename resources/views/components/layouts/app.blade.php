@@ -28,15 +28,15 @@
                 <a class="btn" href="{{ route('home') }}">Accueil</a>
                 <a class="btn" href="/api/v1">API</a>
                 @auth
-                    <a class="btn" href="{{ route('studio.games.create') }}">Creer un jeu</a>
+                    <a class="btn" href="{{ route('studio.games.create') }}">Créer un jeu</a>
                     <a class="btn primary" href="{{ route('dashboard') }}">Dashboard</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button class="btn danger" type="submit">Deconnexion</button>
+                        <button class="btn danger" type="submit">Déconnexion</button>
                     </form>
                 @else
                     <a class="btn" href="{{ route('login') }}">Connexion</a>
-                    <a class="btn primary" href="{{ route('register') }}">Creer un compte</a>
+                    <a class="btn primary" href="{{ route('register') }}">Créer un compte</a>
                 @endauth
             </div>
         </header>
