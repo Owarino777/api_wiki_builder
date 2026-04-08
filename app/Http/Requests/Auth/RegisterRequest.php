@@ -20,6 +20,8 @@ class RegisterRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:190', Rule::unique('users', 'email')],
             'display_name' => ['nullable', 'string', 'max:120'],
             'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+            'privacy_policy_acknowledged' => ['required', 'accepted'],
+            'marketing_opt_in' => ['nullable', 'boolean'],
         ];
     }
 }

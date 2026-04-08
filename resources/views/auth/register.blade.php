@@ -49,7 +49,25 @@
                 </div>
             </div>
 
+            <label class="checkbox">
+                <input name="privacy_policy_acknowledged" type="checkbox" value="1" {{ old('privacy_policy_acknowledged') ? 'checked' : '' }}>
+                <span>J'ai lu la <a href="{{ route('privacy') }}" style="text-decoration:underline;">politique de confidentialite</a> et je comprends l'usage de mes donnees pour fournir le service.</span>
+            </label>
+            @error('privacy_policy_acknowledged')
+                <span class="error">{{ $message }}</span>
+            @enderror
+
+            <label class="checkbox">
+                <input name="marketing_opt_in" type="checkbox" value="1" {{ old('marketing_opt_in') ? 'checked' : '' }}>
+                <span>J'accepte de recevoir des informations produit. Ce consentement est optionnel.</span>
+            </label>
+
             <button class="btn primary" type="submit">Créer mon compte</button>
         </form>
+
+        <div class="actions">
+            <a class="btn" href="{{ route('login') }}">J'ai deja un compte</a>
+            <a class="btn" href="{{ route('privacy') }}">Confidentialite</a>
+        </div>
     </section>
 </x-layouts.app>

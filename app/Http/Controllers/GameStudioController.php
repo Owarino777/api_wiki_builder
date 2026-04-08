@@ -43,6 +43,7 @@ class GameStudioController extends Controller
                 ->take(6)
                 ->get(),
             'writeApiKey' => ApiKey::query()
+                ->where('user_id', $user->id)
                 ->where('is_active', true)
                 ->orderBy('id')
                 ->value('key'),

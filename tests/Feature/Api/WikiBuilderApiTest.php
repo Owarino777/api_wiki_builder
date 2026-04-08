@@ -136,7 +136,7 @@ it('rejects admin routes without an admin user header', function (): void {
             'score' => 55,
         ],
         [
-            'API-KEY' => 'dev-wiki-builder-key-1234567890abcdef',
+            'API-KEY' => 'dev-player-key-1234567890abcdef',
             'X-WIKI-ACTOR-ID' => '2',
         ]
     );
@@ -145,7 +145,7 @@ it('rejects admin routes without an admin user header', function (): void {
         ->assertJsonPath('success', false);
 });
 
-it('requires an actor header for protected draft routes', function (): void {
+it('accepts a protected draft route with a user-bound api key even without actor header', function (): void {
     $response = $this->postJson(
         '/api/v1/game-drafts',
         [
@@ -153,12 +153,31 @@ it('requires an actor header for protected draft routes', function (): void {
             'name' => 'Missing Actor',
             'slug' => 'missing-actor',
         ],
-        ['API-KEY' => 'dev-wiki-builder-key-1234567890abcdef']
+        ['API-KEY' => 'dev-player-key-1234567890abcdef']
     );
 
-    $response->assertUnauthorized()
+    $response->assertCreated()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.owner_user_id', 2);
+});
+
+it('rejects a mismatched actor header when the api key is bound to another user', function (): void {
+    $response = $this->postJson(
+        '/api/v1/game-drafts',
+        [
+            'category_key' => 'fps',
+            'name' => 'Bad Actor',
+            'slug' => 'bad-actor',
+        ],
+        [
+            'API-KEY' => 'dev-player-key-1234567890abcdef',
+            'X-WIKI-ACTOR-ID' => '1',
+        ]
+    );
+
+    $response->assertForbidden()
         ->assertJsonPath('success', false)
-        ->assertJsonPath('message', 'Authenticated user context is required.');
+        ->assertJsonPath('message', 'API key does not match the provided user context.');
 });
 
 it('rejects cross game items in a build', function (): void {
@@ -174,7 +193,7 @@ it('rejects cross game items in a build', function (): void {
             ],
         ],
         [
-            'API-KEY' => 'dev-wiki-builder-key-1234567890abcdef',
+            'API-KEY' => 'dev-player-key-1234567890abcdef',
             'X-WIKI-ACTOR-ID' => '2',
         ]
     );
@@ -209,7 +228,7 @@ it('rejects incompatible modifiers in a build', function (): void {
             ],
         ],
         [
-            'API-KEY' => 'dev-wiki-builder-key-1234567890abcdef',
+            'API-KEY' => 'dev-player-key-1234567890abcdef',
             'X-WIKI-ACTOR-ID' => '2',
         ]
     );
@@ -318,7 +337,7 @@ it('rejects compare between builds from different games', function (): void {
 
 it('publishes a user game draft through the protected workflow', function (): void {
     $headers = [
-        'API-KEY' => 'dev-wiki-builder-key-1234567890abcdef',
+        'API-KEY' => 'dev-player-key-1234567890abcdef',
         'X-WIKI-ACTOR-ID' => '2',
     ];
 

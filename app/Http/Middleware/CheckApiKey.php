@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\ApiKey;
 use App\Support\ApiResponse;
+use App\Support\RequestUserHeader;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,6 +29,16 @@ class CheckApiKey
         }
 
         $request->attributes->set('api_key', $apiKey);
+
+        if ($apiKey->user !== null) {
+            $headerUserId = RequestUserHeader::extractUserId($request);
+
+            if ($headerUserId !== null && $headerUserId !== $apiKey->user_id) {
+                return ApiResponse::error('API key does not match the provided user context.', 403);
+            }
+
+            $request->attributes->set('request_user', $apiKey->user);
+        }
 
         return $next($request);
     }

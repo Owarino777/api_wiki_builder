@@ -54,6 +54,9 @@ class WikiBuilderSeeder extends Seeder
                     'address_line_1' => '1 Rue du Wiki',
                     'avatar_url' => 'https://example.com/avatars/admin.png',
                     'is_anonymized' => false,
+                    'privacy_policy_accepted_at' => $now,
+                    'privacy_policy_version' => '2026-04-08',
+                    'last_login_at' => $now,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ],
@@ -73,17 +76,32 @@ class WikiBuilderSeeder extends Seeder
                     'address_line_1' => '9 Avenue Builder',
                     'avatar_url' => 'https://example.com/avatars/player1.png',
                     'is_anonymized' => false,
+                    'privacy_policy_accepted_at' => $now,
+                    'privacy_policy_version' => '2026-04-08',
+                    'marketing_consent_at' => $now,
+                    'last_login_at' => $now,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ],
             ]);
 
             DB::table('api_keys')->insert([
-                'key' => 'dev-wiki-builder-key-1234567890abcdef',
-                'label' => 'Postman Dev Key',
-                'is_active' => true,
-                'created_at' => $now,
-                'updated_at' => $now,
+                [
+                    'user_id' => 1,
+                    'key' => 'dev-admin-key-1234567890abcdef',
+                    'label' => 'Admin Dev Key',
+                    'is_active' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+                [
+                    'user_id' => 2,
+                    'key' => 'dev-player-key-1234567890abcdef',
+                    'label' => 'Player Dev Key',
+                    'is_active' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
             ]);
 
             DB::table('archetypes')->insert(array_merge(

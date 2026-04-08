@@ -30,6 +30,10 @@ class User extends Authenticatable
         'avatar_url',
         'is_anonymized',
         'anonymized_at',
+        'privacy_policy_accepted_at',
+        'privacy_policy_version',
+        'marketing_consent_at',
+        'last_login_at',
     ];
 
     protected $hidden = [
@@ -45,7 +49,15 @@ class User extends Authenticatable
             'birth_date' => 'date',
             'is_anonymized' => 'boolean',
             'anonymized_at' => 'datetime',
+            'privacy_policy_accepted_at' => 'datetime',
+            'marketing_consent_at' => 'datetime',
+            'last_login_at' => 'datetime',
         ];
+    }
+
+    public function apiKeys(): HasMany
+    {
+        return $this->hasMany(ApiKey::class);
     }
 
     public function builds(): HasMany

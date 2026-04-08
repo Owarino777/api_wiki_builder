@@ -32,6 +32,11 @@
             <button class="btn primary" type="submit">Se connecter</button>
         </form>
 
-        <p class="helper">Aucun compte de démonstration n'est créé par défaut. Utilise l'inscription pour créer un compte ou lance un seed de développement si tu veux des comptes déjà prêts.</p>
+        <div class="actions">
+            <a class="btn" href="{{ route('register') }}">Creer un compte</a>
+            <a class="btn" href="{{ route('privacy') }}">Confidentialite</a>
+        </div>
+
+        <p class="helper">Aucun compte de demonstration n'est cree par defaut. Utilise l'inscription pour creer un compte ou lance un seed de developpement si tu veux des comptes deja prets.</p>
     </section>
 </x-layouts.app>

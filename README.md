@@ -206,6 +206,7 @@ Conséquences :
 
 - la lecture publique BO7 fonctionne immédiatement
 - l'interface d'auth web fonctionne
+- les pages web utiles sont accessibles via `/login`, `/register`, `/dashboard`, `/account` et `/privacy`
 - les écritures API depuis la page d'accueil nécessitent un utilisateur et une clé API déjà présents en base
 
 Si tu veux démontrer rapidement les routes d'écriture avec des comptes déjà prêts, tu peux lancer le seed de développement :
@@ -213,6 +214,16 @@ Si tu veux démontrer rapidement les routes d'écriture avec des comptes déjà 
 ```powershell
 docker compose exec app php artisan db:seed --force
 ```
+
+Le seed crée alors deux comptes de démonstration :
+
+- `admin@wikibuilder.local` / `builder123`
+- `player1@wikibuilder.local` / `builder123`
+
+Et deux clés API de démonstration :
+
+- `dev-admin-key-1234567890abcdef`
+- `dev-player-key-1234567890abcdef`
 
 ## Réseau école et erreur TLS
 

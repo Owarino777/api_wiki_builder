@@ -20,6 +20,8 @@ class ApiHomeController extends Controller
                 'login' => url('/login'),
                 'register' => url('/register'),
                 'dashboard' => url('/dashboard'),
+                'account' => url('/account'),
+                'privacy' => url('/privacy'),
             ],
             'public_routes' => [
                 ['method' => 'GET', 'path' => '/api/v1/games', 'usage' => 'Liste des jeux'],
@@ -32,7 +34,7 @@ class ApiHomeController extends Controller
             'protected_routes' => [
                 'write_header' => 'API-KEY',
                 'actor_headers' => ['X-WIKI-ACTOR-ID', 'X-BUILDER-USER-ID', 'X-USER-ID'],
-                'user_context' => 'Le user d ecriture est resolu via un header actor dedie ou futur auth contextualise, jamais via user_id payload.',
+                'user_context' => 'Le user d ecriture est derive prioritairement de la cle API liee au compte. Les headers actor restent tolérés pour compatibilite mais doivent correspondre a la cle.',
                 'write_examples' => [
                     ['method' => 'POST', 'path' => '/api/v1/builds'],
                     ['method' => 'POST', 'path' => '/api/v1/game-drafts'],

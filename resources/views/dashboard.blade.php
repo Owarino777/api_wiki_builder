@@ -8,6 +8,7 @@
 
         <div class="actions">
             <a class="btn primary" href="{{ route('studio.games.create') }}">Créer un jeu</a>
+            <a class="btn" href="{{ route('account') }}">Mon compte</a>
             <a class="btn" href="{{ route('home') }}">Retour à l'accueil</a>
             <a class="btn" href="/api/v1">Voir l'API</a>
         </div>

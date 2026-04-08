@@ -57,7 +57,7 @@
 
             @if (! $writeApiKey)
                 <div class="note danger">
-                    Aucune `API-KEY` active n'a été trouvée. La page reste visible, mais la création de draft ne pourra pas envoyer les écritures tant qu'une clé active n'aura pas été seedée.
+                    Aucune `API-KEY` active liee a ton compte n'a ete trouvee. La page reste visible, mais la creation de draft ne pourra pas envoyer les ecritures tant qu'une cle active n'aura pas ete seedee pour cet utilisateur.
                 </div>
             @endif
 
