@@ -92,12 +92,6 @@
                             </div>
                         @endif
                     </div>
-
-                    <div class="status-card">
-                        <span class="mini">Accès</span>
-                        <strong>Lecture publique</strong>
-                        <p class="muted">Le catalogue et les builds publics restent consultables sans configuration technique supplémentaire.</p>
-                    </div>
                 </aside>
             </div>
         </section>
