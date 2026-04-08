@@ -1,78 +1,130 @@
 <x-layouts.app :title="'Mon compte - Wiki Builder API'">
-    <section class="panel card">
-        <span class="pill">Compte</span>
-        <div>
-            <h1 style="font-size:38px;line-height:1;">{{ $user->display_name ?: $user->username }}</h1>
-            <p class="helper" style="margin-top:10px;">Cet espace centralise l'accès a tes donnees personnelles, a l'export RGPD et aux actions sensibles sur ton compte.</p>
-        </div>
+    @php
+        $displayName = $user->display_name ?: $user->username;
+        $accountStatus = $user->anonymized_at ? 'Anonymisé' : 'Actif';
+    @endphp
 
-        <div class="actions">
-            <a class="btn primary" href="{{ route('dashboard') }}">Retour au dashboard</a>
-            <a class="btn" href="{{ route('privacy') }}">Lire la politique de confidentialite</a>
-            <a class="btn" href="{{ route('account.export') }}">Exporter mes donnees</a>
+    <section class="panel hero-panel">
+        <div class="hero-main">
+            <div class="hero-copy">
+                <span class="eyebrow">Account center</span>
+                <h1>Ton compte, sans friction.</h1>
+                <p class="lead">
+                    Retrouve ici tes informations essentielles, tes droits RGPD et les actions sensibles
+                    dans un espace plus clair, plus sûr et plus lisible.
+                </p>
+                <div class="hero-actions">
+                    <a class="btn primary" href="{{ route('account.export') }}">Exporter mes données</a>
+                    <a class="btn ghost" href="{{ route('privacy') }}">Voir la politique</a>
+                    <a class="btn subtle" href="{{ route('dashboard') }}">Retour au dashboard</a>
+                </div>
+                <div class="hero-note">
+                    <span>{{ $displayName }}</span>
+                    <span>•</span>
+                    <span>{{ $user->email }}</span>
+                </div>
+            </div>
+
+            <article class="spotlight-card">
+                <span class="eyebrow">Aperçu</span>
+                <h2>{{ $displayName }}</h2>
+                <div class="keyline">
+                    <span>Statut du compte</span>
+                    <strong>{{ $accountStatus }}</strong>
+                </div>
+                <div class="keyline">
+                    <span>Politique acceptée</span>
+                    <strong>{{ $user->privacy_policy_accepted_at?->format('d/m/Y') ?? 'Non renseigné' }}</strong>
+                </div>
+                <div class="keyline">
+                    <span>Dernière connexion</span>
+                    <strong>{{ $user->last_login_at?->format('d/m/Y') ?? 'Première session' }}</strong>
+                </div>
+                <div class="keyline">
+                    <span>Marketing</span>
+                    <strong>{{ $user->marketing_consent_at ? 'Accordé' : 'Non accordé' }}</strong>
+                </div>
+                <div class="keyline">
+                    <span>Version de politique</span>
+                    <strong>{{ $policyVersion }}</strong>
+                </div>
+            </article>
         </div>
     </section>
 
-    <section class="stats">
-        <article class="metric">
+    <section class="info-grid">
+        <article class="info-card">
+            <span>Email</span>
             <strong>{{ $user->email }}</strong>
-            <span>Email de connexion</span>
         </article>
-        <article class="metric">
-            <strong>{{ $user->username }}</strong>
+        <article class="info-card">
             <span>Username</span>
+            <strong>{{ $user->username }}</strong>
         </article>
-        <article class="metric">
-            <strong>{{ $user->privacy_policy_accepted_at?->format('d/m/Y H:i') ?? 'Non renseigne' }}</strong>
-            <span>Politique acceptee</span>
+        <article class="info-card">
+            <span>Rôle</span>
+            <strong>{{ $user->role->value ?? $user->role }}</strong>
         </article>
-        <article class="metric">
-            <strong>{{ $user->last_login_at?->format('d/m/Y H:i') ?? 'Premiere session' }}</strong>
-            <span>Derniere connexion</span>
+        <article class="info-card">
+            <span>Session</span>
+            <strong>{{ $user->last_login_at?->format('d/m/Y H:i') ?? 'En cours' }}</strong>
         </article>
     </section>
 
-    <section class="grid">
-        <article class="panel card">
-            <h2>Donnees conservees</h2>
-            <p class="helper">Le compte conserve seulement les informations utiles au fonctionnement de l'espace utilisateur, des builds et des brouillons. Les champs facultatifs restent vides tant qu'ils ne sont pas renseignes.</p>
-            <div class="list">
+    <section class="section-shell">
+        <article class="panel section-card">
+            <div class="section-head">
+                <div class="section-copy">
+                    <span class="eyebrow">Données</span>
+                    <h2>Ce qui est conservé</h2>
+                </div>
+            </div>
+
+            <div class="feature-list">
                 <article>
-                    <strong>Identifiants</strong>
-                    <p class="helper">Username, email, mot de passe chiffre, role et dates techniques de compte.</p>
+                    <strong>Identité de compte</strong>
+                    <p class="helper compact">Email, username, rôle, dates techniques et mot de passe chiffré.</p>
                 </article>
                 <article>
-                    <strong>Contenus lies au compte</strong>
-                    <p class="helper">Builds personnels, jeux possedes et brouillons en cours de creation.</p>
+                    <strong>Contenus liés</strong>
+                    <p class="helper compact">Jeux, builds et brouillons associés à ton espace utilisateur.</p>
                 </article>
                 <article>
                     <strong>Consentements</strong>
-                    <p class="helper">Version de la politique lue, consentement marketing optionnel et date de derniere connexion.</p>
+                    <p class="helper compact">Acceptation de la politique, dernière connexion et choix marketing optionnel.</p>
                 </article>
             </div>
         </article>
 
-        <article class="panel card">
-            <h2>Mes droits RGPD</h2>
-            <p class="helper">Tu peux exporter tes donnees dans un JSON lisible, anonymiser le profil ou supprimer le compte. Les actions sensibles demandent toujours ton mot de passe actuel.</p>
-            <div class="list">
+        <article class="panel action-card">
+            <span class="eyebrow">Actions rapides</span>
+            <h3>Confidentialité</h3>
+            <div class="action-list">
                 <article>
-                    <strong>Version de la politique</strong>
-                    <p class="helper">{{ $policyVersion }}</p>
+                    <strong>Export RGPD</strong>
+                    <p class="helper compact">Téléchargement immédiat de tes données au format JSON.</p>
+                    <div class="section-actions">
+                        <a class="btn ghost" href="{{ route('account.export') }}">Télécharger</a>
+                    </div>
                 </article>
                 <article>
-                    <strong>Consentement marketing</strong>
-                    <p class="helper">{{ $user->marketing_consent_at ? 'Accorde' : 'Non accorde' }}</p>
+                    <strong>Politique de confidentialité</strong>
+                    <p class="helper compact">Version {{ $policyVersion }} avec les principes appliqués.</p>
+                    <div class="section-actions">
+                        <a class="btn ghost" href="{{ route('privacy') }}">Consulter</a>
+                    </div>
                 </article>
             </div>
         </article>
     </section>
 
-    <section class="grid">
-        <article class="panel card">
-            <span class="pill">Anonymisation</span>
-            <h2>Retirer mes donnees nominatives</h2>
-            <p class="helper">Cette action retire tes donnees personnelles, desactive tes cles API et ferme la session. Tes builds sont detaches du compte et tes brouillons sont supprimes.</p>
+    <section class="duo-grid">
+        <article class="panel action-card">
+            <span class="eyebrow">Anonymisation</span>
+            <h3>Retirer mes données nominatives</h3>
+            <p class="helper compact">
+                Cette action retire les données personnelles du compte et ferme la session.
+            </p>
             <form method="POST" action="{{ route('account.anonymize') }}">
                 @csrf
                 <div class="field">
@@ -82,14 +134,16 @@
                         <span class="error">{{ $message }}</span>
                     @enderror
                 </div>
-                <button class="btn" type="submit">Anonymiser mon compte</button>
+                <button class="btn ghost" type="submit">Anonymiser mon compte</button>
             </form>
         </article>
 
-        <article class="panel card">
-            <span class="pill">Suppression</span>
-            <h2>Supprimer definitivement mon compte</h2>
-            <p class="helper">Cette action supprime le compte. Les builds sont detaches du compte, les cles API sont supprimees et la session est fermee immediatement.</p>
+        <article class="panel action-card danger">
+            <span class="eyebrow">Suppression</span>
+            <h3>Supprimer définitivement mon compte</h3>
+            <p class="helper compact">
+                Cette zone est volontairement isolée. La suppression est irréversible et met fin à la session.
+            </p>
             <form method="POST" action="{{ route('account.destroy') }}">
                 @csrf
                 @method('DELETE')
@@ -102,7 +156,7 @@
                 </div>
                 <label class="checkbox">
                     <input name="confirm_delete" type="checkbox" value="1" {{ old('confirm_delete') ? 'checked' : '' }}>
-                    <span>Je confirme vouloir supprimer definitivement ce compte et comprendre que cette action est irreversible.</span>
+                    <span>Je confirme la suppression définitive de mon compte.</span>
                 </label>
                 @error('confirm_delete')
                     <span class="error">{{ $message }}</span>
