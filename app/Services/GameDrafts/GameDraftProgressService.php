@@ -47,7 +47,10 @@ class GameDraftProgressService
             $record->status = $step['status'];
             $record->blocking_errors_count = count($step['errors']);
             $record->warnings_count = count($step['warnings']);
-            $record->payload_snapshot = $step['snapshot'];
+            $record->payload_snapshot = array_merge($step['snapshot'], [
+                'errors' => $step['errors'],
+                'warnings' => $step['warnings'],
+            ]);
             $record->last_validated_at = $now;
 
             if ($stepKey === $savedStep) {

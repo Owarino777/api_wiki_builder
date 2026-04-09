@@ -73,6 +73,32 @@ class GameCategoryTemplateRegistry
                     'items' => 4,
                     'modifiers' => 3,
                 ],
+                'starter_archetypes' => [
+                    ['name' => 'Assaillant', 'slug' => 'assaillant', 'description' => 'Profil polyvalent pour les combats a moyenne distance.'],
+                    ['name' => 'Sniper', 'slug' => 'sniper', 'description' => 'Profil precision, controle de ligne et faible mobilite.'],
+                    ['name' => 'Support', 'slug' => 'support', 'description' => 'Profil utilitaire avec gadgets et controle d espace.'],
+                ],
+                'starter_categories' => [
+                    ['label' => 'Assault rifle', 'slug' => 'assault-rifle', 'description' => 'Armes polyvalentes et adaptables.'],
+                    ['label' => 'SMG', 'slug' => 'smg', 'description' => 'Armes tres mobiles pour le close range.'],
+                    ['label' => 'Sniper rifle', 'slug' => 'sniper-rifle', 'description' => 'Armes a fort impact et cadence plus faible.'],
+                    ['label' => 'Equipment', 'slug' => 'equipment', 'description' => 'Gadgets, grenades et outils de terrain.'],
+                ],
+                'suggested_item_slots' => [
+                    'weapon' => [
+                        ['slot_key' => 'optic', 'slot_label' => 'Optique', 'accepted_modifier_type' => 'optic', 'is_required' => false],
+                        ['slot_key' => 'muzzle', 'slot_label' => 'Bouche', 'accepted_modifier_type' => 'muzzle', 'is_required' => false],
+                        ['slot_key' => 'barrel', 'slot_label' => 'Canon', 'accepted_modifier_type' => 'barrel', 'is_required' => false],
+                        ['slot_key' => 'magazine', 'slot_label' => 'Chargeur', 'accepted_modifier_type' => 'magazine', 'is_required' => false],
+                        ['slot_key' => 'stock', 'slot_label' => 'Crosse', 'accepted_modifier_type' => 'stock', 'is_required' => false],
+                    ],
+                    'secondary' => [
+                        ['slot_key' => 'optic', 'slot_label' => 'Optique', 'accepted_modifier_type' => 'optic', 'is_required' => false],
+                        ['slot_key' => 'muzzle', 'slot_label' => 'Bouche', 'accepted_modifier_type' => 'muzzle', 'is_required' => false],
+                        ['slot_key' => 'laser', 'slot_label' => 'Laser', 'accepted_modifier_type' => 'laser', 'is_required' => false],
+                    ],
+                    'equipment' => [],
+                ],
             ],
             'rpg' => [
                 'key' => 'rpg',
@@ -88,6 +114,35 @@ class GameCategoryTemplateRegistry
                     'categories' => 2,
                     'items' => 6,
                     'modifiers' => 3,
+                ],
+                'starter_archetypes' => [
+                    ['name' => 'Guerrier', 'slug' => 'guerrier', 'description' => 'Profil melee resistant et stable.'],
+                    ['name' => 'Mage', 'slug' => 'mage', 'description' => 'Profil puissance et utilite magique.'],
+                    ['name' => 'Voleur', 'slug' => 'voleur', 'description' => 'Profil mobilite, critique et precision.'],
+                ],
+                'starter_categories' => [
+                    ['label' => 'Main weapon', 'slug' => 'main-weapon', 'description' => 'Armes principales du personnage.'],
+                    ['label' => 'Armor', 'slug' => 'armor', 'description' => 'Pieces defensives et equipements de protection.'],
+                    ['label' => 'Jewelry', 'slug' => 'jewelry', 'description' => 'Objets de bonus et synergies de build.'],
+                    ['label' => 'Consumable', 'slug' => 'consumable', 'description' => 'Objets ponctuels et supports temporaires.'],
+                ],
+                'suggested_item_slots' => [
+                    'weapon' => [
+                        ['slot_key' => 'socket', 'slot_label' => 'Socket', 'accepted_modifier_type' => 'socket', 'is_required' => false],
+                        ['slot_key' => 'enchant', 'slot_label' => 'Enchantement', 'accepted_modifier_type' => 'enchant', 'is_required' => false],
+                    ],
+                    'helmet' => [
+                        ['slot_key' => 'rune', 'slot_label' => 'Rune', 'accepted_modifier_type' => 'rune', 'is_required' => false],
+                    ],
+                    'armor' => [
+                        ['slot_key' => 'gem', 'slot_label' => 'Gemme', 'accepted_modifier_type' => 'gem', 'is_required' => false],
+                        ['slot_key' => 'enchant', 'slot_label' => 'Enchantement', 'accepted_modifier_type' => 'enchant', 'is_required' => false],
+                    ],
+                    'gloves' => [],
+                    'boots' => [],
+                    'trinket' => [
+                        ['slot_key' => 'socket', 'slot_label' => 'Socket', 'accepted_modifier_type' => 'socket', 'is_required' => false],
+                    ],
                 ],
             ],
         ];

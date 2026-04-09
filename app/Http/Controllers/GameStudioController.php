@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ApiKey;
 use App\Models\Game;
 use App\Models\GameDraft;
 use App\Services\GameDrafts\GameCategoryTemplateRegistry;
@@ -42,11 +41,6 @@ class GameStudioController extends Controller
                 ->latest('updated_at')
                 ->take(6)
                 ->get(),
-            'writeApiKey' => ApiKey::query()
-                ->where('user_id', $user->id)
-                ->where('is_active', true)
-                ->orderBy('id')
-                ->value('key'),
         ]);
     }
 }

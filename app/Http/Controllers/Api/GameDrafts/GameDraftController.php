@@ -96,6 +96,8 @@ class GameDraftController extends OwnedGameDraftController
             return ApiResponse::error('Draft not found.', 404);
         }
 
+        $draft = $this->progressService->refresh($draft);
+
         return ApiResponse::success((new GameDraftResource($this->loadDraft($draft->id)))->toArray($request));
     }
 

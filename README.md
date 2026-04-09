@@ -73,6 +73,12 @@ docker compose down -v
 
 Au prochain `docker compose up -d --build`, la base sera recréée automatiquement.
 
+Note :
+
+- `docker compose down -v` supprime les volumes du projet, sauf si un conteneur one-shot créé avec `docker compose run` les utilise encore
+- si les services tournent déjà, préfère toujours `docker compose exec ...` à `docker compose run ...`
+- si tu dois lancer un conteneur ponctuel, préfère `docker compose run --rm ...` pour qu'il soit supprimé automatiquement à la fin
+
 ## Ce que contient le ZIP
 
 Le ZIP doit contenir :
@@ -180,6 +186,9 @@ Cette commande :
 - restaure BO7 depuis le snapshot s'il est disponible
 - retente le live si nécessaire
 
+Quand le stack Docker est déjà démarré, garde cette forme avec `docker compose exec app ...`.
+N'utilise `docker compose run app ...` que pour un one-shot hors stack, et dans ce cas préfère `docker compose run --rm app ...` pour éviter de laisser un conteneur arrêté qui bloque ensuite `docker compose down -v`.
+
 ### Seed de développement optionnel
 
 ```powershell
@@ -253,6 +262,29 @@ Dans ce cas :
 
 - attends la fin du démarrage du conteneur
 - puis relance la commande si nécessaire
+
+## Volume Docker encore utilisé
+
+Si `docker compose down -v` finit par :
+
+```text
+Resource is still in use
+```
+
+la cause la plus fréquente est un conteneur one-shot déjà arrêté, créé avec `docker compose run`, qui garde encore le volume `vendor_data`.
+
+Nettoyage minimal :
+
+```powershell
+docker rm bo7-diagnose
+docker compose down -v
+```
+
+Si tu relances un diagnostic manuel, préfère :
+
+```powershell
+docker compose run --rm app php artisan bo7:ensure-data --mode=live --source=prefer-snapshot
+```
 
 ## Commandes utiles
 

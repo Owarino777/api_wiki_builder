@@ -7,6 +7,16 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class GameDraftResource extends JsonResource
 {
+    private const STEP_ORDER = [
+        'foundation',
+        'structure',
+        'archetypes',
+        'categories',
+        'items',
+        'modifiers',
+        'review',
+    ];
+
     public function toArray(Request $request): array
     {
         return [
@@ -26,7 +36,15 @@ class GameDraftResource extends JsonResource
             'meta' => $this->meta,
             'last_validated_at' => $this->last_validated_at,
             'published_at' => $this->published_at,
-            'steps' => $this->whenLoaded('steps', fn () => GameDraftStepResource::collection($this->steps->sortBy('step_key')->values())),
+            'steps' => $this->whenLoaded('steps', function () {
+                $positions = array_flip(self::STEP_ORDER);
+
+                return GameDraftStepResource::collection(
+                    $this->steps
+                        ->sortBy(fn ($step) => $positions[$step->step_key] ?? PHP_INT_MAX)
+                        ->values()
+                );
+            }),
             'archetypes' => $this->whenLoaded('archetypes', fn () => GameDraftArchetypeResource::collection($this->archetypes)),
             'categories' => $this->whenLoaded('categories', fn () => GameDraftCategoryResource::collection($this->categories)),
             'items' => $this->whenLoaded('items', fn () => GameDraftItemResource::collection($this->items)),

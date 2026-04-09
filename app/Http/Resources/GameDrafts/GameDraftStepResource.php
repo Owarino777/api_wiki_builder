@@ -9,6 +9,8 @@ class GameDraftStepResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $snapshot = is_array($this->payload_snapshot) ? $this->payload_snapshot : [];
+
         return [
             'step_key' => $this->step_key,
             'status' => $this->status,
@@ -16,7 +18,11 @@ class GameDraftStepResource extends JsonResource
             'warnings_count' => $this->warnings_count,
             'last_saved_at' => $this->last_saved_at,
             'last_validated_at' => $this->last_validated_at,
-            'payload_snapshot' => $this->payload_snapshot,
+            'errors' => array_values(array_filter($snapshot['errors'] ?? [], 'is_string')),
+            'warnings' => array_values(array_filter($snapshot['warnings'] ?? [], 'is_string')),
+            'payload_snapshot' => collect($snapshot)
+                ->except(['errors', 'warnings'])
+                ->all(),
         ];
     }
 }
