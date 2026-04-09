@@ -1,67 +1,16 @@
-<x-layouts.app :title="'Créer un jeu - Wiki Builder API'">
-    <style>
-        .studio-layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
-        .studio-sidebar,.studio-stage{padding:22px}
-        .studio-sidebar{display:grid;gap:18px;position:sticky;top:18px}
-        .sidebar-block,.stage-card,.entity-box,.slot-row,.template-card,.draft-tile,.review-card,.published-tile{border:1px solid var(--line);border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.024),rgba(255,255,255,.01)),var(--surface-2)}
-        .sidebar-block,.stage-card,.published-tile{padding:18px}
-        .sidebar-head,.card-head,.stepper-item,.entity-row,.slot-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-        .sidebar-head h3,.card-head h2{font-size:20px;line-height:1.1;letter-spacing:-.02em}
-        .draft-summary{display:grid;gap:12px}.draft-summary.empty{color:var(--muted)}
-        .summary-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-        .summary-metric{padding:12px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid var(--line);display:grid;gap:4px}
-        .summary-metric strong{font-size:24px;line-height:1}.summary-metric span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-        .step-nav,.draft-list,.template-grid,.wizard-stack,.entity-list,.slot-list,.review-list,.published-list{display:grid;gap:12px}
-        .stepper-item{width:100%;padding:14px 16px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--text);text-align:left}
-        .stepper-item.active{border-color:rgba(90,162,255,.34);background:rgba(90,162,255,.12)}.stepper-item.locked{opacity:.55}
-        .stepper-copy{display:grid;gap:4px}.stepper-copy strong{font-size:15px}.stepper-copy span{color:var(--muted);font-size:13px}
-        .status-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;background:rgba(255,255,255,.22)}
-        .status-dot.complete{background:var(--success)}.status-dot.in_progress{background:var(--warn)}.status-dot.not_started{background:rgba(255,255,255,.22)}
-        .draft-tile,.template-card,.entity-box,.review-card,.published-tile{padding:16px;display:grid;gap:10px}
-        .draft-tile.active,.template-card.active{border-color:rgba(90,162,255,.32);background:rgba(90,162,255,.12)}
-        .draft-tile h4,.template-card h4,.entity-box h4,.published-tile h4{font-size:18px;line-height:1.1}.draft-tile p,.template-card p,.entity-box p,.published-tile p{color:var(--muted);line-height:1.55}
-        .stage-intro{display:grid;gap:8px}.stage-intro h2{font-size:30px;line-height:1;letter-spacing:-.03em}.stage-intro p{max-width:58rem}
-        .template-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-        .template-preview,.structure-preview,.review-summary{display:grid;gap:12px;padding:16px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
-        .template-preview-grid,.taxonomy-grid,.item-form-grid,.modifier-form-grid,.published-grid,.review-grid{display:grid;gap:16px}
-        .template-preview-grid,.taxonomy-grid,.published-grid,.review-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-        .item-form-grid,.modifier-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-        .field.span-2{grid-column:1 / -1}
-        .compact-note{padding:14px 16px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.025);color:var(--muted);line-height:1.55}
-        .compact-note.warn{border-color:rgba(239,180,91,.22);background:rgba(239,180,91,.08);color:#f3d2a0}.compact-note.danger{border-color:rgba(255,127,145,.22);background:rgba(255,127,145,.08);color:#ffd8de}
-        .option-grid,.checkbox-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
-        .option-card{display:flex;gap:10px;align-items:flex-start;padding:14px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
-        .option-card input{margin-top:3px}.option-card strong,.entity-row strong{display:block;font-size:15px}.option-card small,.entity-row small{display:block;color:var(--muted);line-height:1.45}
-        .entity-list{min-height:80px}.entity-row{padding:16px 0;border-bottom:1px solid var(--line)}.entity-row:last-child{border-bottom:0;padding-bottom:0}
-        .entity-meta,.entity-tools,.slot-tools,.wizard-actions,.inline-tools{display:flex;flex-wrap:wrap;gap:10px}
-        .slot-row{padding:14px 16px;align-items:center}.slot-row-main{display:grid;grid-template-columns:1.1fr 1fr auto auto;gap:10px;flex:1}.slot-row-main input,.slot-row-main select{min-height:44px}.slot-row-main label{display:grid;gap:6px;color:var(--muted);font-size:12px}
-        .wizard-actions{justify-content:space-between;align-items:center}.autosave-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:var(--muted);font-size:13px}
-        .review-card.good{border-color:rgba(104,213,167,.2)}.review-card.warn{border-color:rgba(239,180,91,.22)}.review-card strong{font-size:18px}.review-summary strong{font-size:34px;line-height:1}
-        .empty-soft{min-height:120px;display:grid;place-content:center;padding:20px;border-radius:20px;border:1px dashed var(--line-strong);background:rgba(255,255,255,.018);color:var(--muted)}
-        @media (max-width:1120px){.studio-layout,.taxonomy-grid,.review-grid,.template-preview-grid,.published-grid{grid-template-columns:1fr}.studio-sidebar{position:static}}
-        @media (max-width:820px){.item-form-grid,.modifier-form-grid,.slot-row-main,.summary-metrics{grid-template-columns:1fr}.field.span-2{grid-column:auto}.sidebar-head,.card-head,.wizard-actions{flex-direction:column;align-items:stretch}.entity-tools,.slot-tools,.inline-tools{display:grid;grid-template-columns:1fr}}
-    </style>
+<x-layouts.app :title="'Créer un jeu - Wiki Builder API'" bodyClass="page-studio" shellClass="shell-studio" mainClass="content-studio">
 
-    <section class="panel hero-panel">
-        <div class="hero-main">
-            <div class="hero-copy">
-                <span class="eyebrow">Studio</span>
-                <h1>Créer un jeu sans casser le dataset.</h1>
-                <p class="lead">Le parcours suit l'ordre metier du produit : template, base, structure, taxonomie, items, modifiers, puis revue avant publication.</p>
-                <div class="hero-actions">
-                    <a class="btn ghost" href="{{ route('dashboard') }}">Dashboard</a>
-                    <a class="btn subtle" href="{{ route('home') }}">Accueil</a>
-                </div>
-            </div>
-
-            <article class="spotlight-card">
-                <span class="eyebrow">Promesse</span>
-                <h2>Moins d'erreurs, plus de guidage</h2>
-                <div class="keyline"><span>Ordre de creation</span><strong>Dependances respectees</strong></div>
-                <div class="keyline"><span>Fondation / structure</span><strong>Autosave</strong></div>
-                <div class="keyline"><span>Revue</span><strong>Bloquants actionnables</strong></div>
-                <div class="keyline"><span>Publication</span><strong>Uniquement quand tout est coherent</strong></div>
-            </article>
+    <section class="page-head">
+        <div>
+            <span class="eyebrow">Studio</span>
+            <h1>Édition de jeu</h1>
+            <span class="subtitle">Tactical Game Editor</span>
+            <hr class="neon-line">
+            <p class="helper">Choisis un draft, complète les étapes, publie quand la revue est valide.</p>
+        </div>
+        <div class="page-head-actions">
+            <a class="btn ghost" href="{{ route('dashboard') }}">Dashboard</a>
+            <a class="btn subtle" href="{{ route('home') }}">Builder</a>
         </div>
     </section>
 
@@ -69,12 +18,12 @@
         <aside class="panel studio-sidebar">
             <section class="sidebar-block">
                 <span class="eyebrow">Draft actif</span>
-                <div id="draft-summary" class="draft-summary empty">Choisis un template puis cree un premier brouillon.</div>
+                <div id="draft-summary" class="draft-summary empty">Choisis un template puis cree un brouillon.</div>
             </section>
 
             <section class="sidebar-block">
                 <div class="sidebar-head">
-                    <h3>Etapes</h3>
+                    <h3>Progression</h3>
                     <button id="start-new-draft" class="btn ghost" type="button">Nouveau draft</button>
                 </div>
                 <div id="step-nav" class="step-nav"></div>
@@ -82,21 +31,21 @@
 
             <section class="sidebar-block">
                 <div class="sidebar-head">
-                    <h3>Mes drafts</h3>
+                    <h3>Mes brouillons</h3>
                 </div>
                 <div id="draft-list" class="draft-list"></div>
             </section>
         </aside>
 
         <section class="panel studio-stage">
-            <div id="studio-status" class="flash">Choisis un template pour lancer un brouillon propre.</div>
+            <div id="studio-status" class="flash studio-status" role="status" aria-live="polite">Choisis un template pour démarrer.</div>
 
             <div class="wizard-stack">
                 <section class="stage-card" data-step="template">
                     <div class="stage-intro">
                         <span class="eyebrow">Template</span>
                         <h2>Choisir le cadre du jeu</h2>
-                        <p class="helper">Le template fixe les capacites du draft et propose un point de depart coherent.</p>
+                        <p class="helper">Choisis un template puis crée un draft.</p>
                     </div>
                     <div id="template-grid" class="template-grid"></div>
                     <div id="template-preview" class="template-preview"></div>
@@ -111,7 +60,7 @@
                         </div>
                         <div class="field span-2">
                             <div class="wizard-actions">
-                                <p class="helper compact">Le brouillon est prive au depart et pourra etre complete par etapes.</p>
+                                <p class="helper compact">Le draft démarre en privé.</p>
                                 <button class="btn primary" type="submit">Creer le brouillon</button>
                             </div>
                         </div>
@@ -122,12 +71,12 @@
                     <div class="stage-intro">
                         <span class="eyebrow">Base</span>
                         <h2>Fondations du jeu</h2>
-                        <p class="helper">Nom final, slug, description et visibilite. Cette partie se sauvegarde automatiquement.</p>
+                        <p class="helper">Nom, slug, description, visibilite.</p>
                     </div>
                     <form id="foundation-form" class="item-form-grid">
                         <div class="field"><label for="foundation-name">Nom final</label><input id="foundation-name" type="text" required></div>
                         <div class="field"><label for="foundation-slug">Slug</label><input id="foundation-slug" type="text" required></div>
-                        <div class="field span-2"><label for="foundation-description">Description</label><textarea id="foundation-description" placeholder="Positionnement, fantasy, promesse de jeu..."></textarea></div>
+                        <div class="field span-2"><label for="foundation-description">Description</label><textarea id="foundation-description" placeholder="Description du jeu"></textarea></div>
                         <div class="field"><label for="foundation-visibility">Visibilite cible</label><select id="foundation-visibility"><option value="private">Prive</option><option value="public">Public</option></select></div>
                         <div class="field span-2"><div class="wizard-actions"><div class="autosave-row"><span id="foundation-save-state">Autosave inactif</span></div><div class="inline-tools"><button id="save-foundation" class="btn ghost" type="submit">Enregistrer maintenant</button><button class="btn primary" type="button" data-go-step="structure">Continuer</button></div></div></div>
                     </form>
@@ -137,9 +86,9 @@
                     <div class="stage-intro">
                         <span class="eyebrow">Structure</span>
                         <h2>Cadre du template</h2>
-                        <p class="helper">Tu confirmes ici les slots globaux et les types de modifiers autorises.</p>
+                        <p class="helper">Active les slots et les types de modifiers autorises.</p>
                     </div>
-                    <div id="structure-lock-note" class="compact-note warn" hidden>Certains choix sont verrouilles une fois des items ou modifiers ajoutes. Le parcours te protege contre les changements cassants.</div>
+                    <div id="structure-lock-note" class="compact-note warn" hidden>Certains choix sont verrouilles apres ajout d'items ou de modifiers.</div>
                     <form id="structure-form" class="wizard-stack">
                         <div class="option-grid">
                             <label class="option-card"><input id="supports-modifiers" type="checkbox"><span><strong>Supporte les modifiers</strong><small>Active accessoires, runes ou effets relies aux items.</small></span></label>
@@ -155,7 +104,7 @@
                     <div class="stage-intro">
                         <span class="eyebrow">Taxonomie</span>
                         <h2>Profils et categories</h2>
-                        <p class="helper">On pose d'abord les briques de classement pour eviter les items orphelins ou incoherents.</p>
+                        <p class="helper">Ajoute les profils et les categories avant les items.</p>
                     </div>
                     <div class="taxonomy-grid">
                         <article class="stage-card">
@@ -164,7 +113,7 @@
                             <form id="archetype-form" class="wizard-stack">
                                 <div class="field"><label for="archetype-name">Nom</label><input id="archetype-name" type="text" placeholder="Assaillant"></div>
                                 <div class="field"><label for="archetype-slug">Slug</label><input id="archetype-slug" type="text" placeholder="assaillant"></div>
-                                <div class="field"><label for="archetype-description">Description</label><textarea id="archetype-description" placeholder="Role, style, promesse de gameplay..."></textarea></div>
+                                <div class="field"><label for="archetype-description">Description</label><textarea id="archetype-description" placeholder="Description du profil"></textarea></div>
                                 <div class="inline-tools"><button id="save-archetype" class="btn primary" type="submit">Ajouter</button><button id="cancel-archetype-edit" class="btn subtle" type="button" hidden>Annuler</button></div>
                             </form>
                             <div id="archetype-list" class="entity-list"></div>
@@ -187,7 +136,7 @@
                     <div class="stage-intro">
                         <span class="eyebrow">Items</span>
                         <h2>Equipements du jeu</h2>
-                        <p class="helper">Chaque item herite du cadre structurel et peut recevoir des categories, des stats et des slots internes.</p>
+                        <p class="helper">Ajoute les items, leurs stats et leurs slots internes.</p>
                     </div>
                     <form id="item-form" class="wizard-stack">
                         <div class="item-form-grid">
@@ -233,7 +182,7 @@
                     <div class="stage-intro">
                         <span class="eyebrow">Modifiers</span>
                         <h2>Accessoires et effets</h2>
-                        <p class="helper">On relie ici les modifiers a des items deja existants, selon les types autorises par la structure.</p>
+                        <p class="helper">Relie les modifiers aux items compatibles.</p>
                     </div>
                     <div id="modifier-disabled-note" class="compact-note" hidden>Les modifiers sont actuellement desactives dans la structure du draft.</div>
                     <form id="modifier-form" class="wizard-stack">
@@ -266,7 +215,7 @@
                     <div class="stage-intro">
                         <span class="eyebrow">Revue</span>
                         <h2>Etat du draft et publication</h2>
-                        <p class="helper">Chaque blocage renvoie vers l'etape a corriger pour garder un parcours simple.</p>
+                        <p class="helper">Corrige les blocages puis publie.</p>
                     </div>
                     <div class="review-grid">
                         <article class="review-summary">
@@ -505,7 +454,7 @@
         }
 
         function setStatus(message, kind = 'info') {
-            N.status.className = kind === 'danger' ? 'flash compact-note danger' : 'flash';
+            N.status.className = kind === 'danger' ? 'flash compact-note danger studio-status' : 'flash studio-status';
             N.status.textContent = message;
         }
 
@@ -627,7 +576,7 @@
         function renderDraftSummary() {
             if (!S.draft) {
                 N.draftSummary.className = 'draft-summary empty';
-                N.draftSummary.innerHTML = 'Choisis un template puis cree un premier brouillon.';
+                N.draftSummary.innerHTML = 'Choisis un template puis cree un brouillon.';
                 return;
             }
             const template = templateFor(S.draft.category_key);
@@ -918,7 +867,7 @@
             N.reviewSubtitle.textContent = published
                 ? 'Jeu deja publie depuis ce brouillon.'
                 : ready
-                    ? 'Le draft est coherent et peut etre publie.'
+                    ? 'Le draft peut etre publie.'
                     : `${totalErrors} blocage(s) et ${totalWarnings} warning(s) a traiter avant publication.`;
             N.reviewItemsCount.textContent = String(counts.items);
             N.reviewModifiersCount.textContent = String(counts.modifiers);
@@ -1587,7 +1536,7 @@
             S.activeStep = 'template';
             resetCreateForm();
             bootSelectedTemplate();
-            setStatus('Choisis un template pour lancer un nouveau brouillon.');
+            setStatus('Choisis un template pour demarrer un nouveau brouillon.');
             render();
         });
 

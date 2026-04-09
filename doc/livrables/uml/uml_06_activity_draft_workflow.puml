@@ -1,0 +1,39 @@
+@startuml
+title UML 2.5 - Activity Diagram - Draft Workflow
+
+start
+
+:Select category template;
+:Create draft;
+
+if (Foundation valid?) then (yes)
+  :Update structure;
+else (no)
+  :Fix foundation fields;
+  -> [retry] Foundation valid?;
+endif
+
+if (Structure valid?) then (yes)
+  :Manage archetypes/categories;
+else (no)
+  :Fix structure settings;
+  -> [retry] Structure valid?;
+endif
+
+:Manage items;
+:Manage modifiers;
+:Compute progress and publish readiness;
+
+if (Publish errors empty?) then (yes)
+  :Publish draft (transaction);
+  :Create runtime game dataset;
+  :Set draft status = published;
+else (no)
+  :Return blocking errors;
+  :User fixes draft data;
+endif
+
+stop
+
+@enduml
+

@@ -1,0 +1,44 @@
+@startuml
+title UML 2.5 - Use Case Diagram - Wiki Builder API
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Visiteur" as Visitor
+actor "Utilisateur authentifie" as User
+actor "Admin" as Admin
+actor "Client API externe" as ApiClient
+
+rectangle "Wiki Builder API" {
+  usecase "Consulter catalogue public" as UC1
+  usecase "Composer build" as UC2
+  usecase "Comparer slots/builds" as UC3
+  usecase "Creer draft" as UC4
+  usecase "Editer draft" as UC5
+  usecase "Publier draft" as UC6
+  usecase "Gerer compte RGPD" as UC7
+  usecase "Administrer ressources globales" as UC8
+}
+
+Visitor --> UC1
+Visitor --> UC2
+Visitor --> UC3
+
+ApiClient --> UC1
+ApiClient --> UC3
+
+User --> UC2
+User --> UC3
+User --> UC4
+User --> UC5
+User --> UC6
+User --> UC7
+
+Admin --> UC8
+Admin --> UC1
+Admin --> UC6
+
+UC6 .> UC5 : <<include>>
+UC5 .> UC4 : <<include>>
+
+@enduml
+

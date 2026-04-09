@@ -1,0 +1,41 @@
+@startuml
+title UML 2.5 - Sequence - Draft Publication
+autonumber
+
+actor User
+participant "Studio UI (Blade + JS)" as UI
+participant "API /game-drafts/{id}/publish" as API
+participant "GameDraftController" as Ctrl
+participant "GameDraftProgressService" as Progress
+participant "GameDraftPublicationService" as Publish
+database "MySQL" as DB
+
+User -> UI : Click "Publier le jeu"
+UI -> API : POST publish (api key + user context)
+API -> Ctrl : dispatch request
+Ctrl -> Ctrl : resolve owner draft
+Ctrl -> Progress : refresh(draft)
+Ctrl -> Publish : publish(draft)
+
+Publish -> Progress : publishErrors(draft)
+alt blocking errors present
+  Progress --> Publish : errors[]
+  Publish --> Ctrl : RuntimeException
+  Ctrl --> API : 422 Draft publication blocked
+  API --> UI : JSON error
+else no blocking errors
+  Progress --> Publish : []
+  Publish -> DB : BEGIN TRANSACTION
+  Publish -> DB : INSERT games
+  Publish -> DB : INSERT archetypes/categories
+  Publish -> DB : INSERT items/item_slots
+  Publish -> DB : INSERT modifiers + pivots
+  Publish -> DB : UPDATE game_drafts status=published
+  Publish -> DB : COMMIT
+  Publish --> Ctrl : Game runtime
+  Ctrl --> API : 201 Draft published
+  API --> UI : JSON success (draft + game)
+end
+
+@enduml
+

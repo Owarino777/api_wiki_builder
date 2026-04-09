@@ -1,0 +1,115 @@
+@startuml
+title UML 2.5 - Class Diagram - Domain Model
+hide circle
+skinparam classAttributeIconSize 0
+
+class User {
+  +id: bigint
+  +username: string
+  +email: string
+  +role: string
+}
+
+class ApiKey {
+  +id: bigint
+  +key_hash: string
+  +is_active: bool
+}
+
+class Game {
+  +id: bigint
+  +name: string
+  +slug: string
+  +visibility: string
+}
+
+class BuildProfile {
+  +id: bigint
+  +name: string
+}
+
+class EquipmentItem {
+  +id: bigint
+  +name: string
+  +slot: string
+  +score: int
+}
+
+class EquipmentItemSlot {
+  +id: bigint
+  +slot_key: string
+  +accepted_modifier_type: string
+}
+
+class EquipmentModifier {
+  +id: bigint
+  +name: string
+  +modifier_type: string
+}
+
+class Tag {
+  +id: bigint
+  +label: string
+  +slug: string
+}
+
+class Build {
+  +id: bigint
+  +title: string
+  +is_public: bool
+}
+
+class GameDraft {
+  +id: bigint
+  +category_key: string
+  +status: string
+  +current_step: string
+}
+
+class GameDraftItem {
+  +id: bigint
+  +name: string
+}
+
+class GameDraftModifier {
+  +id: bigint
+  +name: string
+}
+
+class GameDraftCategory {
+  +id: bigint
+  +label: string
+}
+
+class GameDraftArchetype {
+  +id: bigint
+  +name: string
+}
+
+User "1" -- "0..*" Build
+User "1" -- "0..*" GameDraft
+User "1" -- "0..*" ApiKey
+
+Game "1" -- "0..*" BuildProfile
+Game "1" -- "0..*" EquipmentItem
+Game "1" -- "0..*" EquipmentModifier
+Game "1" -- "0..*" Tag
+Game "1" -- "0..*" Build
+
+Build "0..*" -- "0..*" EquipmentItem : build_items
+Build "0..*" -- "0..*" EquipmentModifier : build_slots
+
+EquipmentItem "1" -- "0..*" EquipmentItemSlot
+EquipmentItem "0..*" -- "0..*" Tag : item_categories
+EquipmentItem "0..*" -- "0..*" EquipmentModifier : item_modifiers
+
+GameDraft "1" -- "0..*" GameDraftArchetype
+GameDraft "1" -- "0..*" GameDraftCategory
+GameDraft "1" -- "0..*" GameDraftItem
+GameDraft "1" -- "0..*" GameDraftModifier
+GameDraftItem "0..*" -- "0..*" GameDraftCategory
+GameDraftItem "0..*" -- "0..*" GameDraftModifier
+GameDraft ..> Game : publish runtime dataset
+
+@enduml
+

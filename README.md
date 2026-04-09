@@ -16,6 +16,7 @@ Références officielles :
 Documentation de rendu professeur :
 
 - [doc/rendu_final_prof.md](doc/rendu_final_prof.md)
+- [doc/livrables/README.md](doc/livrables/README.md)
 
 ## Prérequis
 

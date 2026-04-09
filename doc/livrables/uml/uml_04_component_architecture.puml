@@ -1,0 +1,52 @@
+@startuml
+title UML 2.5 - Component Diagram - API Architecture
+skinparam componentStyle rectangle
+
+package "Client Layer" {
+  [Browser UI (Blade)]
+  [Postman / curl]
+}
+
+package "Web Layer" {
+  [Nginx web]
+}
+
+package "Application Layer" {
+  [Laravel Routing]
+  [Controllers]
+  [FormRequests]
+  [Resources]
+  [Services]
+  [Eloquent Models]
+}
+
+package "Data Layer" {
+  database DB as "MySQL"
+  [BO7 Snapshot JSON]
+}
+
+cloud "External Source" {
+  [CODMunity API]
+}
+
+[Browser UI (Blade)] --> [Nginx web]
+[Postman / curl] --> [Nginx web]
+[Nginx web] --> [Laravel Routing]
+[Laravel Routing] --> [Controllers]
+[Controllers] --> [FormRequests]
+[Controllers] --> [Resources]
+[Controllers] --> [Services]
+[Services] --> [Eloquent Models]
+[Eloquent Models] --> DB
+[Services] --> [BO7 Snapshot JSON]
+[Services] --> [CODMunity API]
+
+note right of [Services]
+Includes:
+- BuildRuleService
+- BuildSummaryService
+- GameDraftProgressService
+- GameDraftPublicationService
+end note
+
+@enduml

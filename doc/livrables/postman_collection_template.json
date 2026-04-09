@@ -1,0 +1,92 @@
+{
+  "info": {
+    "_postman_id": "6fdbdb2e-5fc0-4e2b-9e6c-7adf5e7bb001",
+    "name": "Wiki Builder API - Livraison",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "apiKey",
+      "value": "replace-with-real-key"
+    }
+  ],
+  "item": [
+    {
+      "name": "API Home",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1"
+      }
+    },
+    {
+      "name": "Games List",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/games"
+      }
+    },
+    {
+      "name": "Items List",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/items?per_page=10"
+      }
+    },
+    {
+      "name": "Compare Builds",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"left_build_id\":1,\"right_build_id\":2}"
+        },
+        "url": "{{baseUrl}}/api/v1/builds/compare"
+      }
+    },
+    {
+      "name": "Drafts List (secured)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "API-KEY",
+            "value": "{{apiKey}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/game-drafts"
+      }
+    },
+    {
+      "name": "Create Draft (secured)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "API-KEY",
+            "value": "{{apiKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"category_key\":\"fps\",\"name\":\"Draft Postman\",\"slug\":\"draft-postman\"}"
+        },
+        "url": "{{baseUrl}}/api/v1/game-drafts"
+      }
+    }
+  ]
+}
+

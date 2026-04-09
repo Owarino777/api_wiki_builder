@@ -1,0 +1,32 @@
+@startuml
+title UML 2.5 - Deployment Diagram - Local Docker Stack
+
+node "Developer Machine" {
+  node "Docker Engine" {
+    node "Container web (nginx)" as Web
+    node "Container app (php-fpm + laravel)" as App
+    node "Container db (mysql 8)" as DB
+    node "Container test (profile testing)" as Test
+  }
+
+  artifact "Project source code" as Src
+  artifact "Snapshot BO7\nstorage/app/private/codmunity/*" as Snap
+  artifact "dump/wiki_builder.sql" as Dump
+}
+
+actor "User Browser" as Browser
+actor "API Client" as ApiClient
+
+Browser --> Web : HTTP 8000
+ApiClient --> Web : HTTP 8000/api/v1
+Web --> App : FastCGI
+App --> DB : MySQL 3306
+App --> Snap : import/restore dataset
+App --> Src : mounted volume
+DB --> Dump : optional archive export
+
+Test --> App : php artisan test
+Test --> DB : test database
+
+@enduml
+

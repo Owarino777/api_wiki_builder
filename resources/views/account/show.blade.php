@@ -4,114 +4,160 @@
         $accountStatus = $user->anonymized_at ? 'Anonymisé' : 'Actif';
     @endphp
 
-    <section class="panel hero-panel">
-        <div class="hero-main">
-            <div class="hero-copy">
-                <span class="eyebrow">Account center</span>
-                <h1>Ton compte, sans friction.</h1>
-                <p class="lead">
-                    Retrouve ici tes informations essentielles, tes droits RGPD et les actions sensibles
-                    dans un espace plus clair, plus sûr et plus lisible.
-                </p>
-                <div class="hero-actions">
-                    <a class="btn primary" href="{{ route('account.export') }}">Exporter mes données</a>
-                    <a class="btn ghost" href="{{ route('privacy') }}">Voir la politique</a>
-                    <a class="btn subtle" href="{{ route('dashboard') }}">Retour au dashboard</a>
-                </div>
-                <div class="hero-note">
+    <section class="page-head">
+        <div class="page-head-user">
+            <div class="avatar-frame">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+                <span class="eyebrow">Compte</span>
+                <h1>Gestion du compte</h1>
+                <span class="subtitle">Espace personnel</span>
+                <hr class="neon-line">
+                <p class="helper">Informations, export RGPD, anonymisation, suppression.</p>
+                <div class="page-meta">
                     <span>{{ $displayName }}</span>
-                    <span>•</span>
                     <span>{{ $user->email }}</span>
+                    <span>{{ $accountStatus }}</span>
                 </div>
             </div>
-
-            <article class="spotlight-card">
-                <span class="eyebrow">Aperçu</span>
-                <h2>{{ $displayName }}</h2>
-                <div class="keyline">
-                    <span>Statut du compte</span>
-                    <strong>{{ $accountStatus }}</strong>
-                </div>
-                <div class="keyline">
-                    <span>Politique acceptée</span>
-                    <strong>{{ $user->privacy_policy_accepted_at?->format('d/m/Y') ?? 'Non renseigné' }}</strong>
-                </div>
-                <div class="keyline">
-                    <span>Dernière connexion</span>
-                    <strong>{{ $user->last_login_at?->format('d/m/Y') ?? 'Première session' }}</strong>
-                </div>
-                <div class="keyline">
-                    <span>Marketing</span>
-                    <strong>{{ $user->marketing_consent_at ? 'Accordé' : 'Non accordé' }}</strong>
-                </div>
-                <div class="keyline">
-                    <span>Version de politique</span>
-                    <strong>{{ $policyVersion }}</strong>
-                </div>
-            </article>
+        </div>
+        <div class="page-head-actions">
+            <a class="btn primary" href="{{ route('account.export') }}">Exporter</a>
+            <a class="btn ghost" href="{{ route('privacy') }}">Politique</a>
+            <a class="btn subtle" href="{{ route('dashboard') }}">Dashboard</a>
         </div>
     </section>
 
     <section class="info-grid">
         <article class="info-card">
-            <span>Email</span>
-            <strong>{{ $user->email }}</strong>
+            <div class="info-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div class="info-content">
+                <span>Email</span>
+                <strong>{{ $user->email }}</strong>
+            </div>
         </article>
         <article class="info-card">
-            <span>Username</span>
-            <strong>{{ $user->username }}</strong>
+            <div class="info-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="info-content">
+                <span>Username</span>
+                <strong>{{ $user->username }}</strong>
+            </div>
         </article>
         <article class="info-card">
-            <span>Rôle</span>
-            <strong>{{ $user->role->value ?? $user->role }}</strong>
+            <div class="info-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="info-content">
+                <span>Rôle</span>
+                <strong>{{ $user->role->value ?? $user->role }}</strong>
+            </div>
         </article>
         <article class="info-card">
-            <span>Session</span>
-            <strong>{{ $user->last_login_at?->format('d/m/Y H:i') ?? 'En cours' }}</strong>
+            <div class="info-icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="info-content">
+                <span>Dernière connexion</span>
+                <strong>{{ $user->last_login_at?->format('d/m/Y H:i') ?? 'Première session' }}</strong>
+            </div>
         </article>
     </section>
 
     <section class="section-shell">
-        <article class="panel section-card">
+        <article class="panel section-card account-anonymize">
             <div class="section-head">
-                <div class="section-copy">
-                    <span class="eyebrow">Données</span>
-                    <h2>Ce qui est conservé</h2>
+                <div class="section-head-row">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <div class="section-copy">
+                        <span class="eyebrow">Statut</span>
+                        <h2>Compte</h2>
+                    </div>
                 </div>
             </div>
 
             <div class="feature-list">
-                <article>
-                    <strong>Identité de compte</strong>
-                    <p class="helper compact">Email, username, rôle, dates techniques et mot de passe chiffré.</p>
+                <article class="feature-item">
+                    <div class="feature-item-icon">
+                        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <div>
+                        <strong>Statut</strong>
+                        <p class="helper compact">{{ $accountStatus }}</p>
+                    </div>
                 </article>
-                <article>
-                    <strong>Contenus liés</strong>
-                    <p class="helper compact">Jeux, builds et brouillons associés à ton espace utilisateur.</p>
+                <article class="feature-item">
+                    <div class="feature-item-icon">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div>
+                        <strong>Politique acceptée</strong>
+                        <p class="helper compact">{{ $user->privacy_policy_accepted_at?->format('d/m/Y') ?? 'Non renseigné' }}</p>
+                    </div>
                 </article>
-                <article>
-                    <strong>Consentements</strong>
-                    <p class="helper compact">Acceptation de la politique, dernière connexion et choix marketing optionnel.</p>
+                <article class="feature-item">
+                    <div class="feature-item-icon">
+                        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    </div>
+                    <div>
+                        <strong>Marketing</strong>
+                        <p class="helper compact">{{ $user->marketing_consent_at ? 'Accordé' : 'Non accordé' }}</p>
+                    </div>
+                </article>
+                <article class="feature-item">
+                    <div class="feature-item-icon">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </div>
+                    <div>
+                        <strong>Version de politique</strong>
+                        <p class="helper compact">{{ $policyVersion }}</p>
+                    </div>
                 </article>
             </div>
         </article>
 
-        <article class="panel action-card">
-            <span class="eyebrow">Actions rapides</span>
-            <h3>Confidentialité</h3>
+        <article class="panel section-card danger-zone">
+            <div class="section-head">
+                <div class="section-head-row">
+                    <div class="section-icon" style="background: linear-gradient(135deg, rgba(255,109,134,.18), rgba(255,60,80,.1)); border-color: rgba(255,109,134,.35); color: var(--danger);">
+                        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <div class="section-copy">
+                        <span class="eyebrow">Données</span>
+                        <h2>Actions</h2>
+                    </div>
+                </div>
+            </div>
+
             <div class="action-list">
-                <article>
-                    <strong>Export RGPD</strong>
-                    <p class="helper compact">Téléchargement immédiat de tes données au format JSON.</p>
-                    <div class="section-actions">
-                        <a class="btn ghost" href="{{ route('account.export') }}">Télécharger</a>
+                <article class="feature-item">
+                    <div class="feature-item-icon">
+                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </div>
+                    <div>
+                        <strong>Export RGPD</strong>
+                        <p class="helper compact">Télécharger tes données en JSON.</p>
+                        <div class="section-actions">
+                            <a class="btn ghost" href="{{ route('account.export') }}">Télécharger</a>
+                        </div>
                     </div>
                 </article>
-                <article>
-                    <strong>Politique de confidentialité</strong>
-                    <p class="helper compact">Version {{ $policyVersion }} avec les principes appliqués.</p>
-                    <div class="section-actions">
-                        <a class="btn ghost" href="{{ route('privacy') }}">Consulter</a>
+                <article class="feature-item">
+                    <div class="feature-item-icon">
+                        <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                    </div>
+                    <div>
+                        <strong>Politique</strong>
+                        <p class="helper compact">Consulter la version {{ $policyVersion }}.</p>
+                        <div class="section-actions">
+                            <a class="btn ghost" href="{{ route('privacy') }}">Ouvrir</a>
+                        </div>
                     </div>
                 </article>
             </div>
@@ -119,12 +165,14 @@
     </section>
 
     <section class="duo-grid">
-        <article class="panel action-card">
-            <span class="eyebrow">Anonymisation</span>
-            <h3>Retirer mes données nominatives</h3>
-            <p class="helper compact">
-                Cette action retire les données personnelles du compte et ferme la session.
-            </p>
+        <article class="panel section-card">
+            <div class="section-head">
+                <div class="section-copy">
+                    <span class="eyebrow">Anonymisation</span>
+                    <h2>Retirer les données nominatives</h2>
+                    <p class="helper compact">Action irréversible. La session sera fermée.</p>
+                </div>
+            </div>
             <form method="POST" action="{{ route('account.anonymize') }}">
                 @csrf
                 <div class="field">
@@ -134,16 +182,18 @@
                         <span class="error">{{ $message }}</span>
                     @enderror
                 </div>
-                <button class="btn ghost" type="submit">Anonymiser mon compte</button>
+                <button class="btn ghost" type="submit">Anonymiser</button>
             </form>
         </article>
 
-        <article class="panel action-card danger">
-            <span class="eyebrow">Suppression</span>
-            <h3>Supprimer définitivement mon compte</h3>
-            <p class="helper compact">
-                Cette zone est volontairement isolée. La suppression est irréversible et met fin à la session.
-            </p>
+        <article class="panel section-card">
+            <div class="section-head">
+                <div class="section-copy">
+                    <span class="eyebrow">Suppression</span>
+                    <h2>Supprimer le compte</h2>
+                    <p class="helper compact">Action irréversible. Le compte et la session seront supprimés.</p>
+                </div>
+            </div>
             <form method="POST" action="{{ route('account.destroy') }}">
                 @csrf
                 @method('DELETE')
@@ -156,12 +206,12 @@
                 </div>
                 <label class="checkbox">
                     <input name="confirm_delete" type="checkbox" value="1" {{ old('confirm_delete') ? 'checked' : '' }}>
-                    <span>Je confirme la suppression définitive de mon compte.</span>
+                    <span>Je confirme la suppression définitive.</span>
                 </label>
                 @error('confirm_delete')
                     <span class="error">{{ $message }}</span>
                 @enderror
-                <button class="btn danger" type="submit">Supprimer mon compte</button>
+                <button class="btn danger" type="submit">Supprimer</button>
             </form>
         </article>
     </section>
