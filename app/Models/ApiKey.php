@@ -14,10 +14,15 @@ class ApiKey extends Model
 
     protected $fillable = [
         'user_id',
-        'key',
+        'key_hash',
         'label',
         'is_active',
     ];
+
+    public static function hashKey(string $plainKey): string
+    {
+        return hash('sha256', $plainKey);
+    }
 
     protected $casts = [
         'is_active' => 'boolean',

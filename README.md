@@ -286,6 +286,22 @@ Si tu relances un diagnostic manuel, préfère :
 docker compose run --rm app php artisan bo7:ensure-data --mode=live --source=prefer-snapshot
 ```
 
+## Tests
+
+Le projet utilise Pest v4, les dépendances de test ne sont pas dans l'image runtime.
+
+Un service Docker dédié `test` est fourni avec un `Dockerfile.dev` qui installe les dépendances dev :
+
+```powershell
+docker compose --profile testing run --rm test
+```
+
+Au premier lancement, l'image dev sera construite et les dépendances complètes installées.
+
+La base de test `wiki_builder_test` est créée automatiquement par le script `docker/db/init-test-db.sql` au premier démarrage du service `db`.
+
+Si le service `db` existe déjà sans la base de test, fais un `docker compose down -v` puis `docker compose up -d --build` pour que l'init SQL soit rejoué.
+
 ## Commandes utiles
 
 ```powershell

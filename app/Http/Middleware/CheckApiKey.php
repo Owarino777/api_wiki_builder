@@ -20,7 +20,7 @@ class CheckApiKey
         }
 
         $apiKey = ApiKey::query()
-            ->where('key', $key)
+            ->where('key_hash', ApiKey::hashKey($key))
             ->where('is_active', true)
             ->first();
 

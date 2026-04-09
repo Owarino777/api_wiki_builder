@@ -43,7 +43,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Throwable $e, Request $request) {
             if ($request->is('api/*') && !$request->expectsJson()) {
                 $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
-                return ApiResponse::error($e->getMessage() ?: 'Internal server error.', $status);
+                $message = $status >= 500 ? 'Internal server error.' : ($e->getMessage() ?: 'Internal server error.');
+                return ApiResponse::error($message, $status);
             }
         });
     })->create();

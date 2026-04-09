@@ -33,13 +33,14 @@ class GameDraftPublicationService
             throw new \RuntimeException(implode(' ', $errors));
         }
 
-        if ($draft->published_game_id !== null) {
-            throw new \RuntimeException('This draft has already been published.');
-        }
-
         $template = $this->templateRegistry->find($draft->category_key);
 
         return DB::transaction(function () use ($draft, $template): Game {
+            $locked = GameDraft::query()->lockForUpdate()->find($draft->id);
+
+            if ($locked->published_game_id !== null) {
+                throw new \RuntimeException('This draft has already been published.');
+            }
             $now = now();
 
             $game = Game::query()->create([
@@ -144,7 +145,7 @@ class GameDraftPublicationService
                 );
             }
 
-            $draft->forceFill([
+            $locked->forceFill([
                 'published_game_id' => $game->id,
                 'published_at' => $now,
                 'status' => 'published',

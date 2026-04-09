@@ -56,12 +56,29 @@ services:
       MYSQL_ROOT_PASSWORD: root
     volumes:
       - db_data:/var/lib/mysql
+      - ./docker/db/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "--protocol", "tcp", "-h", "127.0.0.1", "-P", "3306", "-p${DB_ROOT_PASSWORD:-root}"]
       interval: 5s
       timeout: 5s
       retries: 20
 
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /var/www/html
+    environment:
+      APP_ENV: testing
+      APP_DEBUG: "true"
+    volumes:
+      - ./:/var/www/html
+      - vendor_dev:/var/www/html/vendor
+    entrypoint: ["sh", "-c", "php artisan config:clear && php artisan test"]
+    profiles:
+      - testing
+
 volumes:
   db_data:
   vendor_data:
+  vendor_dev:

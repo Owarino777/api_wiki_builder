@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreTagRequest;
+use App\Http\Requests\UpdateTagRequest;
 use App\Http\Resources\TagResource;
 use App\Models\Tag;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 class TagController extends Controller
 {
@@ -29,20 +29,9 @@ class TagController extends Controller
         return ApiResponse::success(TagResource::collection($categories)->response()->getData(true));
     }
 
-    public function store(Request $request)
+    public function store(StoreTagRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'game_id' => ['required', 'integer', 'exists:games,id'],
-            'label' => ['required', 'string', 'max:80'],
-            'slug' => ['nullable', 'string', 'max:100', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
-        ]);
-
-        if ($validator->fails()) {
-            return ApiResponse::error('Validation failed.', 422, $validator->errors()->toArray());
-        }
-
-        $data = $validator->validated();
-        $data['slug'] = $data['slug'] ?? Str::slug($data['label']);
+        $data = $request->validated();
 
         $exists = Tag::query()
             ->where('game_id', $data['game_id'])
@@ -67,26 +56,16 @@ class TagController extends Controller
         return ApiResponse::success((new TagResource($category))->toArray($request), 'Category created.', 201);
     }
 
-    public function update(Request $request, int $id)
+    public function update(UpdateTagRequest $request, int $id)
     {
         $category = Tag::query()->find($id);
         if ($category === null) {
             return ApiResponse::error('Category not found.', 404);
         }
 
-        $validator = Validator::make($request->all(), [
-            'game_id' => ['sometimes', 'integer', 'exists:games,id'],
-            'label' => ['sometimes', 'string', 'max:80'],
-            'slug' => ['nullable', 'string', 'max:100', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
-        ]);
-
-        if ($validator->fails()) {
-            return ApiResponse::error('Validation failed.', 422, $validator->errors()->toArray());
-        }
-
-        $data = $validator->validated();
+        $data = $request->validated();
         $newGameId = $data['game_id'] ?? $category->game_id;
-        $newSlug = $data['slug'] ?? ($data['label'] ?? null ? Str::slug($data['label']) : $category->slug);
+        $newSlug = $data['slug'] ?? $category->slug;
         $newLabel = $data['label'] ?? $category->label;
         $data['slug'] = $newSlug;
 

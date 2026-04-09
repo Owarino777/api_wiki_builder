@@ -19,6 +19,10 @@ class EquipmentItemTagController extends Controller
             return ApiResponse::error('Item or category not found.', 404);
         }
 
+        if ((int) $item->game_id !== (int) $category->game_id) {
+            return ApiResponse::error('Item and category must belong to the same game.', 422);
+        }
+
         DB::table('item_categories')->insertOrIgnore([
             'item_id' => $itemId,
             'category_id' => $categoryId,

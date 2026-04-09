@@ -56,6 +56,7 @@ class WikiBuilderSeeder extends Seeder
                     'is_anonymized' => false,
                     'privacy_policy_accepted_at' => $now,
                     'privacy_policy_version' => '2026-04-08',
+                    'marketing_consent_at' => null,
                     'last_login_at' => $now,
                     'created_at' => $now,
                     'updated_at' => $now,
@@ -88,7 +89,7 @@ class WikiBuilderSeeder extends Seeder
             DB::table('api_keys')->insert([
                 [
                     'user_id' => 1,
-                    'key' => 'dev-admin-key-1234567890abcdef',
+                    'key_hash' => hash('sha256', 'dev-admin-key-1234567890abcdef'),
                     'label' => 'Admin Dev Key',
                     'is_active' => true,
                     'created_at' => $now,
@@ -96,7 +97,7 @@ class WikiBuilderSeeder extends Seeder
                 ],
                 [
                     'user_id' => 2,
-                    'key' => 'dev-player-key-1234567890abcdef',
+                    'key_hash' => hash('sha256', 'dev-player-key-1234567890abcdef'),
                     'label' => 'Player Dev Key',
                     'is_active' => true,
                     'created_at' => $now,
@@ -236,7 +237,13 @@ class WikiBuilderSeeder extends Seeder
 
     private function truncateTables(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = OFF');
+        } else {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        }
 
         foreach ([
             'game_draft_item_modifiers',
@@ -265,7 +272,11 @@ class WikiBuilderSeeder extends Seeder
             DB::table($table)->truncate();
         }
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        if ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON');
+        } else {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        }
     }
 
     private function blackOpsThreeProfiles(int $gameId, object $now): array

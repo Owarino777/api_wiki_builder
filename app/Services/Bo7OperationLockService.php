@@ -13,6 +13,11 @@ class Bo7OperationLockService
     public function runExclusive(callable $callback, int $waitSeconds = 0): mixed
     {
         $connection = DB::connection();
+
+        if ($connection->getDriverName() === 'sqlite') {
+            return $callback();
+        }
+
         $result = $connection->selectOne('SELECT GET_LOCK(?, ?) AS acquired', [
             self::LOCK_NAME,
             max(0, $waitSeconds),
