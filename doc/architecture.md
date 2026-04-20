@@ -6,6 +6,7 @@ Ce document decrit l'architecture cible effectivement implementee dans le projet
 
 Reference schema detaillee :
 - `doc/architecture_modifications.md`
+- `doc/diagrammes.md` — Diagrammes UML et base de donnees (cas d'utilisation, classes, sequences, etats, MCD, MLD, LDD)
 
 ## 2. Objectif produit
 

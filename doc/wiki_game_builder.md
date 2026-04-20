@@ -67,6 +67,7 @@ Le projet inclut volontairement une table `users` plus riche pour permettre :
 
 Le MPD cible complet est documente dans :
 - `doc/architecture_modifications.md`
+- `doc/diagrammes.md` — Diagrammes UML et base de donnees complets (cas d'utilisation, classes, sequences, etats-transitions, MCD Merise, MLD Merise, LDD SQL)
 
 ## 7) Jeux embarques
 
