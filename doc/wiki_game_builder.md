@@ -67,3 +67,17 @@ Le projet inclut volontairement une table `users` plus riche pour permettre :
 
 Le MPD cible complet est documente dans :
 - `doc/architecture_modifications.md`
+
+## 7) Jeux embarques
+
+Le systeme est livre avec 5 jeux couvrant deux templates (FPS et RPG) :
+
+| Jeu | Template | Items |
+|---|---|---|
+| Call of Duty: Black Ops 7 | FPS | 50 armes avec accessoires detailles |
+| Battlefield 2042 | FPS | 6 armes avec optiques, canons, poignees |
+| Valorant | FPS | 6 armes avec modifications tactiques |
+| League of Legends | RPG | 6 champions avec objets et runes |
+| New World | RPG | 6 armes avec gemmes et enchantements |
+
+Les 4 nouveaux jeux sont peuples par des seeders offline (`database/seeders/`) heritant d'`AbstractGameSeeder`, qui factorise la logique d'import commune et fournit des helpers compacts (`item()`, `mod()`) pour definir les donnees.

@@ -14,6 +14,12 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrivacyPolicyController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/locale/{locale}', function (string $locale) {
+    abort_unless(in_array($locale, ['fr', 'en'], true), 400);
+    session()->put('locale', $locale);
+    return redirect()->back();
+})->name('locale.switch');
+
 Route::get('/', HomeController::class)->name('home');
 Route::get('/privacy', PrivacyPolicyController::class)->name('privacy');
 

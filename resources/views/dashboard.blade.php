@@ -1,4 +1,4 @@
-<x-layouts.app :title="'Dashboard - Wiki Builder API'" bodyClass="page-dashboard">
+<x-layouts.app :title="__('Dashboard - Wiki Builder API')" bodyClass="page-dashboard">
     @php
         $user = auth()->user();
         $featuredDraft = $drafts->sortByDesc(fn ($draft) => $draft->updated_at ?? $draft->created_at)->first();
@@ -6,23 +6,23 @@
 
     <section class="page-head">
         <div>
-            <span class="eyebrow">Dashboard</span>
-            <h1>Pilotage</h1>
-            <span class="subtitle">Control Center</span>
+            <span class="eyebrow">{{ __('Dashboard') }}</span>
+            <h1>{{ __('Pilotage') }}</h1>
+            <span class="subtitle">{{ __('Control Center') }}</span>
             <hr class="neon-line">
-            <p class="helper">Reprends un draft, crée un nouveau jeu ou consulte tes publications.</p>
+            <p class="helper">{{ __('Reprends un draft, crée un nouveau jeu ou consulte tes publications.') }}</p>
             <div class="page-meta">
                 <span>{{ $user->display_name ?: $user->username }}</span>
-                <span>{{ $drafts->count() }} brouillon(s)</span>
-                <span>{{ $games->count() }} publication(s)</span>
+                <span>{{ $drafts->count() }} {{ __('brouillon(s)') }}</span>
+                <span>{{ $games->count() }} {{ __('publication(s)') }}</span>
             </div>
         </div>
         <div class="page-head-actions">
             @if ($featuredDraft)
-                <a class="btn primary" href="{{ route('studio.games.create', ['draft' => $featuredDraft->id]) }}">Reprendre</a>
+                <a class="btn primary" href="{{ route('studio.games.create', ['draft' => $featuredDraft->id]) }}">{{ __('Reprendre') }}</a>
             @endif
-            <a class="btn ghost" href="{{ route('studio.games.create') }}">Nouveau draft</a>
-            <a class="btn subtle" href="{{ route('home') }}">Builder</a>
+            <a class="btn ghost" href="{{ route('studio.games.create') }}">{{ __('Nouveau draft') }}</a>
+            <a class="btn subtle" href="{{ route('home') }}">{{ __('Builder') }}</a>
         </div>
     </section>
 
@@ -33,7 +33,7 @@
             </div>
             <div class="kpi-content">
                 <strong>{{ $drafts->count() }}</strong>
-                <span class="kpi-label">Brouillons</span>
+                <span class="kpi-label">{{ __('Brouillons') }}</span>
             </div>
         </article>
         <article class="kpi-card corner-brackets">
@@ -42,7 +42,7 @@
             </div>
             <div class="kpi-content">
                 <strong>{{ $games->count() }}</strong>
-                <span class="kpi-label">Jeux publiés</span>
+                <span class="kpi-label">{{ __('Jeux publiés') }}</span>
             </div>
         </article>
         <article class="kpi-card corner-brackets">
@@ -51,7 +51,7 @@
             </div>
             <div class="kpi-content">
                 <strong>{{ $builds->count() }}</strong>
-                <span class="kpi-label">Builds</span>
+                <span class="kpi-label">{{ __('Builds') }}</span>
             </div>
         </article>
         <article class="kpi-card corner-brackets">
@@ -60,7 +60,7 @@
             </div>
             <div class="kpi-content">
                 <strong>{{ $drafts->where('status', 'published')->count() }}</strong>
-                <span class="kpi-label">Drafts finalisés</span>
+                <span class="kpi-label">{{ __('Drafts finalisés') }}</span>
             </div>
         </article>
     </section>
@@ -69,11 +69,11 @@
         <article class="panel section-card">
             <div class="section-head">
                 <div class="section-copy">
-                    <span class="eyebrow">Brouillons</span>
-                    <h2>Récents</h2>
-                    <p class="helper compact">Nom, étape, statut, progression.</p>
+                    <span class="eyebrow">{{ __('Brouillons') }}</span>
+                    <h2>{{ __('Récents') }}</h2>
+                    <p class="helper compact">{{ __('Nom, étape, statut, progression.') }}</p>
                 </div>
-                <a class="btn ghost" href="{{ route('studio.games.create') }}">Nouveau</a>
+                <a class="btn ghost" href="{{ route('studio.games.create') }}">{{ __('Nouveau') }}</a>
             </div>
 
             @if ($drafts->isNotEmpty())
@@ -97,17 +97,17 @@
                                 </small>
                             </div>
                             <div class="row-actions">
-                                <a class="btn ghost" href="{{ route('studio.games.create', ['draft' => $draft->id]) }}">Ouvrir</a>
+                                <a class="btn ghost" href="{{ route('studio.games.create', ['draft' => $draft->id]) }}">{{ __('Ouvrir') }}</a>
                             </div>
                         </article>
                     @endforeach
                 </div>
             @else
                 <div class="empty-block">
-                    <strong>Aucun brouillon</strong>
-                    <p class="helper compact">Crée un draft pour démarrer l’édition.</p>
+                    <strong>{{ __('Aucun brouillon') }}</strong>
+                    <p class="helper compact">{{ __('Crée un draft pour démarrer l\'édition.') }}</p>
                     <div class="section-actions">
-                        <a class="btn primary" href="{{ route('studio.games.create') }}">Créer un draft</a>
+                        <a class="btn primary" href="{{ route('studio.games.create') }}">{{ __('Créer un draft') }}</a>
                     </div>
                 </div>
             @endif
@@ -117,9 +117,9 @@
             <article class="panel section-card">
                 <div class="section-head">
                     <div class="section-copy">
-                        <span class="eyebrow">Publications</span>
-                        <h2>Jeux en ligne</h2>
-                        <p class="helper compact">Vue rapide des jeux publiés.</p>
+                        <span class="eyebrow">{{ __('Publications') }}</span>
+                    <h2>{{ __('Jeux en ligne') }}</h2>
+                    <p class="helper compact">{{ __('Vue rapide des jeux publiés.') }}</p>
                     </div>
                 </div>
 
@@ -139,8 +139,8 @@
                     </div>
                 @else
                     <div class="empty-block">
-                        <strong>Aucune publication</strong>
-                        <p class="helper compact">Tes jeux publiés apparaîtront ici.</p>
+                        <strong>{{ __('Aucune publication') }}</strong>
+                        <p class="helper compact">{{ __('Tes jeux publiés apparaîtront ici.') }}</p>
                     </div>
                 @endif
             </article>
@@ -148,13 +148,13 @@
             <article class="panel section-card">
                 <div class="section-head">
                     <div class="section-copy">
-                        <span class="eyebrow">Compte</span>
-                        <h2>Accès rapides</h2>
+                        <span class="eyebrow">{{ __('Compte') }}</span>
+                        <h2>{{ __('Accès rapides') }}</h2>
                     </div>
                 </div>
                 <div class="actions">
-                    <a class="btn ghost" href="{{ route('account') }}">Mon compte</a>
-                    <a class="btn ghost" href="{{ route('privacy') }}">Confidentialité</a>
+                    <a class="btn ghost" href="{{ route('account') }}">{{ __('Mon compte') }}</a>
+                    <a class="btn ghost" href="{{ route('privacy') }}">{{ __('Confidentialité') }}</a>
                 </div>
             </article>
         </div>

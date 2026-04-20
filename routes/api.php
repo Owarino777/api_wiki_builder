@@ -33,24 +33,26 @@ Route::prefix('v1')
     ->middleware(['throttle:60,1', 'resolve.request.user'])
     ->group(function (): void {
         Route::get('/', ApiHomeController::class);
-        Route::get('/game-categories', [GameCategoryController::class, 'index']);
-        Route::get('/game-categories/{key}', [GameCategoryController::class, 'show']);
 
-        Route::get('/games', [GameController::class, 'index']);
-        Route::get('/games/{id}', [GameController::class, 'show']);
-        Route::get('/games/{id}/archetypes', [GameController::class, 'archetypes']);
-        Route::get('/games/{id}/items', [GameController::class, 'items']);
-        Route::get('/games/{id}/modifiers', [GameController::class, 'modifiers']);
+        Route::middleware('cache.api:120')->group(function (): void {
+            Route::get('/game-categories', [GameCategoryController::class, 'index']);
+            Route::get('/game-categories/{key}', [GameCategoryController::class, 'show']);
+            Route::get('/games', [GameController::class, 'index']);
+            Route::get('/games/{id}', [GameController::class, 'show']);
+            Route::get('/games/{id}/archetypes', [GameController::class, 'archetypes']);
+            Route::get('/games/{id}/items', [GameController::class, 'items']);
+            Route::get('/games/{id}/modifiers', [GameController::class, 'modifiers']);
+            Route::get('/categories', [TagController::class, 'index']);
+            Route::get('/items', [EquipmentItemController::class, 'index']);
+            Route::get('/items/{id}', [EquipmentItemController::class, 'show']);
+            Route::get('/modifiers', [EquipmentModifierController::class, 'index']);
+            Route::get('/modifiers/{id}', [EquipmentModifierController::class, 'show']);
+            Route::get('/builds', [BuildController::class, 'index']);
+            Route::get('/builds/{id}', [BuildController::class, 'show']);
+            Route::get('/builds/{id}/summary', [BuildController::class, 'summary']);
+            Route::get('/builds/share/{shareToken}', [BuildController::class, 'share']);
+        });
 
-        Route::get('/categories', [TagController::class, 'index']);
-        Route::get('/items', [EquipmentItemController::class, 'index']);
-        Route::get('/items/{id}', [EquipmentItemController::class, 'show']);
-        Route::get('/modifiers', [EquipmentModifierController::class, 'index']);
-        Route::get('/modifiers/{id}', [EquipmentModifierController::class, 'show']);
-        Route::get('/builds', [BuildController::class, 'index']);
-        Route::get('/builds/{id}', [BuildController::class, 'show']);
-        Route::get('/builds/{id}/summary', [BuildController::class, 'summary']);
-        Route::get('/builds/share/{shareToken}', [BuildController::class, 'share']);
         Route::post('/builds/compare', [BuildController::class, 'compare']);
 
         Route::middleware(['check.api.key', 'require.request.user'])->group(function (): void {

@@ -16,7 +16,11 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Orbitron:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://static.wikia.nocookie.net" crossorigin>
+    <link rel="preconnect" href="https://ddragon.leagueoflegends.com" crossorigin>
+    <link rel="preconnect" href="https://media.valorant-api.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700;800;900&display=swap" rel="stylesheet"></noscript>
 </head>
 <body class="{{ trim('theme-dark '.$bodyClass) }}">
     <div class="{{ trim('shell '.$shellClass) }}">
@@ -25,36 +29,41 @@
                 <span class="brand-mark" aria-hidden="true">W</span>
                 <span class="brand-copy">
                     <strong>Wiki Builder</strong>
-                    <span>Builder, studio et API Laravel.</span>
+                    <span>{{ __('Builder, studio et API Laravel.') }}</span>
                 </span>
             </a>
 
-            <nav id="main-nav" class="main-nav" aria-label="Navigation principale">
-                <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Accueil</a>
+            <nav id="main-nav" class="main-nav" aria-label="{{ __('Navigation principale') }}">
+                <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">{{ __('Accueil') }}</a>
                 @auth
-                    <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Dashboard</a>
-                    <a class="nav-link {{ request()->routeIs('studio.games.create') ? 'active' : '' }}" href="{{ route('studio.games.create') }}">Studio</a>
-                    <a class="nav-link {{ request()->routeIs('account') ? 'active' : '' }}" href="{{ route('account') }}">Mon compte</a>
+                    <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a>
+                    <a class="nav-link {{ request()->routeIs('studio.games.create') ? 'active' : '' }}" href="{{ route('studio.games.create') }}">{{ __('Studio') }}</a>
+                    <a class="nav-link {{ request()->routeIs('account') ? 'active' : '' }}" href="{{ route('account') }}">{{ __('Mon compte') }}</a>
                 @endauth
-                <a class="nav-link {{ request()->routeIs('privacy') ? 'active' : '' }}" href="{{ route('privacy') }}">Confidentialité</a>
+                <a class="nav-link {{ request()->routeIs('privacy') ? 'active' : '' }}" href="{{ route('privacy') }}">{{ __('Confidentialité') }}</a>
                 <a class="nav-link" href="/api/v1">API</a>
             </nav>
 
             <div class="header-actions">
                 @auth
                     <span class="user-chip">
-                        <span class="user-chip-label">Session</span>
+                        <span class="user-chip-label">{{ __('Session') }}</span>
                         <strong>{{ auth()->user()->display_name ?: auth()->user()->username }}</strong>
                     </span>
-                    <a class="btn primary" href="{{ route('studio.games.create') }}">Nouveau draft</a>
+                    <a class="btn primary" href="{{ route('studio.games.create') }}">{{ __('Nouveau draft') }}</a>
                     <form class="inline-form" method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button class="btn danger" type="submit">Déconnexion</button>
+                        <button class="btn danger" type="submit">{{ __('Déconnexion') }}</button>
                     </form>
                 @else
-                    <a class="btn ghost" href="{{ route('login') }}">Connexion</a>
-                    <a class="btn primary" href="{{ route('register') }}">Créer un compte</a>
+                    <a class="btn ghost" href="{{ route('login') }}">{{ __('Connexion') }}</a>
+                    <a class="btn primary" href="{{ route('register') }}">{{ __('Créer un compte') }}</a>
                 @endauth
+
+                <div class="locale-switcher">
+                    <a class="btn ghost {{ app()->getLocale() === 'fr' ? 'active' : '' }}" href="{{ route('locale.switch', 'fr') }}">FR</a>
+                    <a class="btn ghost {{ app()->getLocale() === 'en' ? 'active' : '' }}" href="{{ route('locale.switch', 'en') }}">EN</a>
+                </div>
             </div>
 
             <button
@@ -63,7 +72,7 @@
                 data-header-burger
                 aria-controls="main-nav"
                 aria-expanded="false"
-                aria-label="Ouvrir le menu principal"
+                aria-label="{{ __('Ouvrir le menu principal') }}"
             >
                 <span></span>
                 <span></span>

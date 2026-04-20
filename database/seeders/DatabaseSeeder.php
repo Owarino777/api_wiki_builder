@@ -11,6 +11,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             WikiBuilderSeeder::class,
             Bo7OfflineSeeder::class,
+            BattlefieldSeeder::class,
+            ValorantSeeder::class,
+            LeagueOfLegendsSeeder::class,
+            NewWorldSeeder::class,
         ]);
     }
 }

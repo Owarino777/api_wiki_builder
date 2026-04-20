@@ -127,3 +127,29 @@ Documents de reference pour cette extension :
 Point d'attention important :
 
 - `categories` devra evoluer vers un scope par jeu pour eviter les collisions entre datasets utilisateurs.
+
+## 10. Jeux pre-charges
+
+Le systeme embarque 5 jeux avec donnees realistes au demarrage :
+
+| Jeu | Slug | Genre | Template | Items | Source |
+|---|---|---|---|---|---|
+| Call of Duty: Black Ops 7 | `call-of-duty-black-ops-7` | Arena Shooter | FPS | 50 armes | API CODMunity (snapshot) |
+| Battlefield 2042 | `battlefield-2042` | First-Person Shooter | FPS | 6 armes | Seeder offline |
+| Valorant | `valorant` | Tactical Shooter | FPS | 6 armes | Seeder offline |
+| League of Legends | `league-of-legends` | MOBA | RPG | 6 champions | Seeder offline |
+| New World | `new-world` | MMORPG | RPG | 6 armes | Seeder offline |
+
+### Sources de donnees
+
+- **BO7** : API publique `api.codmunity.gg`, snapshot JSON pre-genere et compresse (10 Mo) dans `docker/app/bo7-snapshot.zip`.
+- **Battlefield 2042** : `BattlefieldSeeder` - armes reelles (M5A3, AK-24, PP-29, DM7, SWS-10, MCS-880) avec accessoires FPS (optiques, bouches, canons, poignees).
+- **Valorant** : `ValorantSeeder` - armes du jeu (Vandal, Phantom, Operator, Spectre, Sheriff, Odin) avec modifications conceptuelles.
+- **League of Legends** : `LeagueOfLegendsSeeder` - champions populaires (Jinx, Ahri, Yasuo, Thresh, Lee Sin, Darius) avec objets et runes comme modificateurs RPG.
+- **New World** : `NewWorldSeeder` - armes du MMO (Sword and Shield, Great Axe, Fire Staff, Life Staff, Bow, War Hammer) avec gemmes et enchantements RPG.
+
+### Demarrage rapide
+
+Tous les seeders sont idempotents et s'executent automatiquement via `SEED_DATABASE=true` (defaut dans docker-compose.yml).
+Le snapshot BO7 est extrait au boot et importe en ~12 secondes.
+Les 4 autres jeux sont seeds instantanement depuis les fixtures PHP.

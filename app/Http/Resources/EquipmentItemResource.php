@@ -9,12 +9,28 @@ class EquipmentItemResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $metadata = $this->metadata;
+
+        // Strip heavy nested data the frontend doesn't need
+        if (is_array($metadata)) {
+            $slim = [];
+            if (isset($metadata['source']['image_url'])) {
+                $slim['source']['image_url'] = $metadata['source']['image_url'];
+            }
+            if (isset($metadata['bo3']['weapon_class'])) {
+                $slim['bo3']['weapon_class'] = $metadata['bo3']['weapon_class'];
+            }
+            if (isset($metadata['bo7']['category'])) {
+                $slim['bo7']['category'] = $metadata['bo7']['category'];
+            }
+            $metadata = $slim ?: null;
+        }
+
         return [
             'id' => $this->id,
             'game_id' => $this->game_id,
             'name' => $this->name,
             'slug' => $this->slug,
-            'external_ref' => $this->external_ref,
             'slot' => $this->slot,
             'rarity' => $this->rarity,
             'tier_level' => $this->tier_level,
@@ -24,9 +40,7 @@ class EquipmentItemResource extends JsonResource
             'utility' => $this->utility,
             'accuracy' => $this->accuracy,
             'mobility' => $this->mobility,
-            'metadata' => $this->metadata,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'metadata' => $metadata,
             'categories' => TagResource::collection($this->whenLoaded('categories')),
             'item_slots' => EquipmentItemSlotResource::collection($this->whenLoaded('itemSlots')),
             'compatible_modifiers' => $this->whenLoaded('modifiers', function () {

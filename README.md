@@ -40,6 +40,8 @@ Dans le ZIP final, le fichier `.env` et le snapshot BO7 sont déjà présents.
 docker compose up -d --build
 ```
 
+Ensuite ouvre `http://localhost:8000` dans ton navigateur pour accéder au front.
+
 Au premier démarrage, la commande peut prendre un peu de temps le temps de :
 
 - construire l'image PHP

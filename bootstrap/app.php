@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Middleware\CacheApiResponse;
 use App\Http\Middleware\CheckApiKey;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\RequireRequestUser;
 use App\Http\Middleware\ResolveRequestUser;
+use App\Http\Middleware\SetLocale;
 use App\Support\ApiResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,7 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [
+            SetLocale::class,
+        ]);
+
         $middleware->alias([
+            'cache.api' => CacheApiResponse::class,
             'check.api.key' => CheckApiKey::class,
             'check.role' => CheckRole::class,
             'resolve.request.user' => ResolveRequestUser::class,

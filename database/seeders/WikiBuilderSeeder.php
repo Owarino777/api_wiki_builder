@@ -349,7 +349,7 @@ class WikiBuilderSeeder extends Seeder
                     ],
                     'source' => [
                         'page_url' => 'https://callofduty.fandom.com/wiki/KN-44',
-                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/b/b8/KN44_BO3.png/revision/latest?cb=20151114232306',
+                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/6/68/KN-44_BO3.png/revision/latest?cb=20151120181111',
                     ],
                 ],
             ],
@@ -373,7 +373,7 @@ class WikiBuilderSeeder extends Seeder
                     ],
                     'source' => [
                         'page_url' => 'https://callofduty.fandom.com/wiki/ICR-1',
-                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/e/e2/ICR-1_BO3.png/revision/latest?cb=20151114232253',
+                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/e/e0/ICR-1_BO3.png/revision/latest?cb=20151125210630',
                     ],
                 ],
             ],
@@ -397,7 +397,7 @@ class WikiBuilderSeeder extends Seeder
                     ],
                     'source' => [
                         'page_url' => 'https://callofduty.fandom.com/wiki/XR-2',
-                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/8/84/XR-2_BO3.png/revision/latest?cb=20151114232400',
+                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/e/ec/XR-2_BO3.png/revision/latest?cb=20151125032851',
                     ],
                 ],
             ],
@@ -421,7 +421,7 @@ class WikiBuilderSeeder extends Seeder
                     ],
                     'source' => [
                         'page_url' => 'https://callofduty.fandom.com/wiki/HVK-30',
-                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/0/03/HVK-30_BO3.png/revision/latest?cb=20151114232319',
+                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/3/30/HVK-30_BO3.png/revision/latest?cb=20151121194033',
                     ],
                 ],
             ],
@@ -445,7 +445,7 @@ class WikiBuilderSeeder extends Seeder
                     ],
                     'source' => [
                         'page_url' => 'https://callofduty.fandom.com/wiki/Man-O-War',
-                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/1/11/Man-O-War_BO3.png/revision/latest?cb=20151114232331',
+                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/5/5e/Man-O-War_BO3.png/revision/latest?cb=20151121193732',
                     ],
                 ],
             ],
@@ -469,7 +469,7 @@ class WikiBuilderSeeder extends Seeder
                     ],
                     'source' => [
                         'page_url' => 'https://callofduty.fandom.com/wiki/M8A7',
-                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/1/14/M8A7_BO3.png/revision/latest?cb=20151114232329',
+                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/f/f4/M8A7_BO3.png/revision/latest?cb=20151121193432',
                     ],
                 ],
             ],
@@ -493,7 +493,7 @@ class WikiBuilderSeeder extends Seeder
                     ],
                     'source' => [
                         'page_url' => 'https://callofduty.fandom.com/wiki/Sheiva',
-                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/b/b8/Sheiva_BO3.png/revision/latest?cb=20151114232341',
+                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/e/e2/Sheiva_BO3.png/revision/latest?cb=20151121193516',
                     ],
                 ],
             ],
@@ -517,7 +517,7 @@ class WikiBuilderSeeder extends Seeder
                     ],
                     'source' => [
                         'page_url' => 'https://callofduty.fandom.com/wiki/Kuda',
-                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/a/a2/Kuda_BO3.png/revision/latest?cb=20151114232305',
+                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/7/75/Kuda_BO3.png/revision/latest?cb=20161020100152',
                     ],
                 ],
             ],
@@ -541,7 +541,7 @@ class WikiBuilderSeeder extends Seeder
                     ],
                     'source' => [
                         'page_url' => 'https://callofduty.fandom.com/wiki/VMP',
-                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/2/28/VMP_BO3.png/revision/latest?cb=20151114232355',
+                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/1/19/VMP_BO3.png/revision/latest?cb=20151121194540',
                     ],
                 ],
             ],
@@ -565,7 +565,7 @@ class WikiBuilderSeeder extends Seeder
                     ],
                     'source' => [
                         'page_url' => 'https://callofduty.fandom.com/wiki/Weevil',
-                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/7/7b/Weevil_BO3.png/revision/latest?cb=20151114232358',
+                        'image_url' => 'https://static.wikia.nocookie.net/callofduty/images/b/ba/Weevil_BO3.png/revision/latest?cb=20151121194237',
                     ],
                 ],
             ],

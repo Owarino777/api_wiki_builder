@@ -1,58 +1,58 @@
-<x-layouts.app :title="'Créer un jeu - Wiki Builder API'" bodyClass="page-studio" shellClass="shell-studio" mainClass="content-studio">
+<x-layouts.app :title="__('Créer un jeu - Wiki Builder API')" bodyClass="page-studio" shellClass="shell-studio" mainClass="content-studio">
 
     <section class="page-head">
         <div>
-            <span class="eyebrow">Studio</span>
-            <h1>Édition de jeu</h1>
-            <span class="subtitle">Tactical Game Editor</span>
+            <span class="eyebrow">{{ __('Studio') }}</span>
+            <h1>{{ __('Édition de jeu') }}</h1>
+            <span class="subtitle">{{ __('Tactical Game Editor') }}</span>
             <hr class="neon-line">
-            <p class="helper">Choisis un draft, complète les étapes, publie quand la revue est valide.</p>
+            <p class="helper">{{ __('Choisis un draft, complète les étapes, publie quand la revue est valide.') }}</p>
         </div>
         <div class="page-head-actions">
-            <a class="btn ghost" href="{{ route('dashboard') }}">Dashboard</a>
-            <a class="btn subtle" href="{{ route('home') }}">Builder</a>
+            <a class="btn ghost" href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a>
+            <a class="btn subtle" href="{{ route('home') }}">{{ __('Builder') }}</a>
         </div>
     </section>
 
     <div class="studio-layout">
         <aside class="panel studio-sidebar">
             <section class="sidebar-block">
-                <span class="eyebrow">Draft actif</span>
-                <div id="draft-summary" class="draft-summary empty">Choisis un template puis cree un brouillon.</div>
+                <span class="eyebrow">{{ __('Draft actif') }}</span>
+                <div id="draft-summary" class="draft-summary empty">{{ __('Choisis un template puis cree un brouillon.') }}</div>
             </section>
 
             <section class="sidebar-block">
                 <div class="sidebar-head">
-                    <h3>Progression</h3>
-                    <button id="start-new-draft" class="btn ghost" type="button">Nouveau draft</button>
+                    <h3>{{ __('Progression') }}</h3>
+                    <button id="start-new-draft" class="btn ghost" type="button">{{ __('Nouveau draft') }}</button>
                 </div>
                 <div id="step-nav" class="step-nav"></div>
             </section>
 
             <section class="sidebar-block">
                 <div class="sidebar-head">
-                    <h3>Mes brouillons</h3>
+                    <h3>{{ __('Mes brouillons') }}</h3>
                 </div>
                 <div id="draft-list" class="draft-list"></div>
             </section>
         </aside>
 
         <section class="panel studio-stage">
-            <div id="studio-status" class="flash studio-status" role="status" aria-live="polite">Choisis un template pour démarrer.</div>
+            <div id="studio-status" class="flash studio-status" role="status" aria-live="polite">{{ __('Choisis un template pour démarrer.') }}</div>
 
             <div class="wizard-stack">
                 <section class="stage-card" data-step="template">
                     <div class="stage-intro">
-                        <span class="eyebrow">Template</span>
-                        <h2>Choisir le cadre du jeu</h2>
-                        <p class="helper">Choisis un template puis crée un draft.</p>
+                        <span class="eyebrow">{{ __('Template') }}</span>
+                        <h2>{{ __('Choisir le cadre du jeu') }}</h2>
+                        <p class="helper">{{ __("Choisis un template puis crée un draft.") }}</p>
                     </div>
                     <div id="template-grid" class="template-grid"></div>
                     <div id="template-preview" class="template-preview"></div>
                     <form id="create-draft-form" class="item-form-grid">
                         <div class="field">
-                            <label for="create-name">Nom du jeu</label>
-                            <input id="create-name" type="text" placeholder="Mon arena shooter" required>
+                            <label for="create-name">{{ __('Nom du jeu') }}</label>
+                            <input id="create-name" type="text" placeholder="{{ __('Mon arena shooter') }}" required>
                         </div>
                         <div class="field">
                             <label for="create-slug">Slug</label>
@@ -60,8 +60,8 @@
                         </div>
                         <div class="field span-2">
                             <div class="wizard-actions">
-                                <p class="helper compact">Le draft démarre en privé.</p>
-                                <button class="btn primary" type="submit">Creer le brouillon</button>
+                                <p class="helper compact">{{ __('Le draft démarre en privé.') }}</p>
+                                <button class="btn primary" type="submit">{{ __('Creer le brouillon') }}</button>
                             </div>
                         </div>
                     </form>
@@ -69,81 +69,81 @@
 
                 <section class="stage-card" data-step="foundation" hidden>
                     <div class="stage-intro">
-                        <span class="eyebrow">Base</span>
-                        <h2>Fondations du jeu</h2>
-                        <p class="helper">Nom, slug, description, visibilite.</p>
+                        <span class="eyebrow">{{ __('Base') }}</span>
+                        <h2>{{ __('Fondations du jeu') }}</h2>
+                        <p class="helper">{{ __('Nom, slug, description, visibilite.') }}</p>
                     </div>
                     <form id="foundation-form" class="item-form-grid">
-                        <div class="field"><label for="foundation-name">Nom final</label><input id="foundation-name" type="text" required></div>
+                        <div class="field"><label for="foundation-name">{{ __('Nom final') }}</label><input id="foundation-name" type="text" required></div>
                         <div class="field"><label for="foundation-slug">Slug</label><input id="foundation-slug" type="text" required></div>
-                        <div class="field span-2"><label for="foundation-description">Description</label><textarea id="foundation-description" placeholder="Description du jeu"></textarea></div>
-                        <div class="field"><label for="foundation-visibility">Visibilite cible</label><select id="foundation-visibility"><option value="private">Prive</option><option value="public">Public</option></select></div>
-                        <div class="field span-2"><div class="wizard-actions"><div class="autosave-row"><span id="foundation-save-state">Autosave inactif</span></div><div class="inline-tools"><button id="save-foundation" class="btn ghost" type="submit">Enregistrer maintenant</button><button class="btn primary" type="button" data-go-step="structure">Continuer</button></div></div></div>
+                        <div class="field span-2"><label for="foundation-description">Description</label><textarea id="foundation-description" placeholder="{{ __('Description du jeu') }}"></textarea></div>
+                        <div class="field"><label for="foundation-visibility">{{ __('Visibilite cible') }}</label><select id="foundation-visibility"><option value="private">{{ __('Prive') }}</option><option value="public">{{ __('Public') }}</option></select></div>
+                        <div class="field span-2"><div class="wizard-actions"><div class="autosave-row"><span id="foundation-save-state">{{ __('Autosave inactif') }}</span></div><div class="inline-tools"><button id="save-foundation" class="btn ghost" type="submit">{{ __('Enregistrer maintenant') }}</button><button class="btn primary" type="button" data-go-step="structure">{{ __('Continuer') }}</button></div></div></div>
                     </form>
                 </section>
 
                 <section class="stage-card" data-step="structure" hidden>
                     <div class="stage-intro">
-                        <span class="eyebrow">Structure</span>
-                        <h2>Cadre du template</h2>
-                        <p class="helper">Active les slots et les types de modifiers autorises.</p>
+                        <span class="eyebrow">{{ __('Structure') }}</span>
+                        <h2>{{ __('Cadre du template') }}</h2>
+                        <p class="helper">{{ __('Active les slots et les types de modifiers autorises.') }}</p>
                     </div>
-                    <div id="structure-lock-note" class="compact-note warn" hidden>Certains choix sont verrouilles apres ajout d'items ou de modifiers.</div>
+                    <div id="structure-lock-note" class="compact-note warn" hidden>{{ __('Certains choix sont verrouilles apres ajout d\'items ou de modifiers.') }}</div>
                     <form id="structure-form" class="wizard-stack">
                         <div class="option-grid">
-                            <label class="option-card"><input id="supports-modifiers" type="checkbox"><span><strong>Supporte les modifiers</strong><small>Active accessoires, runes ou effets relies aux items.</small></span></label>
-                            <label class="option-card"><input id="supports-archetypes" type="checkbox"><span><strong>Supporte les archetypes</strong><small>Ajoute des profils ou classes propres a ce jeu.</small></span></label>
+                            <label class="option-card"><input id="supports-modifiers" type="checkbox"><span><strong>{{ __('Supporte les modifiers') }}</strong><small>{{ __('Active accessoires, runes ou effets relies aux items.') }}</small></span></label>
+                            <label class="option-card"><input id="supports-archetypes" type="checkbox"><span><strong>{{ __('Supporte les archetypes') }}</strong><small>{{ __("Ajoute des profils ou classes propres a ce jeu.") }}</small></span></label>
                         </div>
-                        <div class="structure-preview"><div class="card-head"><h2>Slots d'items actifs</h2></div><div id="structure-item-slots" class="checkbox-grid"></div></div>
-                        <div class="structure-preview"><div class="card-head"><h2>Types de modifiers actifs</h2></div><div id="structure-modifier-types" class="checkbox-grid"></div></div>
-                        <div class="wizard-actions"><div class="autosave-row"><span id="structure-save-state">Autosave inactif</span></div><div class="inline-tools"><button id="save-structure" class="btn ghost" type="submit">Enregistrer maintenant</button><button class="btn primary" type="button" data-go-step="taxonomy">Continuer</button></div></div>
+                        <div class="structure-preview"><div class="card-head"><h2>{{ __("Slots d'items actifs") }}</h2></div><div id="structure-item-slots" class="checkbox-grid"></div></div>
+                        <div class="structure-preview"><div class="card-head"><h2>{{ __('Types de modifiers actifs') }}</h2></div><div id="structure-modifier-types" class="checkbox-grid"></div></div>
+                        <div class="wizard-actions"><div class="autosave-row"><span id="structure-save-state">{{ __('Autosave inactif') }}</span></div><div class="inline-tools"><button id="save-structure" class="btn ghost" type="submit">{{ __('Enregistrer maintenant') }}</button><button class="btn primary" type="button" data-go-step="taxonomy">{{ __('Continuer') }}</button></div></div>
                     </form>
                 </section>
 
                 <section class="stage-card" data-step="taxonomy" hidden>
                     <div class="stage-intro">
-                        <span class="eyebrow">Taxonomie</span>
-                        <h2>Profils et categories</h2>
-                        <p class="helper">Ajoute les profils et les categories avant les items.</p>
+                        <span class="eyebrow">{{ __('Taxonomie') }}</span>
+                        <h2>{{ __('Profils et categories') }}</h2>
+                        <p class="helper">{{ __('Ajoute les profils et les categories avant les items.') }}</p>
                     </div>
                     <div class="taxonomy-grid">
                         <article class="stage-card">
-                            <div class="card-head"><div><h2>Archetypes</h2><p class="helper compact">Profils, classes ou styles de jeu.</p></div><button id="apply-archetype-starters" class="btn ghost" type="button">Suggestions</button></div>
-                            <div id="archetype-disabled-note" class="compact-note" hidden>Les archetypes sont desactives dans la structure actuelle.</div>
+                            <div class="card-head"><div><h2>{{ __('Archetypes') }}</h2><p class="helper compact">{{ __('Profils, classes ou styles de jeu.') }}</p></div><button id="apply-archetype-starters" class="btn ghost" type="button">{{ __('Suggestions') }}</button></div>
+                            <div id="archetype-disabled-note" class="compact-note" hidden>{{ __('Les archetypes sont desactives dans la structure actuelle.') }}</div>
                             <form id="archetype-form" class="wizard-stack">
                                 <div class="field"><label for="archetype-name">Nom</label><input id="archetype-name" type="text" placeholder="Assaillant"></div>
                                 <div class="field"><label for="archetype-slug">Slug</label><input id="archetype-slug" type="text" placeholder="assaillant"></div>
-                                <div class="field"><label for="archetype-description">Description</label><textarea id="archetype-description" placeholder="Description du profil"></textarea></div>
-                                <div class="inline-tools"><button id="save-archetype" class="btn primary" type="submit">Ajouter</button><button id="cancel-archetype-edit" class="btn subtle" type="button" hidden>Annuler</button></div>
+                                <div class="field"><label for="archetype-description">Description</label><textarea id="archetype-description" placeholder="{{ __('Description du profil') }}"></textarea></div>
+                                <div class="inline-tools"><button id="save-archetype" class="btn primary" type="submit">{{ __('Ajouter') }}</button><button id="cancel-archetype-edit" class="btn subtle" type="button" hidden>{{ __('Annuler') }}</button></div>
                             </form>
                             <div id="archetype-list" class="entity-list"></div>
                         </article>
                         <article class="stage-card">
-                            <div class="card-head"><div><h2>Categories</h2><p class="helper compact">Regroupements visuels et fonctionnels des items.</p></div><button id="apply-category-starters" class="btn ghost" type="button">Suggestions</button></div>
+                            <div class="card-head"><div><h2>{{ __('Catégories') }}</h2><p class="helper compact">{{ __('Regroupements visuels et fonctionnels des items.') }}</p></div><button id="apply-category-starters" class="btn ghost" type="button">{{ __('Suggestions') }}</button></div>
                             <form id="category-form" class="wizard-stack">
                                 <div class="field"><label for="category-label">Label</label><input id="category-label" type="text" placeholder="Assault rifle"></div>
                                 <div class="field"><label for="category-slug">Slug</label><input id="category-slug" type="text" placeholder="assault-rifle"></div>
-                                <div class="field"><label for="category-description">Description</label><textarea id="category-description" placeholder="A quoi sert cette categorie dans le jeu ?"></textarea></div>
-                                <div class="inline-tools"><button id="save-category" class="btn primary" type="submit">Ajouter</button><button id="cancel-category-edit" class="btn subtle" type="button" hidden>Annuler</button></div>
+                                <div class="field"><label for="category-description">Description</label><textarea id="category-description" placeholder="{{ __('A quoi sert cette categorie dans le jeu ?') }}"></textarea></div>
+                                <div class="inline-tools"><button id="save-category" class="btn primary" type="submit">{{ __('Ajouter') }}</button><button id="cancel-category-edit" class="btn subtle" type="button" hidden>{{ __('Annuler') }}</button></div>
                             </form>
                             <div id="category-list" class="entity-list"></div>
                         </article>
                     </div>
-                    <div class="wizard-actions"><button class="btn ghost" type="button" data-go-step="structure">Retour</button><button class="btn primary" type="button" data-go-step="items">Continuer</button></div>
+                    <div class="wizard-actions"><button class="btn ghost" type="button" data-go-step="structure">{{ __('Retour') }}</button><button class="btn primary" type="button" data-go-step="items">{{ __('Continuer') }}</button></div>
                 </section>
 
                 <section class="stage-card" data-step="items" hidden>
                     <div class="stage-intro">
-                        <span class="eyebrow">Items</span>
-                        <h2>Equipements du jeu</h2>
-                        <p class="helper">Ajoute les items, leurs stats et leurs slots internes.</p>
+                        <span class="eyebrow">{{ __('Items') }}</span>
+                        <h2>{{ __('Equipements du jeu') }}</h2>
+                        <p class="helper">{{ __('Ajoute les items, leurs stats et leurs slots internes.') }}</p>
                     </div>
                     <form id="item-form" class="wizard-stack">
                         <div class="item-form-grid">
                             <div class="field"><label for="item-name">Nom</label><input id="item-name" type="text" placeholder="VX-7"></div>
                             <div class="field"><label for="item-slug">Slug</label><input id="item-slug" type="text" placeholder="vx-7"></div>
                             <div class="field"><label for="item-slot">Slot global</label><select id="item-slot"></select></div>
-                            <div class="field"><label for="item-rarity">Rarete</label><select id="item-rarity"><option value="standard">standard</option><option value="rare">rare</option><option value="epic">epic</option><option value="legendary">legendary</option></select></div>
+                            <div class="field"><label for="item-rarity">{{ __('Rarete') }}</label><select id="item-rarity"><option value="standard">standard</option><option value="rare">rare</option><option value="epic">epic</option><option value="legendary">legendary</option></select></div>
                             <div class="field"><label for="item-tier">Tier</label><input id="item-tier" type="text" placeholder="T1"></div>
                             <div class="field"><label for="item-score">Score</label><input id="item-score" type="number" value="0"></div>
                             <div class="field"><label for="item-attack">Attack</label><input id="item-attack" type="number" value="0"></div>
@@ -159,32 +159,32 @@
                         <div id="item-slots-card" class="structure-preview">
                             <div class="card-head">
                                 <div>
-                                    <h2>Slots internes</h2>
-                                    <p class="helper compact">Utiles si cet item doit recevoir des modifiers compatibles.</p>
+                                    <h2>{{ __('Slots internes') }}</h2>
+                                    <p class="helper compact">{{ __('Utiles si cet item doit recevoir des modifiers compatibles.') }}</p>
                                 </div>
                                 <div class="slot-tools">
-                                    <button id="apply-item-slot-preset" class="btn ghost" type="button">Appliquer un preset</button>
-                                    <button id="add-item-slot-row" class="btn ghost" type="button">Ajouter un slot</button>
+                                    <button id="apply-item-slot-preset" class="btn ghost" type="button">{{ __('Appliquer un preset') }}</button>
+                                    <button id="add-item-slot-row" class="btn ghost" type="button">{{ __('Ajouter un slot') }}</button>
                                 </div>
                             </div>
                             <div id="item-slot-list" class="slot-list"></div>
                         </div>
                         <div class="inline-tools">
-                            <button id="save-item" class="btn primary" type="submit">Ajouter l'item</button>
-                            <button id="cancel-item-edit" class="btn subtle" type="button" hidden>Annuler</button>
+                            <button id="save-item" class="btn primary" type="submit">{{ __("Ajouter l'item") }}</button>
+                            <button id="cancel-item-edit" class="btn subtle" type="button" hidden>{{ __('Annuler') }}</button>
                         </div>
                     </form>
                     <div id="item-list" class="entity-list"></div>
-                    <div class="wizard-actions"><button class="btn ghost" type="button" data-go-step="taxonomy">Retour</button><button class="btn primary" type="button" data-go-step="modifiers">Continuer</button></div>
+                    <div class="wizard-actions"><button class="btn ghost" type="button" data-go-step="taxonomy">{{ __('Retour') }}</button><button class="btn primary" type="button" data-go-step="modifiers">{{ __('Continuer') }}</button></div>
                 </section>
 
                 <section class="stage-card" data-step="modifiers" hidden>
                     <div class="stage-intro">
-                        <span class="eyebrow">Modifiers</span>
-                        <h2>Accessoires et effets</h2>
-                        <p class="helper">Relie les modifiers aux items compatibles.</p>
+                        <span class="eyebrow">{{ __('Modifiers') }}</span>
+                        <h2>{{ __('Accessoires et effets') }}</h2>
+                        <p class="helper">{{ __('Relie les modifiers aux items compatibles.') }}</p>
                     </div>
-                    <div id="modifier-disabled-note" class="compact-note" hidden>Les modifiers sont actuellement desactives dans la structure du draft.</div>
+                    <div id="modifier-disabled-note" class="compact-note" hidden>{{ __('Les modifiers sont actuellement desactives dans la structure du draft.') }}</div>
                     <form id="modifier-form" class="wizard-stack">
                         <div class="modifier-form-grid">
                             <div class="field"><label for="modifier-name">Nom</label><input id="modifier-name" type="text" placeholder="Red Dot X"></div>
@@ -196,63 +196,63 @@
                             <div class="field"><label for="modifier-utility">Delta utility</label><input id="modifier-utility" type="number" value="0"></div>
                             <div class="field"><label for="modifier-accuracy">Delta accuracy</label><input id="modifier-accuracy" type="number" value="0"></div>
                             <div class="field"><label for="modifier-mobility">Delta mobility</label><input id="modifier-mobility" type="number" value="0"></div>
-                            <div class="field span-2"><label for="modifier-description">Description</label><textarea id="modifier-description" placeholder="Effet, compromis, role dans le build..."></textarea></div>
+                            <div class="field span-2"><label for="modifier-description">Description</label><textarea id="modifier-description" placeholder="{{ __('Effet, compromis, role dans le build...') }}"></textarea></div>
                         </div>
                         <div class="structure-preview">
-                            <div class="card-head"><h2>Items compatibles</h2></div>
+                            <div class="card-head"><h2>{{ __('Items compatibles') }}</h2></div>
                             <div id="modifier-item-options" class="checkbox-grid"></div>
                         </div>
                         <div class="inline-tools">
-                            <button id="save-modifier" class="btn primary" type="submit">Ajouter le modifier</button>
-                            <button id="cancel-modifier-edit" class="btn subtle" type="button" hidden>Annuler</button>
+                            <button id="save-modifier" class="btn primary" type="submit">{{ __('Ajouter le modifier') }}</button>
+                            <button id="cancel-modifier-edit" class="btn subtle" type="button" hidden>{{ __('Annuler') }}</button>
                         </div>
                     </form>
                     <div id="modifier-list" class="entity-list"></div>
-                    <div class="wizard-actions"><button class="btn ghost" type="button" data-go-step="items">Retour</button><button class="btn primary" type="button" data-go-step="review">Continuer</button></div>
+                    <div class="wizard-actions"><button class="btn ghost" type="button" data-go-step="items">{{ __('Retour') }}</button><button class="btn primary" type="button" data-go-step="review">{{ __('Continuer') }}</button></div>
                 </section>
 
                 <section class="stage-card" data-step="review" hidden>
                     <div class="stage-intro">
-                        <span class="eyebrow">Revue</span>
-                        <h2>Etat du draft et publication</h2>
-                        <p class="helper">Corrige les blocages puis publie.</p>
+                        <span class="eyebrow">{{ __('Revue') }}</span>
+                        <h2>{{ __('Etat du draft et publication') }}</h2>
+                        <p class="helper">{{ __('Corrige les blocages puis publie.') }}</p>
                     </div>
                     <div class="review-grid">
                         <article class="review-summary">
-                            <span class="eyebrow">Synthese</span>
+                            <span class="eyebrow">{{ __('Synthese') }}</span>
                             <strong id="review-completion">0%</strong>
-                            <p id="review-subtitle" class="helper compact">Aucune donnee pour le moment.</p>
+                            <p id="review-subtitle" class="helper compact">{{ __('Aucune donnee pour le moment.') }}</p>
                             <div class="summary-metrics">
-                                <article class="summary-metric"><strong id="review-items-count">0</strong><span>Items</span></article>
-                                <article class="summary-metric"><strong id="review-modifiers-count">0</strong><span>Modifiers</span></article>
-                                <article class="summary-metric"><strong id="review-errors-count">0</strong><span>Bloquants</span></article>
+                                <article class="summary-metric"><strong id="review-items-count">0</strong><span>{{ __('Items') }}</span></article>
+                                <article class="summary-metric"><strong id="review-modifiers-count">0</strong><span>{{ __('Modifiers') }}</span></article>
+                                <article class="summary-metric"><strong id="review-errors-count">0</strong><span>{{ __('Bloquants') }}</span></article>
                             </div>
                         </article>
                         <article class="review-summary">
-                            <span class="eyebrow">Publication</span>
-                            <strong id="publish-state-label">En attente</strong>
-                            <p id="publish-state-copy" class="helper compact">Le draft doit etre complet avant publication.</p>
-                            <div class="inline-tools"><button id="publish-draft" class="btn primary" type="button">Publier le jeu</button></div>
+                            <span class="eyebrow">{{ __('Publication') }}</span>
+                            <strong id="publish-state-label">{{ __('En attente') }}</strong>
+                            <p id="publish-state-copy" class="helper compact">{{ __('Le draft doit etre complet avant publication.') }}</p>
+                            <div class="inline-tools"><button id="publish-draft" class="btn primary" type="button">{{ __('Publier le jeu') }}</button></div>
                         </article>
                     </div>
                     <div id="review-list" class="review-list"></div>
-                    <div class="wizard-actions"><button class="btn ghost" type="button" data-go-step="modifiers">Retour</button></div>
+                    <div class="wizard-actions"><button class="btn ghost" type="button" data-go-step="modifiers">{{ __('Retour') }}</button></div>
                 </section>
             </div>
         </section>
     </div>
 
     <section class="panel section-card">
-        <div class="section-head"><div class="section-copy"><span class="eyebrow">Publies</span><h2>Mes jeux recents</h2></div></div>
+        <div class="section-head"><div class="section-copy"><span class="eyebrow">{{ __('Publies') }}</span><h2>{{ __('Mes jeux recents') }}</h2></div></div>
         <div class="published-grid">
             @forelse ($publishedGames as $game)
                 <article class="published-tile">
                     <h4>{{ $game->name }}</h4>
                     <div class="entity-meta"><span class="tag">{{ $game->visibility }}</span><span class="tag">{{ $game->creation_category ?: 'system' }}</span></div>
-                    <p>Publie le {{ $game->published_at?->format('d/m/Y H:i') ?: 'non date' }}</p>
+                    <p>{{ __('Publie le') }} {{ $game->published_at?->format('d/m/Y H:i') ?: __('non date') }}</p>
                 </article>
             @empty
-                <div class="empty-soft">Aucun jeu utilisateur publie pour le moment.</div>
+                <div class="empty-soft">{{ __('Aucun jeu utilisateur publie pour le moment.') }}</div>
             @endforelse
         </div>
     </section>

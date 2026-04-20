@@ -384,6 +384,26 @@ img {
     align-items: center;
 }
 
+.locale-switcher {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.locale-switcher .btn {
+    min-height: 32px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.locale-switcher .btn.active {
+    background: var(--neon);
+    color: var(--bg-root);
+    border-color: var(--neon);
+}
+
 .nav-link,
 .btn,
 .chip,
@@ -780,8 +800,8 @@ textarea:focus-visible,
     min-width: 0;
 }
 
-.page-head-user > div:last-child,
-.feature-item > div:last-child,
+.page-head-user>div:last-child,
+.feature-item>div:last-child,
 .info-content,
 .kpi-content {
     min-width: 0;
@@ -1951,6 +1971,7 @@ code {
 }
 
 @media (max-width: 760px) {
+
     .section-head,
     .builder-head,
     .catalog-head,
@@ -1981,6 +2002,7 @@ code {
 }
 
 @media (max-width: 425px) {
+
     .shell,
     .shell-home,
     .shell-studio {
@@ -2153,6 +2175,7 @@ pre {
 }
 
 @media (max-width: 1024px) {
+
     .shell,
     .shell-home,
     .shell-studio {
@@ -2166,6 +2189,7 @@ pre {
 }
 
 @media (max-width: 900px) {
+
     .home-config-grid,
     .catalog-toolbar,
     .build-form-grid,
@@ -2234,6 +2258,7 @@ pre {
 }
 
 @media (max-width: 560px) {
+
     .main-nav,
     .header-actions,
     .page-head-actions,
@@ -2254,6 +2279,7 @@ pre {
 }
 
 @media (max-width: 375px) {
+
     .page-kpis,
     .builder-setup .page-kpis {
         grid-template-columns: 1fr;
@@ -2545,6 +2571,7 @@ select optgroup {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {
@@ -2553,4 +2580,3 @@ select optgroup {
         scroll-behavior: auto !important;
     }
 }
-
