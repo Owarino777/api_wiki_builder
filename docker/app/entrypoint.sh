@@ -58,6 +58,16 @@ if [ "${SEED_DATABASE:-false}" = "true" ]; then
     php artisan db:seed --force --no-interaction
 fi
 
+# Extract pre-bundled snapshot if available and not already extracted
+SNAPSHOT_ZIP="/var/www/html/docker/app/bo7-snapshot.zip"
+SNAPSHOT_DIR="/var/www/html/storage/app/private/codmunity"
+if [ -f "${SNAPSHOT_ZIP}" ] && [ ! -f "${SNAPSHOT_DIR}/bo7-live-snapshot/manifest.json" ]; then
+    echo "Extracting pre-bundled BO7 snapshot..."
+    mkdir -p "${SNAPSHOT_DIR}"
+    unzip -o "${SNAPSHOT_ZIP}" -d "${SNAPSHOT_DIR}" > /dev/null 2>&1 || true
+    chown -R www-data:www-data "${SNAPSHOT_DIR}" || true
+fi
+
 if [ "${BOOTSTRAP_BO7_MODE:-skip}" != "skip" ]; then
     bootstrap_args="--mode=${BOOTSTRAP_BO7_MODE} --no-interaction"
 

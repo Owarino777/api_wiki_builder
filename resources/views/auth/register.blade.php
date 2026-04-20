@@ -15,7 +15,7 @@
                     <span class="field-icon">
                         <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </span>
-                    <input id="username" name="username" type="text" value="{{ old('username') }}" required autocomplete="username">
+                    <input id="username" name="username" type="text" value="{{ old('username') }}" required autocomplete="username" placeholder="Choisis un username">
                     @error('username')
                         <span class="error">{{ $message }}</span>
                     @enderror
@@ -26,7 +26,7 @@
                     <span class="field-icon">
                         <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
                     </span>
-                    <input id="display_name" name="display_name" type="text" value="{{ old('display_name') }}" autocomplete="nickname">
+                    <input id="display_name" name="display_name" type="text" value="{{ old('display_name') }}" autocomplete="nickname" placeholder="Nom visible par les autres">
                     @error('display_name')
                         <span class="error">{{ $message }}</span>
                     @enderror
@@ -38,7 +38,7 @@
                 <span class="field-icon">
                     <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                 </span>
-                <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="email">
+                <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="email" placeholder="ton@email.com">
                 @error('email')
                     <span class="error">{{ $message }}</span>
                 @enderror
@@ -50,7 +50,7 @@
                     <span class="field-icon">
                         <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                     </span>
-                    <input id="password" name="password" type="password" required autocomplete="new-password">
+                    <input id="password" name="password" type="password" required autocomplete="new-password" placeholder="Crée un mot de passe sécurisé">
                     @error('password')
                         <span class="error">{{ $message }}</span>
                     @enderror
@@ -61,7 +61,7 @@
                     <span class="field-icon">
                         <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     </span>
-                    <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password">
+                    <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password" placeholder="Répète ton mot de passe">
                 </div>
             </div>
 

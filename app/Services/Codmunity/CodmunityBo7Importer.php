@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -46,6 +47,17 @@ class CodmunityBo7Importer
 
         if ($limit !== null) {
             $weapons = $weapons->take(max(1, $limit))->values();
+        }
+
+        // Pre-fetch all weapon details in parallel BEFORE the DB transaction
+        if ($withBuilds && $bundle['source'] !== 'snapshot') {
+            $weaponSlugs = $weapons
+                ->pluck('slug')
+                ->filter(fn (mixed $slug): bool => is_string($slug) && trim($slug) !== '')
+                ->values()
+                ->all();
+
+            $bundle['weapon_details'] = $this->prefetchWeaponDetails($weaponSlugs);
         }
 
         $weaponPopularity = collect($meta['topWeapons'] ?? [])
@@ -292,10 +304,41 @@ class CodmunityBo7Importer
 
     private function fetchLiveBundle(): array
     {
-        $meta = $this->getJson('https://api.codmunity.gg/website/assets/meta-ranking/one/bo7');
-        $attachmentsPayload = $this->getJson('https://api.codmunity.gg/website/assets/attachments-data');
-        $weaponStats = $this->getJson('https://api.codmunity.gg/weapon-stats');
-        $attachmentStats = $this->getJson('https://api.codmunity.gg/attachment-stats');
+        $timeout = $this->requestTimeout();
+        $connectTimeout = $this->connectTimeout();
+        $curlOptions = [];
+
+        if (defined('CURLOPT_IPRESOLVE') && defined('CURL_IPRESOLVE_V4')) {
+            $curlOptions[CURLOPT_IPRESOLVE] = CURL_IPRESOLVE_V4;
+        }
+
+        if (defined('CURLOPT_HTTP_VERSION') && defined('CURL_HTTP_VERSION_1_1')) {
+            $curlOptions[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_1_1;
+        }
+
+        $responses = Http::pool(function (Pool $pool) use ($timeout, $connectTimeout, $curlOptions) {
+            $urls = [
+                'meta' => 'https://api.codmunity.gg/website/assets/meta-ranking/one/bo7',
+                'attachments_payload' => 'https://api.codmunity.gg/website/assets/attachments-data',
+                'weapon_stats' => 'https://api.codmunity.gg/weapon-stats',
+                'attachment_stats' => 'https://api.codmunity.gg/attachment-stats',
+            ];
+
+            foreach ($urls as $key => $url) {
+                $pool->as($key)
+                    ->timeout($timeout)
+                    ->connectTimeout($connectTimeout)
+                    ->acceptJson()
+                    ->withHeaders(['User-Agent' => 'api_wiki_builder/bo7-importer'])
+                    ->withOptions(['verify' => true, 'curl' => $curlOptions])
+                    ->get($url);
+            }
+        });
+
+        $meta = $responses['meta']->throw()->json();
+        $attachmentsPayload = $responses['attachments_payload']->throw()->json();
+        $weaponStats = $responses['weapon_stats']->throw()->json();
+        $attachmentStats = $responses['attachment_stats']->throw()->json();
 
         $bundle = [
             'source' => 'live',
@@ -377,11 +420,69 @@ class CodmunityBo7Importer
 
     private function getWeaponDetail(array $bundle, string $weaponSlug): ?array
     {
+        // Return prefetched data if available (parallel batch)
+        if (isset($bundle['weapon_details'][$weaponSlug])) {
+            return $bundle['weapon_details'][$weaponSlug];
+        }
+
         if ($bundle['source'] === 'snapshot') {
             return $this->readSnapshotWeaponDetail($weaponSlug);
         }
 
         return $this->fetchLiveWeaponDetail($weaponSlug);
+    }
+
+    /**
+     * Fetch all weapon details concurrently using HTTP connection pooling.
+     */
+    private function prefetchWeaponDetails(array $weaponSlugs): array
+    {
+        if ($weaponSlugs === []) {
+            return [];
+        }
+
+        $timeout = $this->requestTimeout();
+        $connectTimeout = $this->connectTimeout();
+        $curlOptions = [];
+
+        if (defined('CURLOPT_IPRESOLVE') && defined('CURL_IPRESOLVE_V4')) {
+            $curlOptions[CURLOPT_IPRESOLVE] = CURL_IPRESOLVE_V4;
+        }
+
+        if (defined('CURLOPT_HTTP_VERSION') && defined('CURL_HTTP_VERSION_1_1')) {
+            $curlOptions[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_1_1;
+        }
+
+        $responses = Http::pool(function (Pool $pool) use ($weaponSlugs, $timeout, $connectTimeout, $curlOptions) {
+            foreach ($weaponSlugs as $slug) {
+                $pool->as($slug)
+                    ->timeout($timeout)
+                    ->connectTimeout($connectTimeout)
+                    ->acceptJson()
+                    ->withHeaders(['User-Agent' => 'api_wiki_builder/bo7-importer'])
+                    ->withOptions(['verify' => true, 'curl' => $curlOptions])
+                    ->get("https://api.codmunity.gg/website/assets/weapon/bo7/{$slug}");
+            }
+        });
+
+        $details = [];
+
+        foreach ($responses as $slug => $response) {
+            try {
+                if ($response instanceof \Illuminate\Http\Client\Response && $response->successful()) {
+                    $detail = $response->json();
+
+                    if (is_array($detail)) {
+                        $details[$slug] = $detail;
+                        $this->writeSnapshotJson($this->snapshotWeaponDetailPath($slug), $detail);
+                    }
+                }
+            } catch (Throwable) {
+                // Skip failed weapon details silently
+            }
+        }
+
+        return $details;
     }
 
     private function fetchLiveWeaponDetail(string $weaponSlug): ?array
@@ -514,7 +615,7 @@ class CodmunityBo7Importer
 
     private function requestTimeout(): int
     {
-        return max(30, (int) env('CODMUNITY_REQUEST_TIMEOUT', 120));
+        return max(10, (int) env('CODMUNITY_REQUEST_TIMEOUT', 30));
     }
 
     private function connectTimeout(): int
@@ -529,7 +630,7 @@ class CodmunityBo7Importer
 
     private function retrySleepMilliseconds(): int
     {
-        return max(0, (int) env('CODMUNITY_RETRY_SLEEP_MS', 500));
+        return max(0, (int) env('CODMUNITY_RETRY_SLEEP_MS', 200));
     }
 
     private function safeGetJson(string $url): ?array

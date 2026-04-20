@@ -14,7 +14,7 @@
                 <span class="field-icon">
                     <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </span>
-                <input id="login" name="login" type="text" value="{{ old('login') }}" required autofocus autocomplete="username">
+                <input id="login" name="login" type="text" value="{{ old('login') }}" required autofocus autocomplete="username" placeholder="ton@email.com ou ton_username">
                 @error('login')
                     <span class="error">{{ $message }}</span>
                 @enderror
@@ -25,7 +25,7 @@
                 <span class="field-icon">
                     <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                 </span>
-                <input id="password" name="password" type="password" required autocomplete="current-password">
+                <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Ton mot de passe">
                 @error('password')
                     <span class="error">{{ $message }}</span>
                 @enderror
