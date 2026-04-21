@@ -100,19 +100,15 @@ Choix actuel :
 
 Fichiers :
 
-- `doc/spec_ajout_jeux_utilisateur.md`
+- `doc/creation_jeux.md` (spec complète + ADR + plan de migrations)
 - `doc/architecture.md`
-- `doc/architecture_modifications.md`
-- `doc/plan_migrations_jeux_utilisateur.md`
-- `doc/adr_001_jeux_utilisateur_draft_runtime.md`
 
 ### 2. Document / CDC
 
 Fichiers :
 
-- `doc/demarche_et_methodo.md`
-- `doc/wiki_game_builder.md`
 - `doc/architecture.md`
+- `doc/creation_jeux.md`
 
 ### 3. Codebase
 

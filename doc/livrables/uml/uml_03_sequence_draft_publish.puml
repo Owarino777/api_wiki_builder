@@ -1,41 +1,100 @@
 @startuml
-title UML 2.5 - Sequence - Draft Publication
+title UML 2.5 - Sequence - Parcours Studio popup jusqu'a publication
 autonumber
 
-actor User
-participant "Studio UI (Blade + JS)" as UI
-participant "API /game-drafts/{id}/publish" as API
-participant "GameDraftController" as Ctrl
+actor "Utilisateur" as User
+participant "Studio UI\nBlade + JS popup" as UI
+participant "Routes web\n/studio/api/v1" as WebApi
+participant "GameDraftController" as DraftCtrl
+participant "Draft child controllers\nArchetype/Category/Item/Modifier" as ChildCtrls
+participant "FormRequests" as Requests
 participant "GameDraftProgressService" as Progress
 participant "GameDraftPublicationService" as Publish
 database "MySQL" as DB
 
-User -> UI : Click "Publier le jeu"
-UI -> API : POST publish (api key + user context)
-API -> Ctrl : dispatch request
-Ctrl -> Ctrl : resolve owner draft
-Ctrl -> Progress : refresh(draft)
-Ctrl -> Publish : publish(draft)
+User -> UI : Ouvre /studio/games/create
+UI -> UI : Etapes popup\nnom, description, options
+UI -> UI : Selection archetypes/categories\npuis saisie items et modificateurs
 
+UI -> WebApi : POST /game-drafts\ncategory_key, name, slug
+WebApi -> DraftCtrl : store()
+DraftCtrl -> Requests : StoreGameDraftRequest
+DraftCtrl -> DB : INSERT game_drafts
+DraftCtrl -> Progress : refresh(draft, foundation)
+Progress -> DB : UPSERT game_draft_steps
+DraftCtrl --> UI : Draft JSON
+
+UI -> WebApi : PATCH /game-drafts/{id}/foundation
+WebApi -> DraftCtrl : foundation()
+DraftCtrl -> Requests : UpdateGameDraftFoundationRequest
+DraftCtrl -> DB : UPDATE name, slug, description, visibility
+DraftCtrl -> Progress : refresh(draft, foundation)
+DraftCtrl --> UI : Draft JSON
+
+UI -> WebApi : PATCH /game-drafts/{id}/structure
+WebApi -> DraftCtrl : structure()
+DraftCtrl -> Requests : UpdateGameDraftStructureRequest
+DraftCtrl -> DB : UPDATE settings JSON
+DraftCtrl -> Progress : refresh(draft, structure)
+DraftCtrl --> UI : Draft JSON
+
+opt archetypes actifs
+  loop archetype selectionne
+    UI -> WebApi : POST /game-drafts/{id}/archetypes
+    WebApi -> ChildCtrls : GameDraftArchetypeController@store
+    ChildCtrls -> DB : INSERT game_draft_archetypes
+    ChildCtrls -> Progress : refresh(draft, archetypes)
+  end
+end
+
+loop categorie selectionnee ou saisie
+  UI -> WebApi : POST /game-drafts/{id}/categories
+  WebApi -> ChildCtrls : GameDraftCategoryController@store
+  ChildCtrls -> DB : INSERT game_draft_categories
+  ChildCtrls -> Progress : refresh(draft, categories)
+end
+
+loop item/equipement saisi
+  UI -> WebApi : POST /game-drafts/{id}/items
+  WebApi -> ChildCtrls : GameDraftItemController@store
+  ChildCtrls -> Requests : SaveGameDraftItemRequest
+  ChildCtrls -> DB : INSERT game_draft_items
+  ChildCtrls -> DB : SYNC categories + item slots
+  ChildCtrls -> Progress : refresh(draft, items)
+end
+
+opt modificateurs actifs
+  loop modificateur saisi
+    UI -> WebApi : POST /game-drafts/{id}/modifiers
+    WebApi -> ChildCtrls : GameDraftModifierController@store
+    ChildCtrls -> Requests : SaveGameDraftModifierRequest
+    ChildCtrls -> DB : INSERT game_draft_modifiers
+    ChildCtrls -> DB : SYNC compatible_item_ids
+    ChildCtrls -> Progress : refresh(draft, modifiers)
+  end
+end
+
+UI -> WebApi : POST /game-drafts/{id}/publish
+WebApi -> DraftCtrl : publish()
+DraftCtrl -> Publish : publish(draft)
 Publish -> Progress : publishErrors(draft)
-alt blocking errors present
+
+alt erreurs de validation
   Progress --> Publish : errors[]
-  Publish --> Ctrl : RuntimeException
-  Ctrl --> API : 422 Draft publication blocked
-  API --> UI : JSON error
-else no blocking errors
+  Publish --> DraftCtrl : RuntimeException
+  DraftCtrl --> UI : 422 + liste des blocages
+else pret a publier
   Progress --> Publish : []
   Publish -> DB : BEGIN TRANSACTION
   Publish -> DB : INSERT games
   Publish -> DB : INSERT archetypes/categories
-  Publish -> DB : INSERT items/item_slots
+  Publish -> DB : INSERT items + item_slots
   Publish -> DB : INSERT modifiers + pivots
-  Publish -> DB : UPDATE game_drafts status=published
+  Publish -> DB : UPDATE game_drafts\nstatus=published, completion=100
   Publish -> DB : COMMIT
-  Publish --> Ctrl : Game runtime
-  Ctrl --> API : 201 Draft published
-  API --> UI : JSON success (draft + game)
+  Publish --> DraftCtrl : Game publie
+  DraftCtrl -> Progress : refresh(draft, review)
+  DraftCtrl --> UI : 201 success\n{draft, game}
 end
 
 @enduml
-

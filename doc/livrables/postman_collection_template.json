@@ -1,92 +1,164 @@
 {
   "info": {
     "_postman_id": "6fdbdb2e-5fc0-4e2b-9e6c-7adf5e7bb001",
-    "name": "Wiki Builder API - Livraison",
+    "name": "Wiki Builder API - Routes completes",
+    "description": "Collection de livraison listant les routes API principales avec une explication fonctionnelle.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8000"
-    },
-    {
-      "key": "apiKey",
-      "value": "replace-with-real-key"
-    }
+    {"key": "baseUrl", "value": "http://localhost:8000"},
+    {"key": "apiKey", "value": "replace-with-real-key"},
+    {"key": "gameId", "value": "1"},
+    {"key": "buildId", "value": "1"},
+    {"key": "shareToken", "value": "demo"},
+    {"key": "draftId", "value": "1"},
+    {"key": "archetypeId", "value": "1"},
+    {"key": "categoryId", "value": "1"},
+    {"key": "itemId", "value": "1"},
+    {"key": "modifierId", "value": "1"},
+    {"key": "userId", "value": "1"}
   ],
   "item": [
     {
-      "name": "API Home",
-      "request": {
-        "method": "GET",
-        "url": "{{baseUrl}}/api/v1"
-      }
-    },
-    {
-      "name": "Games List",
-      "request": {
-        "method": "GET",
-        "url": "{{baseUrl}}/api/v1/games"
-      }
-    },
-    {
-      "name": "Items List",
-      "request": {
-        "method": "GET",
-        "url": "{{baseUrl}}/api/v1/items?per_page=10"
-      }
-    },
-    {
-      "name": "Compare Builds",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
+      "name": "Lecture publique",
+      "description": "Routes accessibles sans cle API. Elles alimentent le builder, le catalogue public et les exemples de lecture.",
+      "item": [
+        {"name": "API Home", "description": "Retourne la documentation live des routes et exemples.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1"}},
+        {"name": "Game categories", "description": "Liste les templates backend disponibles pour creer un jeu.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/game-categories"}},
+        {"name": "Game category detail", "description": "Retourne le detail d un template de jeu.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/game-categories/fps"}},
+        {"name": "Games list", "description": "Liste paginee des jeux publics.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/games?per_page=20"}},
+        {"name": "Game detail", "description": "Detail d un jeu public.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/games/{{gameId}}"}},
+        {"name": "Game archetypes", "description": "Profils/archetypes disponibles pour un jeu.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/games/{{gameId}}/archetypes?per_page=100"}},
+        {"name": "Game items", "description": "Catalogue des items/equipements d un jeu.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/games/{{gameId}}/items?per_page=100&sort_by=score&sort_dir=desc"}},
+        {"name": "Game modifiers", "description": "Modificateurs/accessoires d un jeu.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/games/{{gameId}}/modifiers?per_page=100&sort_by=name&sort_dir=asc"}},
+        {"name": "Categories list", "description": "Liste les categories runtime, filtrables par jeu.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/categories?game_id={{gameId}}"}},
+        {"name": "Items list", "description": "Recherche/liste paginee des items.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/items?game_id={{gameId}}&per_page=10"}},
+        {"name": "Item detail", "description": "Detail complet d un item avec categories, slots et modificateurs compatibles.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/items/{{itemId}}"}},
+        {"name": "Modifiers list", "description": "Recherche/liste paginee des modificateurs.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/modifiers?game_id={{gameId}}&per_page=10"}},
+        {"name": "Modifier detail", "description": "Detail complet d un modificateur.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/modifiers/{{modifierId}}"}},
+        {"name": "Builds list", "description": "Liste les builds publics ou filtres par jeu.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/builds?game_id={{gameId}}&is_public=true&per_page=20"}},
+        {"name": "Build detail", "description": "Detail d un build public ou accessible au proprietaire.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/builds/{{buildId}}"}},
+        {"name": "Build summary", "description": "Stats agregees et resume calcule d un build.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/builds/{{buildId}}/summary"}},
+        {"name": "Shared build", "description": "Acces public a un build via token de partage.", "request": {"method": "GET", "url": "{{baseUrl}}/api/v1/builds/share/{{shareToken}}"}},
+        {
+          "name": "Compare builds",
+          "description": "Compare deux builds publics.",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"left_build_id\":1,\"right_build_id\":2}"},
+            "url": "{{baseUrl}}/api/v1/builds/compare"
           }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"left_build_id\":1,\"right_build_id\":2}"
-        },
-        "url": "{{baseUrl}}/api/v1/builds/compare"
-      }
+        }
+      ]
     },
     {
-      "name": "Drafts List (secured)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "API-KEY",
-            "value": "{{apiKey}}"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/game-drafts"
-      }
+      "name": "Utilisateur protege",
+      "description": "Routes necessitant API-KEY et un utilisateur resolu.",
+      "item": [
+        {"name": "My games", "description": "Liste les jeux crees par l utilisateur authentifie.", "request": {"method": "GET", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/my/games"}},
+        {"name": "My game detail", "description": "Detail d un jeu possede par l utilisateur.", "request": {"method": "GET", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/my/games/{{gameId}}"}},
+        {"name": "Drafts list", "description": "Liste les jeux en cours de creation.", "request": {"method": "GET", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/game-drafts"}},
+        {"name": "Create draft", "description": "Demarre un jeu en creation depuis un template.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"category_key\":\"fps\",\"name\":\"Jeu Postman\",\"slug\":\"jeu-postman\"}"}, "url": "{{baseUrl}}/api/v1/game-drafts"}},
+        {"name": "Draft detail", "description": "Charge le detail complet d un jeu en creation.", "request": {"method": "GET", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}"}},
+        {"name": "Delete draft", "description": "Supprime un jeu en creation non publie.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}"}},
+        {"name": "Update draft foundation", "description": "Met a jour nom, slug, description et visibilite.", "request": {"method": "PATCH", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"Jeu Postman\",\"slug\":\"jeu-postman\",\"description\":\"Jeu cree depuis Postman.\",\"visibility\":\"private\"}"}, "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/foundation"}},
+        {"name": "Update draft structure", "description": "Configure slots, archetypes et types de modificateurs.", "request": {"method": "PATCH", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"supports_modifiers\":true,\"supports_archetypes\":true,\"allowed_item_slots\":[\"weapon\",\"secondary\"],\"allowed_modifier_types\":[\"optic\",\"barrel\"]}"}, "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/structure"}},
+        {"name": "Publish draft", "description": "Publie le jeu en creation dans le catalogue runtime.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/publish"}},
+        {"name": "Draft archetypes list", "description": "Liste les archetypes du jeu en creation.", "request": {"method": "GET", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/archetypes"}},
+        {"name": "Create draft archetype", "description": "Ajoute un archetype au jeu en creation.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"Assaillant\",\"slug\":\"assaillant\",\"description\":\"Profil offensif.\"}"}, "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/archetypes"}},
+        {"name": "Update draft archetype", "description": "Modifie un archetype du jeu en creation.", "request": {"method": "PUT", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"Assaillant\",\"slug\":\"assaillant\",\"description\":\"Profil offensif mis a jour.\"}"}, "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/archetypes/{{archetypeId}}"}},
+        {"name": "Delete draft archetype", "description": "Supprime un archetype du jeu en creation.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/archetypes/{{archetypeId}}"}},
+        {"name": "Draft categories list", "description": "Liste les categories du jeu en creation.", "request": {"method": "GET", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/categories"}},
+        {"name": "Create draft category", "description": "Ajoute une categorie au jeu en creation.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"label\":\"Assault rifle\",\"slug\":\"assault-rifle\",\"description\":\"Armes polyvalentes.\"}"}, "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/categories"}},
+        {"name": "Update draft category", "description": "Modifie une categorie du jeu en creation.", "request": {"method": "PUT", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"label\":\"Assault rifle\",\"slug\":\"assault-rifle\",\"description\":\"Categorie mise a jour.\"}"}, "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/categories/{{categoryId}}"}},
+        {"name": "Delete draft category", "description": "Supprime une categorie du jeu en creation.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/categories/{{categoryId}}"}},
+        {"name": "Draft items list", "description": "Liste les items du jeu en creation.", "request": {"method": "GET", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/items"}},
+        {"name": "Create draft item", "description": "Ajoute un item/equipement au jeu en creation.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"KN-44\",\"slug\":\"kn-44\",\"slot\":\"weapon\",\"rarity\":\"standard\",\"score\":80,\"category_ids\":[1],\"item_slots\":[]}"}, "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/items"}},
+        {"name": "Update draft item", "description": "Modifie un item/equipement du jeu en creation.", "request": {"method": "PUT", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"KN-44\",\"slug\":\"kn-44\",\"slot\":\"weapon\",\"rarity\":\"standard\",\"score\":82,\"category_ids\":[1],\"item_slots\":[]}"}, "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/items/{{itemId}}"}},
+        {"name": "Delete draft item", "description": "Supprime un item/equipement du jeu en creation.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/items/{{itemId}}"}},
+        {"name": "Draft modifiers list", "description": "Liste les modificateurs du jeu en creation.", "request": {"method": "GET", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/modifiers"}},
+        {"name": "Create draft modifier", "description": "Ajoute un modificateur au jeu en creation.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"Red Dot\",\"slug\":\"red-dot\",\"modifier_type\":\"optic\",\"description\":\"Viseur simple.\",\"delta_score\":1,\"compatible_item_ids\":[1]}"}, "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/modifiers"}},
+        {"name": "Update draft modifier", "description": "Modifie un modificateur du jeu en creation.", "request": {"method": "PUT", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"Red Dot\",\"slug\":\"red-dot\",\"modifier_type\":\"optic\",\"description\":\"Viseur mis a jour.\",\"delta_score\":2,\"compatible_item_ids\":[1]}"}, "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/modifiers/{{modifierId}}"}},
+        {"name": "Delete draft modifier", "description": "Supprime un modificateur du jeu en creation.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/game-drafts/{{draftId}}/modifiers/{{modifierId}}"}},
+        {"name": "Create build", "description": "Cree un build utilisateur.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"game_id\":1,\"title\":\"Build demo\",\"description\":\"Build de test\",\"is_public\":true,\"items\":[{\"item_id\":1,\"position\":1}],\"slots\":[]}"}, "url": "{{baseUrl}}/api/v1/builds"}},
+        {"name": "Update build", "description": "Modifie un build appartenant a l utilisateur.", "request": {"method": "PUT", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"title\":\"Build demo update\",\"is_public\":true}"}, "url": "{{baseUrl}}/api/v1/builds/{{buildId}}"}},
+        {"name": "Delete build", "description": "Supprime un build appartenant a l utilisateur.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/builds/{{buildId}}"}}
+      ]
     },
     {
-      "name": "Create Draft (secured)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "API-KEY",
-            "value": "{{apiKey}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"category_key\":\"fps\",\"name\":\"Draft Postman\",\"slug\":\"draft-postman\"}"
-        },
-        "url": "{{baseUrl}}/api/v1/game-drafts"
-      }
+      "name": "Administration",
+      "description": "Routes reservees aux comptes admin. Elles utilisent API-KEY et check.role:admin.",
+      "item": [
+        {"name": "Create archetype", "description": "Cree un archetype runtime.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"game_id\":1,\"name\":\"Flex\",\"description\":\"Profil flexible\"}"}, "url": "{{baseUrl}}/api/v1/archetypes"}},
+        {"name": "Update archetype", "description": "Modifie un archetype runtime.", "request": {"method": "PUT", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"Flex update\",\"description\":\"Profil mis a jour\"}"}, "url": "{{baseUrl}}/api/v1/archetypes/{{archetypeId}}"}},
+        {"name": "Delete archetype", "description": "Supprime un archetype runtime.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/archetypes/{{archetypeId}}"}},
+        {"name": "Create category", "description": "Cree une categorie runtime.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"game_id\":1,\"label\":\"SMG\",\"slug\":\"smg\"}"}, "url": "{{baseUrl}}/api/v1/categories"}},
+        {"name": "Update category", "description": "Modifie une categorie runtime.", "request": {"method": "PUT", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"label\":\"SMG update\",\"slug\":\"smg-update\"}"}, "url": "{{baseUrl}}/api/v1/categories/{{categoryId}}"}},
+        {"name": "Delete category", "description": "Supprime une categorie runtime.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/categories/{{categoryId}}"}},
+        {"name": "Create item", "description": "Cree un item runtime.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"game_id\":1,\"name\":\"Item admin\",\"slug\":\"item-admin\",\"slot\":\"weapon\",\"rarity\":\"standard\",\"score\":50}"}, "url": "{{baseUrl}}/api/v1/items"}},
+        {"name": "Update item", "description": "Modifie un item runtime.", "request": {"method": "PUT", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"Item admin update\",\"slug\":\"item-admin-update\",\"slot\":\"weapon\",\"rarity\":\"standard\",\"score\":55}"}, "url": "{{baseUrl}}/api/v1/items/{{itemId}}"}},
+        {"name": "Delete item", "description": "Supprime un item runtime.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/items/{{itemId}}"}},
+        {"name": "Create modifier", "description": "Cree un modificateur runtime.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"game_id\":1,\"name\":\"Mod admin\",\"slug\":\"mod-admin\",\"modifier_type\":\"optic\",\"delta_score\":1}"}, "url": "{{baseUrl}}/api/v1/modifiers"}},
+        {"name": "Update modifier", "description": "Modifie un modificateur runtime.", "request": {"method": "PUT", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"Mod admin update\",\"slug\":\"mod-admin-update\",\"modifier_type\":\"optic\",\"delta_score\":2}"}, "url": "{{baseUrl}}/api/v1/modifiers/{{modifierId}}"}},
+        {"name": "Delete modifier", "description": "Supprime un modificateur runtime.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/modifiers/{{modifierId}}"}},
+        {"name": "Attach item modifier", "description": "Ajoute une compatibilite item/modificateur.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/items/{{itemId}}/modifiers/{{modifierId}}"}},
+        {"name": "Detach item modifier", "description": "Retire une compatibilite item/modificateur.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/items/{{itemId}}/modifiers/{{modifierId}}"}},
+        {"name": "Attach item category", "description": "Associe un item a une categorie.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/items/{{itemId}}/categories/{{categoryId}}"}},
+        {"name": "Detach item category", "description": "Retire une categorie d un item.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/items/{{itemId}}/categories/{{categoryId}}"}},
+        {"name": "User export", "description": "Export RGPD des donnees d un utilisateur.", "request": {"method": "GET", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/users/{{userId}}/export"}},
+        {"name": "User anonymize", "description": "Anonymise un utilisateur.", "request": {"method": "POST", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/users/{{userId}}/anonymize"}},
+        {"name": "User delete", "description": "Supprime un utilisateur.", "request": {"method": "DELETE", "header": [{"key": "API-KEY", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/users/{{userId}}"}}
+      ]
+    },
+    {
+      "name": "Routes web principales",
+      "description": "Routes HTML principales du projet, utiles pour la demonstration.",
+      "item": [
+        {"name": "Accueil builder", "description": "Interface publique de creation de build.", "request": {"method": "GET", "url": "{{baseUrl}}/"}},
+        {"name": "Switch locale", "description": "Change la langue de session fr/en.", "request": {"method": "GET", "url": "{{baseUrl}}/locale/fr"}},
+        {"name": "Privacy", "description": "Politique de confidentialite.", "request": {"method": "GET", "url": "{{baseUrl}}/privacy"}},
+        {"name": "Login", "description": "Formulaire de connexion.", "request": {"method": "GET", "url": "{{baseUrl}}/login"}},
+        {"name": "Login submit", "description": "Soumet la connexion utilisateur via session web.", "request": {"method": "POST", "url": "{{baseUrl}}/login"}},
+        {"name": "Register", "description": "Formulaire d inscription.", "request": {"method": "GET", "url": "{{baseUrl}}/register"}},
+        {"name": "Register submit", "description": "Cree un compte utilisateur via session web.", "request": {"method": "POST", "url": "{{baseUrl}}/register"}},
+        {"name": "Dashboard", "description": "Tableau de bord utilisateur authentifie.", "request": {"method": "GET", "url": "{{baseUrl}}/dashboard"}},
+        {"name": "Account", "description": "Compte et RGPD utilisateur.", "request": {"method": "GET", "url": "{{baseUrl}}/account"}},
+        {"name": "Account export", "description": "Export RGPD du compte connecte.", "request": {"method": "GET", "url": "{{baseUrl}}/account/export"}},
+        {"name": "Account anonymize", "description": "Anonymise le compte connecte.", "request": {"method": "POST", "url": "{{baseUrl}}/account/anonymize"}},
+        {"name": "Account delete", "description": "Supprime le compte connecte.", "request": {"method": "DELETE", "url": "{{baseUrl}}/account"}},
+        {"name": "Studio", "description": "Parcours popup de creation et publication de jeu.", "request": {"method": "GET", "url": "{{baseUrl}}/studio/games/create"}},
+        {"name": "Logout", "description": "Ferme la session utilisateur.", "request": {"method": "POST", "url": "{{baseUrl}}/logout"}}
+      ]
+    },
+    {
+      "name": "Studio interne session",
+      "description": "Routes appelees par le front Studio avec session Laravel et protection CSRF. Elles reprennent le meme parcours que les game-drafts API.",
+      "item": [
+        {"name": "Studio drafts list", "description": "Liste les jeux en creation de la session connectee.", "request": {"method": "GET", "url": "{{baseUrl}}/studio/api/v1/game-drafts"}},
+        {"name": "Studio create draft", "description": "Demarre un nouveau jeu depuis le parcours popup.", "request": {"method": "POST", "url": "{{baseUrl}}/studio/api/v1/game-drafts"}},
+        {"name": "Studio draft detail", "description": "Charge le detail complet d un jeu en creation.", "request": {"method": "GET", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}"}},
+        {"name": "Studio delete draft", "description": "Supprime un jeu en creation non publie.", "request": {"method": "DELETE", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}"}},
+        {"name": "Studio update foundation", "description": "Met a jour nom, slug, description et visibilite.", "request": {"method": "PATCH", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/foundation"}},
+        {"name": "Studio update structure", "description": "Configure slots, archetypes et modificateurs.", "request": {"method": "PATCH", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/structure"}},
+        {"name": "Studio publish draft", "description": "Publie le jeu en creation vers le catalogue runtime.", "request": {"method": "POST", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/publish"}},
+        {"name": "Studio archetypes list", "description": "Liste les archetypes du jeu en creation.", "request": {"method": "GET", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/archetypes"}},
+        {"name": "Studio create archetype", "description": "Ajoute un archetype au jeu en creation.", "request": {"method": "POST", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/archetypes"}},
+        {"name": "Studio update archetype", "description": "Modifie un archetype du jeu en creation.", "request": {"method": "PUT", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/archetypes/{{archetypeId}}"}},
+        {"name": "Studio delete archetype", "description": "Supprime un archetype du jeu en creation.", "request": {"method": "DELETE", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/archetypes/{{archetypeId}}"}},
+        {"name": "Studio categories list", "description": "Liste les categories du jeu en creation.", "request": {"method": "GET", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/categories"}},
+        {"name": "Studio create category", "description": "Ajoute une categorie au jeu en creation.", "request": {"method": "POST", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/categories"}},
+        {"name": "Studio update category", "description": "Modifie une categorie du jeu en creation.", "request": {"method": "PUT", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/categories/{{categoryId}}"}},
+        {"name": "Studio delete category", "description": "Supprime une categorie du jeu en creation.", "request": {"method": "DELETE", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/categories/{{categoryId}}"}},
+        {"name": "Studio items list", "description": "Liste les items/equipements du jeu en creation.", "request": {"method": "GET", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/items"}},
+        {"name": "Studio create item", "description": "Ajoute un item/equipement au jeu en creation.", "request": {"method": "POST", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/items"}},
+        {"name": "Studio update item", "description": "Modifie un item/equipement du jeu en creation.", "request": {"method": "PUT", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/items/{{itemId}}"}},
+        {"name": "Studio delete item", "description": "Supprime un item/equipement du jeu en creation.", "request": {"method": "DELETE", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/items/{{itemId}}"}},
+        {"name": "Studio modifiers list", "description": "Liste les modificateurs du jeu en creation.", "request": {"method": "GET", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/modifiers"}},
+        {"name": "Studio create modifier", "description": "Ajoute un modificateur au jeu en creation.", "request": {"method": "POST", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/modifiers"}},
+        {"name": "Studio update modifier", "description": "Modifie un modificateur du jeu en creation.", "request": {"method": "PUT", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/modifiers/{{modifierId}}"}},
+        {"name": "Studio delete modifier", "description": "Supprime un modificateur du jeu en creation.", "request": {"method": "DELETE", "url": "{{baseUrl}}/studio/api/v1/game-drafts/{{draftId}}/modifiers/{{modifierId}}"}}
+      ]
     }
   ]
 }
-

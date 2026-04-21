@@ -434,7 +434,15 @@
                 N.apiEndpoints.innerHTML = '<div class="endpoint"><p class="muted">' + E(T('Chargement...')) + '</p></div>';
                 return;
             }
-            N.apiEndpoints.innerHTML = (S.root.public_routes ?? []).map((route) => `<div class="endpoint"><span class="method">${E(route.method)}</span><strong>${E(route.path)}</strong><p class="muted">${E(route.usage)}</p></div>`).join('');
+            const routeBlock = (title, routes) => routes?.length
+                ? `<div class="endpoint"><strong>${E(title)}</strong><p class="muted">${E(routes.length)} route(s)</p></div>${routes.map((route) => `<div class="endpoint"><span class="method">${E(route.method)}</span><strong>${E(route.path)}</strong><p class="muted">${E(route.usage)}</p></div>`).join('')}`
+                : '';
+            N.apiEndpoints.innerHTML = [
+                routeBlock('Lecture publique', S.root.public_routes ?? []),
+                routeBlock('Écriture protégée', S.root.protected_routes?.routes ?? []),
+                routeBlock('Administration', S.root.admin_routes ?? []),
+                routeBlock('Routes web', S.root.web_routes ?? []),
+            ].join('');
             N.apiPublicSample.innerHTML = `<code>curl http://localhost:8000/api/v1\ncurl "http://localhost:8000${E(S.root.examples?.[1]?.path ?? '/api/v1/games')}"</code>`;
             N.apiWriteSample.innerHTML = `<code>curl -X POST http://localhost:8000/api/v1/builds ^\n  -H "Content-Type: application/json" ^\n  -H "API-KEY: votre-cle-api" ^\n  -d "{\\"game_id\\":${E(S.game ?? 1)},\\"user_id\\":1,\\"title\\":\\"Build demo\\",\\"items\\":[{\\"item_id\\":1,\\"position\\":1}]}"</code>`;
         }

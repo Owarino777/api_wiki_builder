@@ -1,156 +1,264 @@
-# Documentation d'architecture - API Wiki Builder
+# Architecture — API Wiki Builder
 
-## 1. Statut
+> Document de référence unique. Consolide architecture.md, architecture_modifications.md, wiki_game_builder.md, demarche_et_methodo.md et AI_INSTRUCTIONS.md.
+> Diagrammes UML et base de données : `doc/diagrammes.md`.
+> Feature création de jeux utilisateur : `doc/creation_jeux.md`.
 
-Ce document decrit l'architecture cible effectivement implementee dans le projet apres refactor.
+---
 
-Reference schema detaillee :
-- `doc/architecture_modifications.md`
-- `doc/diagrammes.md` — Diagrammes UML et base de donnees (cas d'utilisation, classes, sequences, etats, MCD, MLD, LDD)
+## 1. Objectif produit
 
-## 2. Objectif produit
+L'API est un **wiki builder multi-jeux data-driven**. Elle permet :
 
-L'API doit couvrir :
-- un catalogue multi-jeux
-- une fiche detaillee par item
-- un builder de builds/equipements piloté par la base
+- d'exposer un catalogue multi-jeux (jeux, archetypes, items, modifiers, categories)
+- d'afficher le détail d'un item avec ses slots internes et ses modificateurs compatibles
+- de construire des builds avec contraintes métier réelles
+- de comparer et partager des builds
 
-Le projet doit rester data-driven :
-- nouveaux jeux sans code specifique
-- nouveaux types de slots sans `if/else` par jeu
-- nouveaux types de modificateurs sans remanier le code applicatif
+Principe fondamental : ajouter un nouveau jeu ne doit pas demander de modifier le code. Tout se porte en base via `item_slots.slot_key`, `item_slots.accepted_modifier_type` et `modifiers.modifier_type`.
 
-## 3. Concepts centraux
+---
 
-### 3.1 Multi-jeux
+## 2. Stack technique
 
-Tout est rattache a `games` :
-- `archetypes`
-- `items`
-- `modifiers`
-- `builds`
+- **Laravel 12 / PHP 8.4** — framework backend
+- **MySQL 8** — base de données
+- **Docker Compose** — orchestration locale et production
+- **Vite** — assets frontend (Blade vanilla, pas de SPA)
 
-### 3.2 Deux niveaux de slots
+---
 
-- `items.slot` = emplacement global
-- `item_slots` = emplacements internes d'accessoires
+## 3. Vocabulaire retenu
 
-### 3.3 Builder data-driven
+| Ancien nom | Nom cible |
+|---|---|
+| `build_profiles` | `archetypes` |
+| `equipment_items` | `items` |
+| `equipment_modifiers` | `modifiers` |
+| `tags` | `categories` |
+| `equipment_item_tags` | `item_categories` |
+| `equipment_item_compatible_modifiers` | `item_modifiers` |
+| `build_equipment_items` | `build_items` |
+| `build_equipment_modifiers` | `build_slots` |
 
-Le builder repose sur :
-- `item_modifiers` pour la compatibilite
-- `item_slots` pour les emplacements disponibles
-- `build_slots` pour l'equipement effectif dans un build
+> Les modèles Eloquent conservent provisoirement les anciens noms (`BuildProfile`, `EquipmentItem`…).
 
-## 4. Entites et pivots
+---
 
-Entites :
-- `games`
-- `users`
-- `api_keys`
-- `archetypes`
-- `items`
-- `item_slots`
-- `modifiers`
-- `categories`
-- `builds`
+## 4. Entités et pivots
 
-Pivots :
-- `item_categories`
-- `item_modifiers`
-- `build_items`
-- `build_slots`
+| Table | Rôle |
+|---|---|
+| `games` | Catalogue des jeux disponibles |
+| `users` | Comptes utilisateurs (enrichi RGPD) |
+| `api_keys` | Clés d'accès en écriture |
+| `archetypes` | Profils / classes par jeu |
+| `items` | Armes, objets, champions par jeu |
+| `item_slots` | Emplacements internes d'un item (pour modificateurs) |
+| `modifiers` | Accessoires, runes, effets par jeu |
+| `categories` | Classification des items, scopée au jeu |
+| `builds` | Builds/équipements d'un utilisateur |
+| `item_categories` | Items ↔ categories |
+| `item_modifiers` | Compatibilité explicite item ↔ modifier |
+| `build_items` | Items équipés dans un build |
+| `build_slots` | Slot précis occupé par un modifier dans un build |
 
-## 5. API
+### Deux niveaux de slots
 
-Routes publiques principales :
-- `GET /api/v1/games`
-- `GET /api/v1/games/{id}`
-- `GET /api/v1/games/{id}/archetypes`
-- `GET /api/v1/games/{id}/items`
-- `GET /api/v1/games/{id}/modifiers`
-- `GET /api/v1/categories`
-- `GET /api/v1/items`
-- `GET /api/v1/items/{id}`
-- `GET /api/v1/modifiers`
-- `GET /api/v1/modifiers/{id}`
-- `GET /api/v1/builds`
-- `GET /api/v1/builds/{id}`
-- `GET /api/v1/builds/{id}/summary`
-- `POST /api/v1/builds/compare`
-- `GET /api/v1/builds/share/{shareToken}`
+- `items.slot` = emplacement **global** dans le build (ex : `weapon`)
+- `item_slots` = emplacements **internes** de l'item (ex : `optic`, `magazine`)
 
-## 6. Regles metier
+Ces deux concepts ne font pas doublon.
 
-- build mono-jeu
-- archetype du meme jeu que le build
-- item du meme jeu que le build
-- modifier du meme jeu que le build
-- compatibilite item/modifier obligatoire
-- item_slot obligatoire pour equiper un modifier
-- type du modifier conforme au slot
-- un seul modifier par slot
+---
 
-## 7. Securite
+## 5. Modèle de données (MPD)
 
-- `API-KEY` pour les routes d'ecriture
-- `X-USER-ID` pour le role
-- throttle global
-- reponses JSON standardisees
+### `games`
+```
+id                BIGINT UNSIGNED  PK AI
+name              VARCHAR(120)     NOT NULL
+slug              VARCHAR(120)     NOT NULL UNIQUE
+genre             VARCHAR(80)      NULL
+owner_user_id     BIGINT UNSIGNED  NULL  FK -> users.id ON DELETE SET NULL
+creation_category VARCHAR(40)      NULL
+source_type       VARCHAR(20)      NOT NULL DEFAULT 'system'
+visibility        VARCHAR(20)      NOT NULL DEFAULT 'public'
+published_at      TIMESTAMP        NULL
+```
 
-## 8. RGPD
+### `items`
+```
+id            BIGINT UNSIGNED  PK AI
+game_id       BIGINT UNSIGNED  NOT NULL  FK -> games.id
+name          VARCHAR(140)     NOT NULL
+slug          VARCHAR(160)     NOT NULL
+external_ref  VARCHAR(160)     NULL
+slot          VARCHAR(60)      NOT NULL
+rarity        VARCHAR(40)      NOT NULL
+tier_level    VARCHAR(20)      NULL
+score         INT              NOT NULL DEFAULT 0
+attack/defense/utility/accuracy/mobility  INT  NULL
+metadata      JSON             NULL
+UNIQUE (game_id, slug)
+```
 
-Le projet integre un perimetre RGPD reel :
-- export utilisateur
-- anonymisation utilisateur
-- suppression utilisateur
+### `item_slots`
+```
+id                      BIGINT UNSIGNED   PK AI
+item_id                 BIGINT UNSIGNED   NOT NULL  FK -> items.id
+slot_key                VARCHAR(60)       NOT NULL
+slot_label              VARCHAR(80)       NOT NULL
+accepted_modifier_type  VARCHAR(60)       NULL
+sort_order              SMALLINT UNSIGNED NOT NULL DEFAULT 1
+is_required             TINYINT(1)        NOT NULL DEFAULT 0
+UNIQUE (item_id, slot_key)
+```
 
-Les donnees personnelles sont stockees dans `users` de maniere volontaire pour l'evaluation pedagogique.
+### `modifiers`
+```
+id             BIGINT UNSIGNED  PK AI
+game_id        BIGINT UNSIGNED  NOT NULL  FK -> games.id
+name           VARCHAR(140)     NOT NULL
+slug           VARCHAR(160)     NOT NULL
+modifier_type  VARCHAR(60)      NOT NULL
+delta_score/attack/defense/utility/accuracy/mobility  INT  NULL
+UNIQUE (game_id, slug)
+```
 
-## 9. Extension prevue - Jeux utilisateur
+### `categories`
+```
+id       BIGINT UNSIGNED  PK AI
+game_id  BIGINT UNSIGNED  NOT NULL  FK -> games.id ON DELETE CASCADE
+label    VARCHAR(80)      NOT NULL
+slug     VARCHAR(100)     NOT NULL
+UNIQUE (game_id, slug)
+UNIQUE (game_id, label)
+```
 
-La creation de jeux par l'utilisateur ne doit pas ecrire directement dans le runtime existant.
+### `builds`
+```
+id            BIGINT UNSIGNED  PK AI
+game_id       BIGINT UNSIGNED  NOT NULL  FK -> games.id
+user_id       BIGINT UNSIGNED  NULL      FK -> users.id
+archetype_id  BIGINT UNSIGNED  NULL      FK -> archetypes.id
+title         VARCHAR(140)     NOT NULL
+share_token   VARCHAR(64)      NULL UNIQUE
+is_public     TINYINT(1)       NOT NULL DEFAULT 0
+```
 
-La cible retenue pour cette extension est :
+### Pivots
+```
+item_categories : PK (item_id, category_id)
+item_modifiers  : PK (item_id, modifier_id)
+build_items     : PK (build_id, item_id) | position SMALLINT NULL
+build_slots     : PK (build_id, item_id, item_slot_id) | modifier_id FK modifiers.id
+```
 
-- creation guidee dans un schema `draft`
-- validation backend forte par etape
-- publication transactionnelle vers le runtime
-- jeux utilisateur prives par defaut en V1
-- ownership derive du contexte d'auth
+---
 
-Documents de reference pour cette extension :
+## 6. Routes API
 
-- `doc/spec_ajout_jeux_utilisateur.md`
-- `doc/adr_001_jeux_utilisateur_draft_runtime.md`
-- `doc/plan_migrations_jeux_utilisateur.md`
+### Lecture publique
+```
+GET /api/v1/games
+GET /api/v1/games/{id}
+GET /api/v1/games/{id}/archetypes
+GET /api/v1/games/{id}/items
+GET /api/v1/games/{id}/modifiers
+GET /api/v1/categories
+GET /api/v1/items
+GET /api/v1/items/{id}
+GET /api/v1/modifiers
+GET /api/v1/modifiers/{id}
+GET /api/v1/builds
+GET /api/v1/builds/{id}
+GET /api/v1/builds/{id}/summary
+GET /api/v1/builds/share/{shareToken}
+POST /api/v1/builds/compare
+```
 
-Point d'attention important :
+### Écriture (nécessite API-KEY)
+```
+POST /api/v1/archetypes
+POST /api/v1/categories
+POST /api/v1/items
+POST /api/v1/modifiers
+POST /api/v1/items/{itemId}/modifiers/{modifierId}
+POST /api/v1/items/{itemId}/categories/{categoryId}
+POST /api/v1/builds
+```
 
-- `categories` devra evoluer vers un scope par jeu pour eviter les collisions entre datasets utilisateurs.
+### Studio — Création de jeux
+```
+GET  /studio/api/v1/game-categories
+POST /studio/api/v1/game-drafts
+GET|PATCH /studio/api/v1/game-drafts/{id}/foundation
+GET|PATCH /studio/api/v1/game-drafts/{id}/structure
+POST      /studio/api/v1/game-drafts/{id}/publish
+CRUD      /studio/api/v1/game-drafts/{id}/archetypes|categories|items|modifiers
+```
 
-## 10. Jeux pre-charges
+---
 
-Le systeme embarque 5 jeux avec donnees realistes au demarrage :
+## 7. Règles métier (non négociables)
 
-| Jeu | Slug | Genre | Template | Items | Source |
-|---|---|---|---|---|---|
-| Call of Duty: Black Ops 7 | `call-of-duty-black-ops-7` | Arena Shooter | FPS | 50 armes | API CODMunity (snapshot) |
-| Battlefield 2042 | `battlefield-2042` | First-Person Shooter | FPS | 6 armes | Seeder offline |
-| Valorant | `valorant` | Tactical Shooter | FPS | 6 armes | Seeder offline |
-| League of Legends | `league-of-legends` | MOBA | RPG | 6 champions | Seeder offline |
-| New World | `new-world` | MMORPG | RPG | 6 armes | Seeder offline |
+1. Un build est mono-jeu.
+2. Archetype, item et modifier doivent appartenir au même jeu que le build.
+3. Un modifier ne peut être équipé que si la compatibilité existe dans `item_modifiers`.
+4. Un modifier doit être équipé via un `item_slot_id` valide appartenant à l'item ciblé.
+5. `accepted_modifier_type` doit correspondre à `modifiers.modifier_type` (NULL = wildcard).
+6. Un seul modifier par slot dans un build.
+7. Comparaison de builds réservée à deux builds du même jeu.
+8. Résumé de stats = stats item + deltas modifiers (NULL = 0).
 
-### Sources de donnees
+---
 
-- **BO7** : API publique `api.codmunity.gg`, snapshot JSON pre-genere et compresse (10 Mo) dans `docker/app/bo7-snapshot.zip`.
-- **Battlefield 2042** : `BattlefieldSeeder` - armes reelles (M5A3, AK-24, PP-29, DM7, SWS-10, MCS-880) avec accessoires FPS (optiques, bouches, canons, poignees).
-- **Valorant** : `ValorantSeeder` - armes du jeu (Vandal, Phantom, Operator, Spectre, Sheriff, Odin) avec modifications conceptuelles.
-- **League of Legends** : `LeagueOfLegendsSeeder` - champions populaires (Jinx, Ahri, Yasuo, Thresh, Lee Sin, Darius) avec objets et runes comme modificateurs RPG.
-- **New World** : `NewWorldSeeder` - armes du MMO (Sword and Shield, Great Axe, Fire Staff, Life Staff, Bow, War Hammer) avec gemmes et enchantements RPG.
+## 8. Sécurité
 
-### Demarrage rapide
+- `API-KEY` header obligatoire pour les routes d'écriture (`check.api.key`)
+- User résolu depuis le contexte d'auth, **jamais** depuis le payload
+- Throttle global sur l'API
+- Réponses JSON via `ApiResponse` (`{ success, message, data }`)
 
-Tous les seeders sont idempotents et s'executent automatiquement via `SEED_DATABASE=true` (defaut dans docker-compose.yml).
-Le snapshot BO7 est extrait au boot et importe en ~12 secondes.
-Les 4 autres jeux sont seeds instantanement depuis les fixtures PHP.
+---
+
+## 9. RGPD
+
+Table `users` enrichie pour :
+- export des données personnelles
+- anonymisation (flag `is_anonymized`, champs identifiants nullifiés)
+- suppression (FK builds conservées pour historique fonctionnel)
+
+---
+
+## 10. Jeux pré-chargés
+
+| Jeu | Template | Items | Source |
+|---|---|---|---|
+| Call of Duty: Black Ops 7 | FPS | 50 armes | Snapshot API CODMunity (`docker/app/bo7-snapshot.zip`) |
+| Battlefield 2042 | FPS | 6 armes | `BattlefieldSeeder` |
+| Valorant | FPS | 6 armes | `ValorantSeeder` |
+| League of Legends | RPG | 6 champions | `LeagueOfLegendsSeeder` |
+| New World | RPG | 6 armes | `NewWorldSeeder` |
+
+Seeders idempotents, exécutés automatiquement via `SEED_DATABASE=true`. Snapshot BO7 importé en ~12 s au boot.
+
+---
+
+## 11. Conventions de développement
+
+- Validation via `ApiFormRequest` — jamais inline
+- Sérialisation via `Resources`
+- Logique métier dans des Services (`BuildRuleService`, `GameDraftValidationService`…)
+- Middlewares custom : `check.api.key`, `require.request.user`
+- 1 migration par table, seeders héritent de `AbstractGameSeeder`
+
+---
+
+## 12. Ordre de migration
+
+1. `api_keys` → `users` → `games` → `archetypes` → `items` → `item_slots`
+2. `modifiers` → `categories` → `builds`
+3. `item_categories` → `item_modifiers` → `build_items` → `build_slots`
+4. Tables draft (`game_drafts`, `game_draft_steps`, `game_draft_archetypes`, `game_draft_categories`, `game_draft_items`, `game_draft_item_slots`, `game_draft_modifiers`, pivots)

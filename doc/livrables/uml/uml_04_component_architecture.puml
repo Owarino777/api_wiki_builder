@@ -1,52 +1,114 @@
 @startuml
-title UML 2.5 - Component Diagram - API Architecture
+title UML 2.5 - Diagramme de composants - Architecture Laravel
 skinparam componentStyle rectangle
+skinparam linetype ortho
 
-package "Client Layer" {
-  [Browser UI (Blade)]
-  [Postman / curl]
+package "Clients" {
+  [Navigateur\nBlade UI] as Browser
+  [Postman / cURL] as Postman
 }
 
-package "Web Layer" {
-  [Nginx web]
+package "Presentation" {
+  [Home Builder\nwelcome.blade.php] as HomeView
+  [Studio popup\nstudio/games/create.blade.php] as StudioView
+  [Dashboard / Account / Auth] as AccountViews
 }
 
-package "Application Layer" {
-  [Laravel Routing]
-  [Controllers]
-  [FormRequests]
-  [Resources]
-  [Services]
-  [Eloquent Models]
+package "Routing Laravel" {
+  [routes/web.php] as WebRoutes
+  [routes/api.php] as ApiRoutes
+  [Middleware auth/session] as WebMiddlewares
+  [Middleware API\nthrottle, api key, role,\nresolve.request.user] as ApiMiddlewares
 }
 
-package "Data Layer" {
-  database DB as "MySQL"
-  [BO7 Snapshot JSON]
+package "Controllers" {
+  [HomeController] as HomeController
+  [GameStudioController] as StudioController
+  [Auth + Account controllers] as AccountControllers
+  [ApiHomeController] as ApiHomeController
+  [GameController] as GameController
+  [BuildController] as BuildController
+  [GameDraft controllers] as DraftControllers
+  [Runtime admin controllers] as AdminControllers
+  [RGPD controllers] as RgpdControllers
 }
 
-cloud "External Source" {
-  [CODMunity API]
+package "Validation / Serialization" {
+  [FormRequests] as FormRequests
+  [Json Resources] as Resources
+  [ApiResponse] as ApiResponse
 }
 
-[Browser UI (Blade)] --> [Nginx web]
-[Postman / curl] --> [Nginx web]
-[Nginx web] --> [Laravel Routing]
-[Laravel Routing] --> [Controllers]
-[Controllers] --> [FormRequests]
-[Controllers] --> [Resources]
-[Controllers] --> [Services]
-[Services] --> [Eloquent Models]
-[Eloquent Models] --> DB
-[Services] --> [BO7 Snapshot JSON]
-[Services] --> [CODMunity API]
+package "Services metier" {
+  [BuildRuleService] as BuildRule
+  [BuildSummaryService] as BuildSummary
+  [GameCategoryTemplateRegistry] as TemplateRegistry
+  [GameDraftProgressService] as DraftProgress
+  [GameDraftPublicationService] as DraftPublication
+  [BO7 services\nsnapshot/import] as Bo7Services
+}
 
-note right of [Services]
-Includes:
-- BuildRuleService
-- BuildSummaryService
-- GameDraftProgressService
-- GameDraftPublicationService
-end note
+package "Domaine Eloquent" {
+  [User / ApiKey] as IdentityModels
+  [Game / BuildProfile] as GameModels
+  [EquipmentItem / EquipmentModifier / Tag] as CatalogModels
+  [Build + pivots] as BuildModels
+  [GameDraft + draft children] as DraftModels
+}
+
+database "MySQL 8" as DB
+folder "storage/app/private\nCODMunity snapshot" as Snapshot
+cloud "CODMunity API" as Codmunity
+
+Browser --> WebRoutes : HTML + fetch /api/v1
+Browser --> HomeView
+Browser --> StudioView
+Browser --> AccountViews
+Postman --> ApiRoutes : JSON REST
+
+WebRoutes --> WebMiddlewares
+ApiRoutes --> ApiMiddlewares
+WebRoutes --> HomeController
+WebRoutes --> StudioController
+WebRoutes --> AccountControllers
+WebRoutes --> DraftControllers : /studio/api/v1
+ApiRoutes --> ApiHomeController
+ApiRoutes --> GameController
+ApiRoutes --> BuildController
+ApiRoutes --> DraftControllers
+ApiRoutes --> AdminControllers
+ApiRoutes --> RgpdControllers
+
+HomeController --> HomeView
+StudioController --> StudioView
+AccountControllers --> AccountViews
+
+GameController --> Resources
+BuildController --> FormRequests
+BuildController --> BuildRule
+BuildController --> BuildSummary
+DraftControllers --> FormRequests
+DraftControllers --> DraftProgress
+DraftControllers --> Resources
+DraftControllers --> ApiResponse
+AdminControllers --> FormRequests
+AdminControllers --> Resources
+RgpdControllers --> IdentityModels
+
+DraftPublication --> DraftProgress
+DraftPublication --> DraftModels
+DraftPublication --> GameModels
+DraftPublication --> CatalogModels
+DraftPublication --> DB
+TemplateRegistry --> DraftProgress
+Bo7Services --> Snapshot
+Bo7Services --> Codmunity
+Bo7Services --> CatalogModels
+
+IdentityModels --> DB
+GameModels --> DB
+CatalogModels --> DB
+BuildModels --> DB
+DraftModels --> DB
 
 @enduml

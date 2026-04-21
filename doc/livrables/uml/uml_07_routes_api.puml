@@ -1,0 +1,126 @@
+@startuml
+title UML 2.5 - Vue fonctionnelle des routes
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName Arial
+
+actor "Visiteur" as Visitor
+actor "Client API public" as PublicClient
+actor "Utilisateur authentifie\nAPI-KEY ou session Studio" as UserClient
+actor "Administrateur\nAPI-KEY + role admin" as AdminClient
+
+rectangle "Application Wiki Builder" {
+  package "Web public" as WebPublic {
+    usecase "GET /\nAccueil et documentation API" as UCWebHome
+    usecase "GET /privacy\nPolitique de confidentialite" as UCWebPrivacy
+    usecase "GET /locale/{locale}\nChangement fr/en" as UCWebLocale
+  }
+
+  package "Web invite" as WebGuest {
+    usecase "GET/POST /login\nConnexion" as UCLogin
+    usecase "GET/POST /register\nInscription" as UCRegister
+  }
+
+  package "Web authentifie" as WebAuth {
+    usecase "GET /dashboard\nTableau de bord" as UCDashboard
+    usecase "GET /account\nCompte" as UCAccount
+    usecase "GET /account/export\nExport RGPD" as UCAccountExport
+    usecase "POST /account/anonymize\nAnonymisation du compte" as UCAccountAnon
+    usecase "DELETE /account\nSuppression du compte" as UCAccountDelete
+    usecase "GET /studio/games/create\nStudio de creation de jeu" as UCStudio
+    usecase "POST /logout\nDeconnexion" as UCLogout
+  }
+
+  package "API v1 publique\nthrottle + resolve.request.user" as ApiPublic {
+    usecase "GET /api/v1\nDocumentation JSON" as UCApiHome
+    usecase "GET /api/v1/game-categories\nGET /api/v1/game-categories/{key}\nTemplates de jeux" as UCTemplates
+    usecase "GET /api/v1/games\nGET /api/v1/games/{id}\nCatalogue des jeux" as UCGames
+    usecase "GET /api/v1/games/{id}/archetypes\nGET /api/v1/games/{id}/items\nGET /api/v1/games/{id}/modifiers\nDetail du catalogue d'un jeu" as UCGameCatalog
+    usecase "GET /api/v1/categories\nCategories d'equipement" as UCCategories
+    usecase "GET /api/v1/items\nGET /api/v1/items/{id}\nCatalogue des items" as UCItems
+    usecase "GET /api/v1/modifiers\nGET /api/v1/modifiers/{id}\nCatalogue des modificateurs" as UCModifiers
+    usecase "GET /api/v1/builds\nGET /api/v1/builds/{id}\nGET /api/v1/builds/{id}/summary\nGET /api/v1/builds/share/{shareToken}\nConsultation des builds" as UCBuildRead
+    usecase "POST /api/v1/builds/compare\nComparer deux builds" as UCBuildCompare
+  }
+
+  package "API v1 utilisateur\ncheck.api.key + require.request.user" as ApiUser {
+    usecase "GET /api/v1/my/games\nGET /api/v1/my/games/{id}\nJeux appartenant a l'utilisateur" as UCMyGames
+    usecase "GET/POST /api/v1/game-drafts\nGET/DELETE /api/v1/game-drafts/{id}\nGestion des brouillons" as UCDraftCrud
+    usecase "PATCH /api/v1/game-drafts/{id}/foundation\nPATCH /api/v1/game-drafts/{id}/structure\nConfiguration du brouillon" as UCDraftConfig
+    usecase "POST /api/v1/game-drafts/{id}/publish\nPublication du jeu" as UCDraftPublish
+    usecase "GET/POST /api/v1/game-drafts/{id}/archetypes\nPUT/DELETE /api/v1/game-drafts/{id}/archetypes/{archetypeId}\nArchetypes du brouillon" as UCDraftArchetypes
+    usecase "GET/POST /api/v1/game-drafts/{id}/categories\nPUT/DELETE /api/v1/game-drafts/{id}/categories/{categoryId}\nCategories du brouillon" as UCDraftCategories
+    usecase "GET/POST /api/v1/game-drafts/{id}/items\nPUT/DELETE /api/v1/game-drafts/{id}/items/{itemId}\nEquipements du brouillon" as UCDraftItems
+    usecase "GET/POST /api/v1/game-drafts/{id}/modifiers\nPUT/DELETE /api/v1/game-drafts/{id}/modifiers/{modifierId}\nModificateurs du brouillon" as UCDraftModifiers
+    usecase "POST /api/v1/builds\nPUT /api/v1/builds/{id}\nDELETE /api/v1/builds/{id}\nCreation et gestion des builds" as UCBuildWrite
+  }
+
+  package "API v1 administration\ncheck.role:admin" as ApiAdmin {
+    usecase "POST/PUT/DELETE /api/v1/archetypes\nAdministration des archetypes" as UCAdminArchetypes
+    usecase "POST/PUT/DELETE /api/v1/categories\nAdministration des categories" as UCAdminCategories
+    usecase "POST/PUT/DELETE /api/v1/items\nAdministration des items" as UCAdminItems
+    usecase "POST/PUT/DELETE /api/v1/modifiers\nAdministration des modificateurs" as UCAdminModifiers
+    usecase "POST/DELETE /api/v1/items/{itemId}/modifiers/{modifierId}\nCompatibilites item/modificateur" as UCAdminCompat
+    usecase "POST/DELETE /api/v1/items/{itemId}/categories/{categoryId}\nRattachement item/categorie" as UCAdminItemCategory
+    usecase "GET /api/v1/users/{id}/export\nPOST /api/v1/users/{id}/anonymize\nDELETE /api/v1/users/{id}\nOperations RGPD admin" as UCAdminRgpd
+  }
+
+  package "Studio interne\nsession auth + resolve.request.user" as StudioApi {
+    usecase "GET/POST /studio/api/v1/game-drafts\nGET/DELETE /studio/api/v1/game-drafts/{id}\nBrouillons du Studio" as UCStudioDraftCrud
+    usecase "PATCH /studio/api/v1/game-drafts/{id}/foundation\nPATCH /studio/api/v1/game-drafts/{id}/structure\nConfiguration Studio" as UCStudioDraftConfig
+    usecase "POST /studio/api/v1/game-drafts/{id}/publish\nPublication Studio" as UCStudioPublish
+    usecase "GET/POST /studio/api/v1/game-drafts/{id}/archetypes\nPUT/DELETE /studio/api/v1/game-drafts/{id}/archetypes/{archetypeId}\nArchetypes Studio" as UCStudioArchetypes
+    usecase "GET/POST /studio/api/v1/game-drafts/{id}/categories\nPUT/DELETE /studio/api/v1/game-drafts/{id}/categories/{categoryId}\nCategories Studio" as UCStudioCategories
+    usecase "GET/POST /studio/api/v1/game-drafts/{id}/items\nPUT/DELETE /studio/api/v1/game-drafts/{id}/items/{itemId}\nEquipements Studio" as UCStudioItems
+    usecase "GET/POST /studio/api/v1/game-drafts/{id}/modifiers\nPUT/DELETE /studio/api/v1/game-drafts/{id}/modifiers/{modifierId}\nModificateurs Studio" as UCStudioModifiers
+  }
+}
+
+Visitor --> UCWebHome
+Visitor --> UCWebPrivacy
+Visitor --> UCWebLocale
+Visitor --> UCLogin
+Visitor --> UCRegister
+PublicClient --> UCApiHome
+PublicClient --> UCTemplates
+PublicClient --> UCGames
+PublicClient --> UCGameCatalog
+PublicClient --> UCCategories
+PublicClient --> UCItems
+PublicClient --> UCModifiers
+PublicClient --> UCBuildRead
+PublicClient --> UCBuildCompare
+UserClient --> UCDashboard
+UserClient --> UCAccount
+UserClient --> UCAccountExport
+UserClient --> UCAccountAnon
+UserClient --> UCAccountDelete
+UserClient --> UCStudio
+UserClient --> UCLogout
+UserClient --> UCMyGames
+UserClient --> UCDraftCrud
+UserClient --> UCDraftConfig
+UserClient --> UCDraftPublish
+UserClient --> UCDraftArchetypes
+UserClient --> UCDraftCategories
+UserClient --> UCDraftItems
+UserClient --> UCDraftModifiers
+UserClient --> UCBuildWrite
+UserClient --> UCStudioDraftCrud
+UserClient --> UCStudioDraftConfig
+UserClient --> UCStudioPublish
+UserClient --> UCStudioArchetypes
+UserClient --> UCStudioCategories
+UserClient --> UCStudioItems
+UserClient --> UCStudioModifiers
+AdminClient --> UCAdminArchetypes
+AdminClient --> UCAdminCategories
+AdminClient --> UCAdminItems
+AdminClient --> UCAdminModifiers
+AdminClient --> UCAdminCompat
+AdminClient --> UCAdminItemCategory
+AdminClient --> UCAdminRgpd
+
+@enduml

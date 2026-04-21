@@ -1,44 +1,103 @@
 @startuml
-title UML 2.5 - Use Case Diagram - Wiki Builder API
+title UML 2.5 - Cas d'utilisation - Wiki Builder API
 left to right direction
 skinparam packageStyle rectangle
 
 actor "Visiteur" as Visitor
 actor "Utilisateur authentifie" as User
-actor "Admin" as Admin
-actor "Client API externe" as ApiClient
+actor "Administrateur" as Admin
+actor "Client API externe\n(Postman/cURL)" as ApiClient
+
+User --|> Visitor
+Admin --|> User
 
 rectangle "Wiki Builder API" {
-  usecase "Consulter catalogue public" as UC1
-  usecase "Composer build" as UC2
-  usecase "Comparer slots/builds" as UC3
-  usecase "Creer draft" as UC4
-  usecase "Editer draft" as UC5
-  usecase "Publier draft" as UC6
-  usecase "Gerer compte RGPD" as UC7
-  usecase "Administrer ressources globales" as UC8
+  package "Consultation publique" {
+    usecase "Consulter la documentation\n/api/v1" as UC_API_HOME
+    usecase "Lister les jeux publics" as UC_GAMES
+    usecase "Consulter le catalogue\nitems/modificateurs" as UC_CATALOG
+    usecase "Consulter les builds publics" as UC_BUILDS
+    usecase "Comparer deux builds" as UC_COMPARE
+    usecase "Ouvrir un build partage" as UC_SHARE
+  }
+
+  package "Builder" {
+    usecase "Selectionner un jeu" as UC_SELECT_GAME
+    usecase "Charger un build public" as UC_LOAD_BUILD
+    usecase "Composer un build local" as UC_LOCAL_BUILD
+    usecase "Comparer les statistiques" as UC_COMPARE_UI
+  }
+
+  package "Studio de creation" {
+    usecase "Demarrer un jeu\ndepuis un template" as UC_DRAFT_CREATE
+    usecase "Renseigner nom et description" as UC_FOUNDATION
+    usecase "Configurer structure\nslots, archetypes, modificateurs" as UC_STRUCTURE
+    usecase "Ajouter categories et archetypes" as UC_TAXONOMY
+    usecase "Ajouter items/equipements" as UC_ITEMS
+    usecase "Ajouter modificateurs" as UC_MODIFIERS
+    usecase "Publier le jeu" as UC_PUBLISH
+    usecase "Reprendre un jeu en cours" as UC_RESUME
+  }
+
+  package "Compte et RGPD" {
+    usecase "S'inscrire / se connecter" as UC_AUTH
+    usecase "Consulter le dashboard" as UC_DASHBOARD
+    usecase "Gerer le compte" as UC_ACCOUNT
+    usecase "Exporter ses donnees" as UC_EXPORT
+    usecase "Anonymiser ou supprimer\nson compte" as UC_DELETE_ACCOUNT
+  }
+
+  package "Administration API" {
+    usecase "Administrer archetypes" as UC_ADMIN_ARCH
+    usecase "Administrer categories" as UC_ADMIN_CAT
+    usecase "Administrer items" as UC_ADMIN_ITEMS
+    usecase "Administrer modificateurs" as UC_ADMIN_MODS
+    usecase "Gerer compatibilites\nitem/modificateur/categorie" as UC_ADMIN_LINKS
+    usecase "Operations RGPD admin" as UC_ADMIN_GDPR
+  }
 }
 
-Visitor --> UC1
-Visitor --> UC2
-Visitor --> UC3
+Visitor --> UC_API_HOME
+Visitor --> UC_GAMES
+Visitor --> UC_CATALOG
+Visitor --> UC_BUILDS
+Visitor --> UC_COMPARE
+Visitor --> UC_SHARE
+Visitor --> UC_SELECT_GAME
+Visitor --> UC_LOAD_BUILD
+Visitor --> UC_LOCAL_BUILD
+Visitor --> UC_COMPARE_UI
+Visitor --> UC_AUTH
 
-ApiClient --> UC1
-ApiClient --> UC3
+ApiClient --> UC_API_HOME
+ApiClient --> UC_GAMES
+ApiClient --> UC_CATALOG
+ApiClient --> UC_BUILDS
+ApiClient --> UC_COMPARE
 
-User --> UC2
-User --> UC3
-User --> UC4
-User --> UC5
-User --> UC6
-User --> UC7
+User --> UC_DASHBOARD
+User --> UC_ACCOUNT
+User --> UC_EXPORT
+User --> UC_DELETE_ACCOUNT
+User --> UC_DRAFT_CREATE
+User --> UC_RESUME
+User --> UC_PUBLISH
 
-Admin --> UC8
-Admin --> UC1
-Admin --> UC6
+Admin --> UC_ADMIN_ARCH
+Admin --> UC_ADMIN_CAT
+Admin --> UC_ADMIN_ITEMS
+Admin --> UC_ADMIN_MODS
+Admin --> UC_ADMIN_LINKS
+Admin --> UC_ADMIN_GDPR
 
-UC6 .> UC5 : <<include>>
-UC5 .> UC4 : <<include>>
+UC_DRAFT_CREATE .> UC_FOUNDATION : <<include>>
+UC_DRAFT_CREATE .> UC_STRUCTURE : <<include>>
+UC_DRAFT_CREATE .> UC_TAXONOMY : <<include>>
+UC_DRAFT_CREATE .> UC_ITEMS : <<include>>
+UC_DRAFT_CREATE .> UC_MODIFIERS : <<extend>>\nsi modificateurs actifs
+UC_PUBLISH .> UC_DRAFT_CREATE : <<include>>
+UC_COMPARE_UI .> UC_LOCAL_BUILD : <<include>>
+UC_ADMIN_LINKS .> UC_ADMIN_ITEMS : <<include>>
+UC_ADMIN_LINKS .> UC_ADMIN_MODS : <<include>>
 
 @enduml
-

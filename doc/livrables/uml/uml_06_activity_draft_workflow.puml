@@ -1,39 +1,99 @@
 @startuml
-title UML 2.5 - Activity Diagram - Draft Workflow
+title UML 2.5 - Activite - Parcours Studio popup complet
+
+skinparam shadowing false
+skinparam defaultFontName Arial
 
 start
 
-:Select category template;
-:Create draft;
+:Ouvrir /studio/games/create;
+:Afficher le processus guide en popups;
 
-if (Foundation valid?) then (yes)
-  :Update structure;
-else (no)
-  :Fix foundation fields;
-  -> [retry] Foundation valid?;
+:Etape 1 - saisir le nom du jeu;
+if (Nom valide ?) then (oui)
+  :Conserver le nom;
+else (non)
+  :Afficher l'erreur;
+  :Corriger le nom;
 endif
 
-if (Structure valid?) then (yes)
-  :Manage archetypes/categories;
-else (no)
-  :Fix structure settings;
-  -> [retry] Structure valid?;
+:Etape 2 - saisir la description;
+if (Description valide ?) then (oui)
+  :Conserver la description;
+else (non)
+  :Afficher l'erreur;
+  :Corriger la description;
 endif
 
-:Manage items;
-:Manage modifiers;
-:Compute progress and publish readiness;
+:Etape 3 - choisir le template de depart;
+:Choisir les modules du jeu;
+if (Archetypes actives ?) then (oui)
+  :Saisir ou ajuster les archetypes;
+else (non)
+  :Ignorer l'etape archetypes;
+endif
 
-if (Publish errors empty?) then (yes)
-  :Publish draft (transaction);
-  :Create runtime game dataset;
-  :Set draft status = published;
-else (no)
-  :Return blocking errors;
-  :User fixes draft data;
+if (Modificateurs actives ?) then (oui)
+  :Choisir les familles de modificateurs;
+else (non)
+  :Ignorer les modificateurs;
+endif
+
+:Etape 4 - creer les categories;
+if (Minimum categories atteint ?) then (oui)
+  :Valider les categories;
+else (non)
+  :Ajouter les categories manquantes;
+endif
+
+:POST /studio/api/v1/game-drafts;
+:PATCH /studio/api/v1/game-drafts/{id}/foundation;
+:PATCH /studio/api/v1/game-drafts/{id}/structure;
+
+if (Archetypes actives ?) then (oui)
+  :POST /studio/api/v1/game-drafts/{id}/archetypes;
+endif
+
+:POST /studio/api/v1/game-drafts/{id}/categories;
+
+:Etape 5 - ajouter les equipements / items;
+:Renseigner nom, description, score et rarete;
+:Associer les categories et slots disponibles;
+if (Minimum items atteint ?) then (oui)
+  :Valider les items;
+else (non)
+  :Ajouter les items manquants;
+endif
+:POST /studio/api/v1/game-drafts/{id}/items;
+
+if (Modificateurs actives ?) then (oui)
+  :Etape 6 - ajouter les modificateurs;
+  :Renseigner effet, valeur et compatibilites;
+  if (Minimum modificateurs atteint ?) then (oui)
+    :Valider les modificateurs;
+  else (non)
+    :Ajouter les modificateurs manquants;
+  endif
+  :POST /studio/api/v1/game-drafts/{id}/modifiers;
+else (non)
+  :Passer l'etape modificateurs;
+endif
+
+:Etape 7 - verifier le resume;
+:Calculer la progression du draft;
+
+if (Publication possible ?) then (oui)
+  :POST /studio/api/v1/game-drafts/{id}/publish;
+  :Ouvrir une transaction;
+  :Creer le jeu runtime;
+  :Copier les archetypes, categories, items, slots et modificateurs;
+  :Mettre le draft au statut published;
+  :Afficher le succes de publication;
+else (non)
+  :Afficher les blocages precis;
+  :Retourner a l'etape concernee;
 endif
 
 stop
 
 @enduml
-

@@ -1,12 +1,53 @@
 <x-layouts.app :title="__('Créer un jeu - Wiki Builder API')" bodyClass="page-studio" shellClass="shell-studio" mainClass="content-studio">
 
+    {{-- ═══════════════ MODAL DE CRÉATION ═══════════════ --}}
+    <div id="creation-modal" class="creation-modal-overlay" hidden>
+        <div class="creation-modal-dialog">
+            <div class="creation-modal-head">
+                <h2 id="modal-title"></h2>
+                <div class="creation-modal-dots" id="modal-dots"></div>
+                <button class="btn ghost" type="button" data-action="close-modal">&times;</button>
+            </div>
+            <div id="modal-body" class="creation-modal-body"></div>
+            <div class="creation-modal-foot">
+                <button id="modal-back" class="btn ghost" type="button" hidden>{{ __('Retour') }}</button>
+                <span style="flex:1"></span>
+                <button id="modal-next" class="btn primary" type="button">{{ __('Continuer') }}</button>
+            </div>
+        </div>
+    </div>
+    <style>
+        .creation-modal-overlay{position:fixed;inset:0;z-index:900;background:rgba(5,12,25,.78);display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)}
+        .creation-modal-overlay[hidden]{display:none}
+        .creation-modal-dialog{background:var(--bg-card,#0f1b30);border:1px solid var(--border);border-radius:18px;width:100%;max-width:620px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+        .creation-modal-head{display:flex;align-items:center;gap:12px;padding:20px 24px 14px;border-bottom:1px solid var(--border)}
+        .creation-modal-head h2{margin:0;font-size:20px;flex:1}
+        .creation-modal-dots{display:flex;gap:6px}
+        .creation-modal-dots .dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .2s}
+        .creation-modal-dots .dot.active{background:var(--accent)}
+        .creation-modal-dots .dot.done{background:var(--success,#22c55e)}
+        .creation-modal-body{padding:24px;overflow-y:auto;flex:1}
+        .creation-modal-body .template-grid{margin-bottom:20px}
+        .creation-modal-body .field{margin-bottom:14px}
+        .creation-modal-body .option-grid{margin-bottom:18px}
+        .creation-modal-foot{display:flex;align-items:center;gap:12px;padding:14px 24px 20px;border-top:1px solid var(--border)}
+        .modal-step-copy{margin:0 0 18px}
+        .modal-pill-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+        .modal-check-list{display:grid;gap:10px}
+        .modal-muted{opacity:.72}
+        .modal-review-list{display:grid;gap:10px;margin-top:16px}
+        .studio-stage>.wizard-stack{display:none}
+        .studio-stage{min-height:220px;display:flex;align-items:center}
+        .studio-stage .studio-status{width:100%;font-size:16px}
+    </style>
+
     <section class="page-head">
         <div>
             <span class="eyebrow">{{ __('Studio') }}</span>
-            <h1>{{ __('Édition de jeu') }}</h1>
+            <h1>{{ __('Créateur de jeux') }}</h1>
             <span class="subtitle">{{ __('Tactical Game Editor') }}</span>
             <hr class="neon-line">
-            <p class="helper">{{ __('Choisis un draft, complète les étapes, publie quand la revue est valide.') }}</p>
+            <p class="helper">{{ __('Crée ton jeu étape par étape, ajoute du contenu, puis publie-le.') }}</p>
         </div>
         <div class="page-head-actions">
             <a class="btn ghost" href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a>
@@ -17,35 +58,35 @@
     <div class="studio-layout">
         <aside class="panel studio-sidebar">
             <section class="sidebar-block">
-                <span class="eyebrow">{{ __('Draft actif') }}</span>
-                <div id="draft-summary" class="draft-summary empty">{{ __('Choisis un template puis cree un brouillon.') }}</div>
+                <span class="eyebrow">{{ __('Jeu en cours') }}</span>
+                <div id="draft-summary" class="draft-summary empty">{{ __('Crée un nouveau jeu pour commencer.') }}</div>
             </section>
 
             <section class="sidebar-block">
                 <div class="sidebar-head">
                     <h3>{{ __('Progression') }}</h3>
-                    <button id="start-new-draft" class="btn ghost" type="button">{{ __('Nouveau draft') }}</button>
+                    <button id="start-new-draft" class="btn ghost" type="button">{{ __('Nouveau jeu') }}</button>
                 </div>
                 <div id="step-nav" class="step-nav"></div>
             </section>
 
             <section class="sidebar-block">
                 <div class="sidebar-head">
-                    <h3>{{ __('Mes brouillons') }}</h3>
+                    <h3>{{ __('Mes jeux en cours') }}</h3>
                 </div>
                 <div id="draft-list" class="draft-list"></div>
             </section>
         </aside>
 
         <section class="panel studio-stage">
-            <div id="studio-status" class="flash studio-status" role="status" aria-live="polite">{{ __('Choisis un template pour démarrer.') }}</div>
+            <div id="studio-status" class="flash studio-status" role="status" aria-live="polite">{{ __('Crée un nouveau jeu ou sélectionne un jeu existant.') }}</div>
 
             <div class="wizard-stack">
                 <section class="stage-card" data-step="template">
                     <div class="stage-intro">
                         <span class="eyebrow">{{ __('Template') }}</span>
                         <h2>{{ __('Choisir le cadre du jeu') }}</h2>
-                        <p class="helper">{{ __("Choisis un template puis crée un draft.") }}</p>
+                        <p class="helper">{{ __("Choisis un template de jeu.") }}</p>
                     </div>
                     <div id="template-grid" class="template-grid"></div>
                     <div id="template-preview" class="template-preview"></div>
@@ -60,8 +101,8 @@
                         </div>
                         <div class="field span-2">
                             <div class="wizard-actions">
-                                <p class="helper compact">{{ __('Le draft démarre en privé.') }}</p>
-                                <button class="btn primary" type="submit">{{ __('Creer le brouillon') }}</button>
+                                <p class="helper compact">{{ __('Le jeu démarre en privé.') }}</p>
+                                <button class="btn primary" type="submit">{{ __('Démarrer le parcours') }}</button>
                             </div>
                         </div>
                     </form>
@@ -70,14 +111,14 @@
                 <section class="stage-card" data-step="foundation" hidden>
                     <div class="stage-intro">
                         <span class="eyebrow">{{ __('Base') }}</span>
-                        <h2>{{ __('Fondations du jeu') }}</h2>
-                        <p class="helper">{{ __('Nom, slug, description, visibilite.') }}</p>
+                        <h2>{{ __('Informations du jeu') }}</h2>
+                        <p class="helper">{{ __('Nom, slug, description, visibilité.') }}</p>
                     </div>
                     <form id="foundation-form" class="item-form-grid">
-                        <div class="field"><label for="foundation-name">{{ __('Nom final') }}</label><input id="foundation-name" type="text" required></div>
+                        <div class="field"><label for="foundation-name">{{ __('Nom du jeu') }}</label><input id="foundation-name" type="text" required></div>
                         <div class="field"><label for="foundation-slug">Slug</label><input id="foundation-slug" type="text" required></div>
                         <div class="field span-2"><label for="foundation-description">Description</label><textarea id="foundation-description" placeholder="{{ __('Description du jeu') }}"></textarea></div>
-                        <div class="field"><label for="foundation-visibility">{{ __('Visibilite cible') }}</label><select id="foundation-visibility"><option value="private">{{ __('Prive') }}</option><option value="public">{{ __('Public') }}</option></select></div>
+                        <div class="field"><label for="foundation-visibility">{{ __('Visibilité') }}</label><select id="foundation-visibility"><option value="private">{{ __('Privé') }}</option><option value="public">{{ __('Public') }}</option></select></div>
                         <div class="field span-2"><div class="wizard-actions"><div class="autosave-row"><span id="foundation-save-state">{{ __('Autosave inactif') }}</span></div><div class="inline-tools"><button id="save-foundation" class="btn ghost" type="submit">{{ __('Enregistrer maintenant') }}</button><button class="btn primary" type="button" data-go-step="structure">{{ __('Continuer') }}</button></div></div></div>
                     </form>
                 </section>
@@ -85,14 +126,14 @@
                 <section class="stage-card" data-step="structure" hidden>
                     <div class="stage-intro">
                         <span class="eyebrow">{{ __('Structure') }}</span>
-                        <h2>{{ __('Cadre du template') }}</h2>
-                        <p class="helper">{{ __('Active les slots et les types de modifiers autorises.') }}</p>
+                        <h2>{{ __('Options du jeu') }}</h2>
+                        <p class="helper">{{ __('Configure les slots et types de modificateurs autorisés.') }}</p>
                     </div>
-                    <div id="structure-lock-note" class="compact-note warn" hidden>{{ __('Certains choix sont verrouilles apres ajout d\'items ou de modifiers.') }}</div>
+                    <div id="structure-lock-note" class="compact-note warn" hidden>{{ __('Certains choix sont verrouillés après ajout d\'items ou de modificateurs.') }}</div>
                     <form id="structure-form" class="wizard-stack">
                         <div class="option-grid">
-                            <label class="option-card"><input id="supports-modifiers" type="checkbox"><span><strong>{{ __('Supporte les modifiers') }}</strong><small>{{ __('Active accessoires, runes ou effets relies aux items.') }}</small></span></label>
-                            <label class="option-card"><input id="supports-archetypes" type="checkbox"><span><strong>{{ __('Supporte les archetypes') }}</strong><small>{{ __("Ajoute des profils ou classes propres a ce jeu.") }}</small></span></label>
+                            <label class="option-card"><input id="supports-modifiers" type="checkbox"><span><strong>{{ __('Modificateurs') }}</strong><small>{{ __('Accessoires, runes ou effets reliés aux items.') }}</small></span></label>
+                            <label class="option-card"><input id="supports-archetypes" type="checkbox"><span><strong>{{ __('Archétypes / Profils') }}</strong><small>{{ __('Classes ou styles de jeu personnalisés.') }}</small></span></label>
                         </div>
                         <div class="structure-preview"><div class="card-head"><h2>{{ __("Slots d'items actifs") }}</h2></div><div id="structure-item-slots" class="checkbox-grid"></div></div>
                         <div class="structure-preview"><div class="card-head"><h2>{{ __('Types de modifiers actifs') }}</h2></div><div id="structure-modifier-types" class="checkbox-grid"></div></div>
@@ -102,9 +143,9 @@
 
                 <section class="stage-card" data-step="taxonomy" hidden>
                     <div class="stage-intro">
-                        <span class="eyebrow">{{ __('Taxonomie') }}</span>
-                        <h2>{{ __('Profils et categories') }}</h2>
-                        <p class="helper">{{ __('Ajoute les profils et les categories avant les items.') }}</p>
+                        <span class="eyebrow">{{ __('Classification') }}</span>
+                        <h2>{{ __('Profils et catégories') }}</h2>
+                        <p class="helper">{{ __('Définis les profils et catégories de ton jeu.') }}</p>
                     </div>
                     <div class="taxonomy-grid">
                         <article class="stage-card">
@@ -184,7 +225,7 @@
                         <h2>{{ __('Accessoires et effets') }}</h2>
                         <p class="helper">{{ __('Relie les modifiers aux items compatibles.') }}</p>
                     </div>
-                    <div id="modifier-disabled-note" class="compact-note" hidden>{{ __('Les modifiers sont actuellement desactives dans la structure du draft.') }}</div>
+                    <div id="modifier-disabled-note" class="compact-note" hidden>{{ __('Les modificateurs sont désactivés dans les options du jeu.') }}</div>
                     <form id="modifier-form" class="wizard-stack">
                         <div class="modifier-form-grid">
                             <div class="field"><label for="modifier-name">Nom</label><input id="modifier-name" type="text" placeholder="Red Dot X"></div>
@@ -213,9 +254,9 @@
 
                 <section class="stage-card" data-step="review" hidden>
                     <div class="stage-intro">
-                        <span class="eyebrow">{{ __('Revue') }}</span>
-                        <h2>{{ __('Etat du draft et publication') }}</h2>
-                        <p class="helper">{{ __('Corrige les blocages puis publie.') }}</p>
+                        <span class="eyebrow">{{ __('Publication') }}</span>
+                        <h2>{{ __('Validation et publication') }}</h2>
+                        <p class="helper">{{ __('Corrige les points bloquants puis publie ton jeu.') }}</p>
                     </div>
                     <div class="review-grid">
                         <article class="review-summary">
@@ -231,7 +272,7 @@
                         <article class="review-summary">
                             <span class="eyebrow">{{ __('Publication') }}</span>
                             <strong id="publish-state-label">{{ __('En attente') }}</strong>
-                            <p id="publish-state-copy" class="helper compact">{{ __('Le draft doit etre complet avant publication.') }}</p>
+                            <p id="publish-state-copy" class="helper compact">{{ __('Le jeu doit être complet avant publication.') }}</p>
                             <div class="inline-tools"><button id="publish-draft" class="btn primary" type="button">{{ __('Publier le jeu') }}</button></div>
                         </article>
                     </div>
@@ -267,8 +308,8 @@
         };
 
         const WIZARD_STEPS = ['template', 'foundation', 'structure', 'taxonomy', 'items', 'modifiers', 'review'];
-        const STEP_LABELS = {template: 'Template', foundation: 'Base', structure: 'Structure', taxonomy: 'Profils et categories', items: 'Items', modifiers: 'Modifiers', review: 'Revue'};
-        const STEP_DESCRIPTIONS = {template: 'Choisir le cadre initial', foundation: 'Nom, slug, description, visibilite', structure: 'Capacites et vocabulaire actifs', taxonomy: 'Profils et classification du jeu', items: 'Equipements et slots internes', modifiers: 'Compatibilites et effets', review: 'Validation et publication'};
+        const STEP_LABELS = {template: 'Template', foundation: 'Base', structure: 'Options', taxonomy: 'Profils et cat\u00e9gories', items: 'Items', modifiers: 'Modificateurs', review: 'Publication'};
+        const STEP_DESCRIPTIONS = {template: 'Choisir le cadre initial', foundation: 'Nom, slug, description, visibilit\u00e9', structure: 'Slots et types de modificateurs', taxonomy: 'Profils et classification du jeu', items: '\u00c9quipements et slots internes', modifiers: 'Compatibilit\u00e9s et effets', review: 'Validation et publication'};
         const STEP_ORDER = {foundation: 1, structure: 2, archetypes: 3, categories: 4, items: 5, modifiers: 6, review: 7};
 
         const S = {
@@ -290,6 +331,7 @@
             itemSlugTouched: false,
             modifierSlugTouched: false,
             editing: {archetypeId: null, categoryId: null, itemId: null, modifierId: null},
+            modal: {open: false, stepKey: 'name', busy: false, data: {}},
         };
 
         const N = {
@@ -379,6 +421,12 @@
             publishDraft: document.getElementById('publish-draft'),
             reviewList: document.getElementById('review-list'),
             stepPanels: Array.from(document.querySelectorAll('[data-step]')),
+            creationModal: document.getElementById('creation-modal'),
+            modalTitle: document.getElementById('modal-title'),
+            modalDots: document.getElementById('modal-dots'),
+            modalBody: document.getElementById('modal-body'),
+            modalBack: document.getElementById('modal-back'),
+            modalNext: document.getElementById('modal-next'),
         };
 
         function E(value) {
@@ -511,6 +559,16 @@
             };
         }
 
+        function displayStatus(status) {
+            if (status === 'draft') return 'en création';
+            if (status === 'published') return 'publié';
+            return status ?? 'en création';
+        }
+
+        function displayStep(step) {
+            return STEP_LABELS[mapDraftStepToWizard(step)] ?? step ?? 'Base';
+        }
+
         function currentSettings() {
             const template = templateFor(S.draft?.category_key ?? selectedTemplateKey());
             const settings = S.draft?.settings ?? {};
@@ -552,7 +610,7 @@
             render();
         }
 
-        async function loadDraft(id, message = 'Brouillon charge.') {
+        async function loadDraft(id, message = 'Jeu charg\u00e9.') {
             const previousId = S.selectedDraftId;
             const previousStep = S.activeStep;
             const payload = await studioApi(`/game-drafts/${id}`);
@@ -576,13 +634,13 @@
         function renderDraftSummary() {
             if (!S.draft) {
                 N.draftSummary.className = 'draft-summary empty';
-                N.draftSummary.innerHTML = 'Choisis un template puis cree un brouillon.';
+                N.draftSummary.innerHTML = 'Cr\u00e9e un nouveau jeu pour commencer.';
                 return;
             }
             const template = templateFor(S.draft.category_key);
             const counts = draftCounts();
             N.draftSummary.className = 'draft-summary';
-            N.draftSummary.innerHTML = `<div><strong style="font-size:24px;line-height:1">${E(S.draft.name)}</strong><p class="helper compact" style="margin-top:8px">${E(template?.label ?? S.draft.category_key)} • ${E(S.draft.slug)}</p></div><div class="summary-metrics"><article class="summary-metric"><strong>${E(S.draft.completion_percent ?? 0)}%</strong><span>Progression</span></article><article class="summary-metric"><strong>${E(counts.items)}</strong><span>Items</span></article><article class="summary-metric"><strong>${E(counts.modifiers)}</strong><span>Modifiers</span></article></div><div class="entity-meta"><span class="tag">${E(S.draft.status ?? 'draft')}</span><span class="tag">${E(S.draft.visibility ?? 'private')}</span><span class="tag">${E(S.draft.current_step ?? 'foundation')}</span></div><div class="inline-tools"><button class="btn subtle" type="button" data-action="delete-draft" ${selectedDraftLocked() ? 'disabled' : ''}>Supprimer ce draft</button></div>`;
+            N.draftSummary.innerHTML = `<div><strong style="font-size:24px;line-height:1">${E(S.draft.name)}</strong><p class="helper compact" style="margin-top:8px">${E(template?.label ?? S.draft.category_key)} • ${E(S.draft.slug)}</p></div><div class="summary-metrics"><article class="summary-metric"><strong>${E(S.draft.completion_percent ?? 0)}%</strong><span>Progression</span></article><article class="summary-metric"><strong>${E(counts.items)}</strong><span>Items</span></article><article class="summary-metric"><strong>${E(counts.modifiers)}</strong><span>Modificateurs</span></article></div><div class="entity-meta"><span class="tag">${E(displayStatus(S.draft.status))}</span><span class="tag">${E(S.draft.visibility ?? 'private')}</span><span class="tag">${E(displayStep(S.draft.current_step))}</span></div><div class="inline-tools"><button class="btn subtle" type="button" data-action="delete-draft" ${selectedDraftLocked() ? 'disabled' : ''}>Supprimer ce jeu</button></div>`;
         }
 
         function renderStepNav() {
@@ -596,12 +654,12 @@
 
         function renderDraftList() {
             if (!S.drafts.length) {
-                N.draftList.innerHTML = '<div class="empty-soft">Aucun brouillon en cours.</div>';
+                N.draftList.innerHTML = '<div class="empty-soft">Aucun jeu en cours.</div>';
                 return;
             }
             N.draftList.innerHTML = S.drafts.map((draft) => {
                 const active = Number(draft.id) === Number(S.selectedDraftId);
-                return `<article class="draft-tile ${active ? 'active' : ''}"><h4>${E(draft.name)}</h4><p>${E(draft.category_key)} • ${E(draft.completion_percent ?? 0)}% • ${E(draft.status ?? 'draft')}</p><div class="entity-meta"><span class="tag">${E(draft.current_step ?? 'foundation')}</span><span class="tag">${E(draft.visibility ?? 'private')}</span></div><div class="entity-tools"><button class="btn ghost" type="button" data-action="select-draft" data-id="${draft.id}">Ouvrir</button></div></article>`;
+                return `<article class="draft-tile ${active ? 'active' : ''}"><h4>${E(draft.name)}</h4><p>${E(draft.category_key)} • ${E(draft.completion_percent ?? 0)}% • ${E(displayStatus(draft.status))}</p><div class="entity-meta"><span class="tag">${E(displayStep(draft.current_step))}</span><span class="tag">${E(draft.visibility ?? 'private')}</span></div><div class="entity-tools"><button class="btn ghost" type="button" data-action="select-draft" data-id="${draft.id}">Ouvrir</button></div></article>`;
             }).join('');
         }
 
@@ -624,10 +682,11 @@
 
         function renderFoundation() {
             if (!S.draft) return;
-            N.foundationName.value = S.draft.name ?? '';
-            N.foundationSlug.value = S.draft.slug ?? '';
-            N.foundationDescription.value = S.draft.description ?? '';
-            N.foundationVisibility.value = S.draft.visibility ?? 'private';
+            const active = document.activeElement;
+            if (active !== N.foundationName) N.foundationName.value = S.draft.name ?? '';
+            if (active !== N.foundationSlug) N.foundationSlug.value = S.draft.slug ?? '';
+            if (active !== N.foundationDescription) N.foundationDescription.value = S.draft.description ?? '';
+            if (active !== N.foundationVisibility) N.foundationVisibility.value = S.draft.visibility ?? 'private';
             N.foundationSaveState.textContent = S.foundationState;
             N.foundationForm.querySelectorAll('input, textarea, select, button').forEach((element) => {
                 element.disabled = selectedDraftLocked();
@@ -636,7 +695,7 @@
 
         function renderStructureCheckboxGrid(container, values, selected, inputName, disabled) {
             container.innerHTML = values.length
-                ? values.map((value) => `<label class="option-card"><input type="checkbox" name="${E(inputName)}" value="${E(value)}" ${selected.includes(value) ? 'checked' : ''} ${disabled ? 'disabled' : ''}><span><strong>${E(value)}</strong><small>Option active pour ce draft.</small></span></label>`).join('')
+                ? values.map((value) => `<label class="option-card"><input type="checkbox" name="${E(inputName)}" value="${E(value)}" ${selected.includes(value) ? 'checked' : ''} ${disabled ? 'disabled' : ''}><span><strong>${E(value)}</strong><small>Option active pour ce jeu.</small></span></label>`).join('')
                 : '<div class="empty-soft">Aucune option disponible.</div>';
         }
 
@@ -749,7 +808,7 @@
                 is_required: Boolean(entry.is_required ?? false),
             }));
             renderItemSlotRows();
-            setStatus('Preset de slots applique.');
+            setStatus('Preset de slots appliqué.');
         }
 
         function updateItemSlotDraftFromDom() {
@@ -791,7 +850,7 @@
             const locked = selectedDraftLocked();
             const categories = S.draft?.categories ?? [];
             N.itemCategoryOptions.innerHTML = categories.length
-                ? categories.map((category) => `<label class="option-card"><input type="checkbox" name="item-category" value="${category.id}" ${selectedIds.includes(Number(category.id)) ? 'checked' : ''} ${locked ? 'disabled' : ''}><span><strong>${E(category.label)}</strong><small>${E(category.description ?? 'Categorie du draft')}</small></span></label>`).join('')
+                ? categories.map((category) => `<label class="option-card"><input type="checkbox" name="item-category" value="${category.id}" ${selectedIds.includes(Number(category.id)) ? 'checked' : ''} ${locked ? 'disabled' : ''}><span><strong>${E(category.label)}</strong><small>${E(category.description ?? 'Catégorie du jeu')}</small></span></label>`).join('')
                 : '<div class="empty-soft">Ajoute d abord des categories pour mieux classer tes items.</div>';
         }
 
@@ -865,27 +924,27 @@
 
             N.reviewCompletion.textContent = `${S.draft.completion_percent ?? 0}%`;
             N.reviewSubtitle.textContent = published
-                ? 'Jeu deja publie depuis ce brouillon.'
+                ? 'Jeu d\u00e9j\u00e0 publi\u00e9 depuis ce projet.'
                 : ready
-                    ? 'Le draft peut etre publie.'
-                    : `${totalErrors} blocage(s) et ${totalWarnings} warning(s) a traiter avant publication.`;
+                    ? 'Le jeu peut \u00eatre publi\u00e9.'
+                    : `${totalErrors} blocage(s) et ${totalWarnings} warning(s) \u00e0 traiter avant publication.`;
             N.reviewItemsCount.textContent = String(counts.items);
             N.reviewModifiersCount.textContent = String(counts.modifiers);
             N.reviewErrorsCount.textContent = String(totalErrors);
 
             if (published) {
-                N.publishStateLabel.textContent = 'Publie';
-                N.publishStateCopy.textContent = 'Ce brouillon a deja ete converti en jeu runtime.';
+                N.publishStateLabel.textContent = 'Publi\u00e9';
+                N.publishStateCopy.textContent = 'Ce jeu a d\u00e9j\u00e0 \u00e9t\u00e9 publi\u00e9.';
                 N.publishDraft.disabled = true;
-                N.publishDraft.textContent = 'Deja publie';
+                N.publishDraft.textContent = 'D\u00e9j\u00e0 publi\u00e9';
             } else if (ready) {
-                N.publishStateLabel.textContent = 'Pret';
-                N.publishStateCopy.textContent = 'Toutes les etapes backend sont vertes.';
+                N.publishStateLabel.textContent = 'Pr\u00eat';
+                N.publishStateCopy.textContent = 'Toutes les \u00e9tapes sont valid\u00e9es.';
                 N.publishDraft.disabled = false;
                 N.publishDraft.textContent = 'Publier le jeu';
             } else {
-                N.publishStateLabel.textContent = 'Bloque';
-                N.publishStateCopy.textContent = 'Corrige les points signales ci-dessous avant publication.';
+                N.publishStateLabel.textContent = 'Bloqu\u00e9';
+                N.publishStateCopy.textContent = 'Corrige les points signal\u00e9s ci-dessous.';
                 N.publishDraft.disabled = true;
                 N.publishDraft.textContent = 'Publication indisponible';
             }
@@ -990,7 +1049,7 @@
             S.structureState = 'Autosave pret';
         }
 
-        async function persistFoundation(message = 'Fondation enregistree.') {
+        async function persistFoundation(message = 'Informations enregistr\u00e9es.') {
             if (!S.draft || selectedDraftLocked()) return;
             S.foundationState = 'Enregistrement...';
             renderFoundation();
@@ -1055,27 +1114,13 @@
         async function createDraft(event) {
             event.preventDefault();
 
-            try {
-                const payload = await studioApi('/game-drafts', {
-                    method: 'POST',
-                    body: {
-                        category_key: selectedTemplateKey(),
-                        name: N.createName.value.trim(),
-                        slug: N.createSlug.value.trim() || null,
-                    },
-                });
-                syncDraftFromResponse(payload.data);
-                resetCreateForm();
-                resetArchetypeForm();
-                resetCategoryForm();
-                resetItemForm();
-                resetModifierForm();
-                S.activeStep = 'foundation';
-                render();
-                setStatus('Brouillon cree. Tu peux maintenant finaliser la base.');
-            } catch (error) {
-                setStatus(error.message, 'danger');
-            }
+            openCreationModal();
+            setModalTemplate(selectedTemplateKey());
+            S.modal.data.name = N.createName.value.trim();
+            S.modal.data.slug = N.createSlug.value.trim();
+            S.modal.data.slugTouched = S.modal.data.slug !== '';
+            S.modal.stepKey = S.modal.data.name ? 'description' : 'name';
+            renderModal();
         }
 
         async function saveArchetype(event) {
@@ -1095,7 +1140,7 @@
                     await studioApi(`/game-drafts/${S.draft.id}/archetypes`, {method: 'POST', body});
                 }
                 resetArchetypeForm();
-                await loadDraft(S.draft.id, 'Archetype enregistre.');
+                await loadDraft(S.draft.id, 'Arch\u00e9type enregistr\u00e9.');
             } catch (error) {
                 setStatus(error.message, 'danger');
             }
@@ -1118,7 +1163,7 @@
                     await studioApi(`/game-drafts/${S.draft.id}/categories`, {method: 'POST', body});
                 }
                 resetCategoryForm();
-                await loadDraft(S.draft.id, 'Categorie enregistree.');
+                await loadDraft(S.draft.id, 'Cat\u00e9gorie enregistr\u00e9e.');
             } catch (error) {
                 setStatus(error.message, 'danger');
             }
@@ -1169,7 +1214,7 @@
                     await studioApi(`/game-drafts/${S.draft.id}/items`, {method: 'POST', body});
                 }
                 resetItemForm();
-                await loadDraft(S.draft.id, 'Item enregistre.');
+                await loadDraft(S.draft.id, 'Item enregistr\u00e9.');
             } catch (error) {
                 setStatus(error.message, 'danger');
             }
@@ -1200,7 +1245,7 @@
                     await studioApi(`/game-drafts/${S.draft.id}/modifiers`, {method: 'POST', body});
                 }
                 resetModifierForm();
-                await loadDraft(S.draft.id, 'Modifier enregistre.');
+                await loadDraft(S.draft.id, 'Modificateur enregistr\u00e9.');
             } catch (error) {
                 setStatus(error.message, 'danger');
             }
@@ -1208,7 +1253,7 @@
 
         async function deleteDraft() {
             if (!S.draft) return;
-            if (!window.confirm(`Supprimer le draft "${S.draft.name}" ?`)) return;
+            if (!window.confirm(`Supprimer le jeu "${S.draft.name}" ?`)) return;
 
             try {
                 await studioApi(`/game-drafts/${S.draft.id}`, {method: 'DELETE'});
@@ -1223,11 +1268,11 @@
 
                 const nextDraft = S.drafts[0] ?? null;
                 if (nextDraft?.id) {
-                    await loadDraft(nextDraft.id, 'Draft supprime. Un autre draft a ete charge.');
+                    await loadDraft(nextDraft.id, 'Jeu supprim\u00e9. Un autre jeu a \u00e9t\u00e9 charg\u00e9.');
                 } else {
                     S.activeStep = 'template';
                     render();
-                    setStatus('Draft supprime.');
+                    setStatus('Jeu supprim\u00e9.');
                 }
             } catch (error) {
                 setStatus(error.message, 'danger');
@@ -1236,7 +1281,7 @@
 
         async function deleteEntity(type, id) {
             if (!S.draft || selectedDraftLocked()) return;
-            if (!window.confirm('Supprimer cet element ?')) return;
+            if (!window.confirm('Supprimer cet \u00e9l\u00e9ment ?')) return;
 
             const paths = {
                 archetype: `/game-drafts/${S.draft.id}/archetypes/${id}`,
@@ -1247,7 +1292,7 @@
 
             try {
                 await studioApi(paths[type], {method: 'DELETE'});
-                await loadDraft(S.draft.id, 'Element supprime.');
+                await loadDraft(S.draft.id, '\u00c9l\u00e9ment supprim\u00e9.');
             } catch (error) {
                 setStatus(error.message, 'danger');
             }
@@ -1348,10 +1393,10 @@
                 syncDraftFromResponse(payload.data?.draft);
                 S.activeStep = 'review';
                 render();
-                setStatus('Jeu publie avec succes.');
+                setStatus('Jeu publi\u00e9 avec succ\u00e8s.');
             } catch (error) {
                 setStatus(error.message, 'danger');
-                await loadDraft(S.draft.id, 'Publication bloquee. Les erreurs les plus recentes ont ete rechargees.');
+                await loadDraft(S.draft.id, 'Publication bloqu\u00e9e. Les erreurs ont \u00e9t\u00e9 recharg\u00e9es.');
             }
         }
 
@@ -1369,7 +1414,7 @@
             }
 
             if (type === 'archetype' && !currentSettings().supports_archetypes) {
-                setStatus('Active d abord les archetypes dans la structure du draft.', 'danger');
+                setStatus('Active d abord les archétypes dans les options du jeu.', 'danger');
                 return;
             }
 
@@ -1404,7 +1449,7 @@
                     existing.add(slug);
                 }
 
-                await loadDraft(S.draft.id, 'Suggestions appliquees.');
+                await loadDraft(S.draft.id, 'Suggestions appliqu\u00e9es.');
             } catch (error) {
                 setStatus(error.message, 'danger');
             }
@@ -1443,12 +1488,17 @@
             }
 
             if (action === 'select-draft') {
-                await loadDraft(actionTarget.dataset.id, 'Brouillon charge.');
+                await loadDraft(actionTarget.dataset.id, 'Jeu chargé.');
                 return;
             }
 
             if (action === 'delete-draft') {
                 await deleteDraft();
+                return;
+            }
+
+            if (action === 'close-modal') {
+                closeCreationModal();
                 return;
             }
 
@@ -1508,11 +1558,11 @@
         N.createDraftForm.addEventListener('submit', createDraft);
         N.foundationForm.addEventListener('submit', (event) => {
             event.preventDefault();
-            persistFoundation('Fondation enregistree.');
+            persistFoundation('Informations enregistr\u00e9es.');
         });
         N.structureForm.addEventListener('submit', (event) => {
             event.preventDefault();
-            persistStructure('Structure enregistree.');
+            persistStructure('Structure enregistr\u00e9e.');
         });
         N.archetypeForm.addEventListener('submit', saveArchetype);
         N.categoryForm.addEventListener('submit', saveCategory);
@@ -1532,12 +1582,583 @@
         N.applyItemSlotPreset.addEventListener('click', applyCurrentItemSlotPreset);
         N.addItemSlotRow.addEventListener('click', () => addItemSlotRow());
         N.publishDraft.addEventListener('click', publishDraft);
-        N.startNewDraft.addEventListener('click', () => {
-            S.activeStep = 'template';
+        N.startNewDraft.addEventListener('click', () => openCreationModal());
+
+        /* ═══════════════ MODAL DE CRÉATION ═══════════════ */
+
+        function templateDefaultsForModal(templateKey) {
+            const template = templateFor(templateKey) ?? S.templates[0] ?? {};
+            return {
+                templateKey: template.key ?? null,
+                supportsModifiers: template.supports_modifiers ?? true,
+                supportsArchetypes: template.supports_archetypes ?? true,
+                allowedItemSlots: [...(template.allowed_item_slots ?? [])],
+                allowedModifierTypes: [...(template.allowed_modifier_types ?? [])],
+                starterArchetypeSlugs: (template.starter_archetypes ?? []).map((entry) => entry.slug ?? slugify(entry.name ?? '')),
+                starterCategorySlugs: (template.starter_categories ?? []).map((entry) => entry.slug ?? slugify(entry.label ?? '')),
+            };
+        }
+
+        function freshModalState() {
+            return {
+                open: true,
+                stepKey: 'name',
+                busy: false,
+                data: {
+                    ...templateDefaultsForModal(S.templates[0]?.key ?? null),
+                    name: '',
+                    slug: '',
+                    slugTouched: false,
+                    description: '',
+                    visibility: 'private',
+                    customCategories: '',
+                    itemsText: '',
+                    modifiersText: '',
+                    createdDraftId: null,
+                    createdItems: [],
+                    publishedGame: null,
+                },
+            };
+        }
+
+        function modalSteps() {
+            const steps = ['name', 'description', 'options'];
+            if (S.modal.data?.supportsArchetypes) steps.push('archetypes');
+            steps.push('categories');
+            steps.push('items');
+            if (S.modal.data?.supportsModifiers) steps.push('modifiers');
+            steps.push('publish');
+            return steps;
+        }
+
+        function currentModalIndex() {
+            return Math.max(0, modalSteps().indexOf(S.modal.stepKey));
+        }
+
+        function templateMinimum(key, fallback = 1) {
+            const template = templateFor(S.modal.data?.templateKey) ?? {};
+            return Number(template.minimums?.[key] ?? fallback);
+        }
+
+        function defaultItemNames() {
+            const min = templateMinimum('items', 1);
+            const slots = S.modal.data?.allowedItemSlots?.length ? S.modal.data.allowedItemSlots : ['item'];
+            return Array.from({length: min}, (_, index) => {
+                const slot = slots[index % slots.length] ?? 'item';
+                return `${slot} ${index + 1}`;
+            }).join('\n');
+        }
+
+        function defaultModifierNames() {
+            const min = templateMinimum('modifiers', 1);
+            const types = S.modal.data?.allowedModifierTypes?.length ? S.modal.data.allowedModifierTypes : ['modifier'];
+            return Array.from({length: min}, (_, index) => {
+                const type = types[index % types.length] ?? 'modifier';
+                return `${type} ${index + 1}`;
+            }).join('\n');
+        }
+
+        function modalLines(value) {
+            return String(value ?? '')
+                .split(/\r?\n/)
+                .map((line) => line.trim())
+                .filter(Boolean);
+        }
+
+        function openCreationModal() {
+            S.modal = freshModalState();
+            N.creationModal.hidden = false;
+            renderModal();
+        }
+
+        function closeCreationModal() {
+            S.modal.open = false;
+            N.creationModal.hidden = true;
+        }
+
+        function renderModalDots() {
+            const activeIndex = currentModalIndex();
+            N.modalDots.innerHTML = modalSteps().map((_, index) => {
+                const cls = index < activeIndex ? 'dot done' : index === activeIndex ? 'dot active' : 'dot';
+                return `<span class="${cls}"></span>`;
+            }).join('');
+        }
+
+        function setModalTemplate(templateKey) {
+            const previous = S.modal.data ?? {};
+            S.modal.data = {
+                ...previous,
+                ...templateDefaultsForModal(templateKey),
+                name: previous.name ?? '',
+                slug: previous.slug ?? '',
+                slugTouched: Boolean(previous.slugTouched),
+                description: previous.description ?? '',
+                visibility: previous.visibility ?? 'private',
+                customCategories: previous.customCategories ?? '',
+                itemsText: previous.itemsText ?? '',
+                modifiersText: previous.modifiersText ?? '',
+                createdDraftId: previous.createdDraftId ?? null,
+                createdItems: previous.createdItems ?? [],
+                publishedGame: previous.publishedGame ?? null,
+            };
+        }
+
+        function captureModalFields() {
+            if (!S.modal.open) return;
+            const selectedTemplate = document.querySelector('input[name="modal-template"]:checked')?.value;
+            if (selectedTemplate && selectedTemplate !== S.modal.data.templateKey) setModalTemplate(selectedTemplate);
+            const data = S.modal.data;
+
+            const name = document.getElementById('modal-name');
+            const slug = document.getElementById('modal-slug');
+            const description = document.getElementById('modal-description');
+            const visibility = document.getElementById('modal-visibility');
+            const supportsModifiers = document.getElementById('modal-supports-modifiers');
+            const supportsArchetypes = document.getElementById('modal-supports-archetypes');
+            const customCategories = document.getElementById('modal-custom-categories');
+            const itemsText = document.getElementById('modal-items-text');
+            const modifiersText = document.getElementById('modal-modifiers-text');
+
+            if (name) data.name = name.value;
+            if (slug) data.slug = slug.value;
+            if (description) data.description = description.value;
+            if (visibility) data.visibility = visibility.value;
+            if (supportsModifiers) data.supportsModifiers = supportsModifiers.checked;
+            if (supportsArchetypes) data.supportsArchetypes = supportsArchetypes.checked;
+            if (customCategories) data.customCategories = customCategories.value;
+            if (itemsText) data.itemsText = itemsText.value;
+            if (modifiersText) data.modifiersText = modifiersText.value;
+
+            if (document.querySelector('input[name="modal-item-slot"]')) {
+                data.allowedItemSlots = checkedValues('input[name="modal-item-slot"]');
+            }
+            if (document.querySelector('input[name="modal-modifier-type"]')) {
+                data.allowedModifierTypes = data.supportsModifiers ? checkedValues('input[name="modal-modifier-type"]') : [];
+            } else if (!data.supportsModifiers) {
+                data.allowedModifierTypes = [];
+            }
+            if (document.querySelector('input[name="modal-archetype"]')) {
+                data.starterArchetypeSlugs = checkedValues('input[name="modal-archetype"]');
+            }
+            if (document.querySelector('input[name="modal-category"]')) {
+                data.starterCategorySlugs = checkedValues('input[name="modal-category"]');
+            }
+        }
+
+        function wireModalPersistence() {
+            N.modalBody.querySelectorAll('input, textarea, select').forEach((element) => {
+                element.addEventListener('input', captureModalFields);
+                element.addEventListener('change', captureModalFields);
+            });
+        }
+
+        function renderModal() {
+            const step = S.modal.stepKey;
+            const data = S.modal.data ?? {};
+            const template = templateFor(data.templateKey) ?? S.templates[0] ?? {};
+            renderModalDots();
+            N.modalBack.hidden = currentModalIndex() === 0 || Boolean(data.createdDraftId);
+            N.modalNext.disabled = S.modal.busy;
+
+            if (step === 'name') {
+                N.modalTitle.textContent = 'Nom du jeu';
+                N.modalNext.textContent = 'Continuer';
+                N.modalBody.innerHTML = `
+                    <p class="helper modal-step-copy">Commence par le nom public du jeu. Le slug est généré automatiquement.</p>
+                    <div class="item-form-grid">
+                        <div class="field"><label for="modal-name">Nom du jeu</label><input id="modal-name" type="text" value="${E(data.name)}" placeholder="Mon arena shooter" required></div>
+                        <div class="field"><label for="modal-slug">Slug</label><input id="modal-slug" type="text" value="${E(data.slug)}" placeholder="mon-arena-shooter"></div>
+                    </div>`;
+                const nameInput = document.getElementById('modal-name');
+                const slugInput = document.getElementById('modal-slug');
+                nameInput?.addEventListener('input', () => {
+                    S.modal.data.name = nameInput.value;
+                    if (!S.modal.data.slugTouched) {
+                        slugInput.value = slugify(nameInput.value);
+                        S.modal.data.slug = slugInput.value;
+                    }
+                });
+                slugInput?.addEventListener('input', () => {
+                    S.modal.data.slug = slugInput.value;
+                    S.modal.data.slugTouched = slugInput.value.trim() !== '';
+                });
+                nameInput?.focus();
+            } else if (step === 'description') {
+                N.modalTitle.textContent = 'Décris ton jeu';
+                N.modalNext.textContent = 'Continuer';
+                N.modalBody.innerHTML = `
+                    <p class="helper modal-step-copy">Ajoute le contexte avant de choisir la structure du jeu.</p>
+                    <div class="item-form-grid">
+                        <div class="field span-2"><label for="modal-description">Description</label><textarea id="modal-description" rows="5" placeholder="Décris ton jeu en quelques lignes...">${E(data.description)}</textarea></div>
+                        <div class="field"><label for="modal-visibility">Visibilité</label><select id="modal-visibility"><option value="private"${data.visibility === 'private' ? ' selected' : ''}>Privé</option><option value="public"${data.visibility === 'public' ? ' selected' : ''}>Public</option></select></div>
+                    </div>`;
+                wireModalPersistence();
+                document.getElementById('modal-description')?.focus();
+            } else if (step === 'options') {
+                N.modalTitle.textContent = 'Options du jeu';
+                N.modalNext.textContent = 'Continuer';
+                const itemSlots = template.allowed_item_slots ?? [];
+                const modTypes = template.allowed_modifier_types ?? [];
+                const selSlots = Array.isArray(data.allowedItemSlots) ? data.allowedItemSlots : itemSlots;
+                const selTypes = Array.isArray(data.allowedModifierTypes) ? data.allowedModifierTypes : modTypes;
+                N.modalBody.innerHTML = `
+                    <p class="helper modal-step-copy">Choisis le type de jeu, puis active uniquement les éléments dont ton jeu a besoin.</p>
+                    <div class="template-grid">${S.templates.map((t) => `<label class="template-card ${t.key === data.templateKey ? 'active' : ''}"><input type="radio" name="modal-template" value="${E(t.key)}" ${t.key === data.templateKey ? 'checked' : ''} hidden><div><h4>${E(t.label)}</h4><p>${E(t.description)}</p></div><div class="entity-meta"><span class="tag">v${E(t.version)}</span><span class="tag">${(t.allowed_item_slots ?? []).length} slot(s)</span></div></label>`).join('')}</div>
+                    <div class="option-grid">
+                        <label class="option-card"><input id="modal-supports-archetypes" type="checkbox" ${data.supportsArchetypes ? 'checked' : ''}><span><strong>Archétypes / Profils</strong><small>Classes, styles de jeu...</small></span></label>
+                        <label class="option-card"><input id="modal-supports-modifiers" type="checkbox" ${data.supportsModifiers ? 'checked' : ''}><span><strong>Modificateurs</strong><small>Accessoires, runes, effets...</small></span></label>
+                    </div>
+                    <div class="structure-preview" style="margin-top:16px"><div class="card-head"><h2>Slots d'items</h2></div><div class="checkbox-grid">${itemSlots.map((s) => `<label class="option-card"><input type="checkbox" name="modal-item-slot" value="${E(s)}" ${selSlots.includes(s) ? 'checked' : ''}><span><strong>${E(s)}</strong></span></label>`).join('')}</div></div>
+                    <div class="structure-preview" style="margin-top:16px"><div class="card-head"><h2>Types de modificateurs</h2></div><div class="checkbox-grid" id="modal-mod-types">${modTypes.map((t) => `<label class="option-card"><input type="checkbox" name="modal-modifier-type" value="${E(t)}" ${selTypes.includes(t) ? 'checked' : ''} ${data.supportsModifiers ? '' : 'disabled'}><span><strong>${E(t)}</strong></span></label>`).join('')}</div></div>`;
+                N.modalBody.querySelectorAll('input[name="modal-template"]').forEach((input) => {
+                    input.addEventListener('change', () => {
+                        setModalTemplate(input.value);
+                        renderModal();
+                    });
+                });
+                document.getElementById('modal-supports-modifiers')?.addEventListener('change', (event) => {
+                    captureModalFields();
+                    document.querySelectorAll('input[name="modal-modifier-type"]').forEach((input) => { input.disabled = !event.target.checked; });
+                });
+                document.getElementById('modal-supports-archetypes')?.addEventListener('change', captureModalFields);
+                wireModalPersistence();
+            } else if (step === 'archetypes') {
+                N.modalTitle.textContent = 'Archétypes';
+                N.modalNext.textContent = 'Continuer';
+                const archetypes = template.starter_archetypes ?? [];
+                const selected = data.starterArchetypeSlugs ?? [];
+                N.modalBody.innerHTML = `
+                    <p class="helper modal-step-copy">Sélectionne les profils à créer dès maintenant. Tu pourras en ajouter d'autres après.</p>
+                    <div class="modal-check-list">${archetypes.length ? archetypes.map((entry) => {
+                        const slug = entry.slug ?? slugify(entry.name ?? '');
+                        return `<label class="option-card"><input type="checkbox" name="modal-archetype" value="${E(slug)}" ${selected.includes(slug) ? 'checked' : ''}><span><strong>${E(entry.name)}</strong><small>${E(entry.description ?? '')}</small></span></label>`;
+                    }).join('') : '<div class="empty-soft">Aucune suggestion d archétype pour ce type de jeu.</div>'}</div>`;
+                wireModalPersistence();
+            } else if (step === 'categories') {
+                N.modalTitle.textContent = 'Catégories';
+                N.modalNext.textContent = 'Créer le jeu';
+                const categories = template.starter_categories ?? [];
+                const selected = data.starterCategorySlugs ?? [];
+                N.modalBody.innerHTML = `
+                    <p class="helper modal-step-copy">Ajoute les premières catégories qui serviront à classer les items du jeu.</p>
+                    <div class="modal-check-list">${categories.length ? categories.map((entry) => {
+                        const slug = entry.slug ?? slugify(entry.label ?? '');
+                        return `<label class="option-card"><input type="checkbox" name="modal-category" value="${E(slug)}" ${selected.includes(slug) ? 'checked' : ''}><span><strong>${E(entry.label)}</strong><small>${E(entry.description ?? '')}</small></span></label>`;
+                    }).join('') : '<div class="empty-soft">Aucune suggestion de catégorie pour ce type de jeu.</div>'}</div>
+                    <div class="field" style="margin-top:18px"><label for="modal-custom-categories">Catégories en plus</label><textarea id="modal-custom-categories" rows="3" placeholder="Une catégorie par ligne">${E(data.customCategories)}</textarea><p class="helper compact modal-muted">Exemple: Fusils tactiques, Gadgets, Supports.</p></div>`;
+                wireModalPersistence();
+            } else if (step === 'items') {
+                if (!data.itemsText) data.itemsText = defaultItemNames();
+                const minItems = templateMinimum('items', 1);
+                N.modalTitle.textContent = 'Équipements';
+                N.modalNext.textContent = data.supportsModifiers ? 'Continuer' : 'Voir la publication';
+                N.modalBody.innerHTML = `
+                    <p class="helper modal-step-copy">Ajoute les équipements du jeu, un par ligne. Minimum demandé pour publier: ${E(minItems)}.</p>
+                    <div class="field"><label for="modal-items-text">Items / équipements</label><textarea id="modal-items-text" rows="8" placeholder="KN-44\nVMP\nICR-1">${E(data.itemsText)}</textarea></div>
+                    <div class="entity-meta"><span class="tag">${E(modalLines(data.itemsText).length)} item(s)</span><span class="tag">Slots: ${E((data.allowedItemSlots ?? []).join(', '))}</span></div>`;
+                wireModalPersistence();
+                document.getElementById('modal-items-text')?.focus();
+            } else if (step === 'modifiers') {
+                if (!data.modifiersText) data.modifiersText = defaultModifierNames();
+                const minModifiers = templateMinimum('modifiers', 1);
+                N.modalTitle.textContent = 'Modificateurs';
+                N.modalNext.textContent = 'Voir la publication';
+                N.modalBody.innerHTML = `
+                    <p class="helper modal-step-copy">Ajoute les modificateurs, un par ligne. Ils seront rattachés aux équipements compatibles.</p>
+                    <div class="field"><label for="modal-modifiers-text">Modificateurs</label><textarea id="modal-modifiers-text" rows="7" placeholder="Red Dot\nGrip\nExtended Mag">${E(data.modifiersText)}</textarea></div>
+                    <div class="entity-meta"><span class="tag">${E(modalLines(data.modifiersText).length)} modificateur(s)</span><span class="tag">Minimum: ${E(minModifiers)}</span></div>`;
+                wireModalPersistence();
+                document.getElementById('modal-modifiers-text')?.focus();
+            } else if (step === 'publish') {
+                N.modalTitle.textContent = data.publishedGame ? 'Jeu publié' : 'Publication';
+                N.modalNext.textContent = data.publishedGame ? 'Terminer' : 'Publier le jeu';
+                const itemCount = modalLines(data.itemsText).length;
+                const modifierCount = data.supportsModifiers ? modalLines(data.modifiersText).length : 0;
+                N.modalBody.innerHTML = `
+                    <p class="helper modal-step-copy">${data.publishedGame ? 'Ton jeu est publié.' : 'Vérifie le résumé puis publie le jeu.'}</p>
+                    <div class="modal-review-list">
+                        <article class="entity-row"><div><strong>${E(data.name)}</strong><small>${E(data.description || 'Sans description')}</small></div></article>
+                        <article class="entity-row"><div><strong>${E(itemCount)} équipement(s)</strong><small>${E((data.allowedItemSlots ?? []).join(', '))}</small></div></article>
+                        <article class="entity-row"><div><strong>${E(modifierCount)} modificateur(s)</strong><small>${data.supportsModifiers ? E((data.allowedModifierTypes ?? []).join(', ')) : 'Désactivés'}</small></div></article>
+                    </div>`;
+            }
+        }
+
+        function modalSelectedTemplate() {
+            return templateFor(S.modal.data?.templateKey);
+        }
+
+        function selectedModalArchetypes(template, data) {
+            const selected = new Set(data.supportsArchetypes ? data.starterArchetypeSlugs : []);
+            return (template.starter_archetypes ?? [])
+                .filter((entry) => selected.has(entry.slug ?? slugify(entry.name ?? '')));
+        }
+
+        function selectedModalCategories(template, data) {
+            const selected = new Set(data.starterCategorySlugs ?? []);
+            const starter = (template.starter_categories ?? [])
+                .filter((entry) => selected.has(entry.slug ?? slugify(entry.label ?? '')));
+            const custom = modalLines(data.customCategories)
+                .map((label) => ({label, slug: slugify(label), description: null}));
+            const seen = new Set();
+            return [...starter, ...custom].filter((entry) => {
+                if (!entry.slug || seen.has(entry.slug)) return false;
+                seen.add(entry.slug);
+                return true;
+            });
+        }
+
+        async function createModalDraftShell() {
+            const data = S.modal.data;
+            const selectedTemplate = modalSelectedTemplate();
+            if (!selectedTemplate) {
+                throw new Error('Aucun type de jeu disponible.');
+            }
+
+            N.modalNext.textContent = 'Création...';
+
+            const payload = await studioApi('/game-drafts', {
+                method: 'POST',
+                body: {
+                    category_key: data.templateKey,
+                    name: data.name.trim(),
+                    slug: data.slug.trim() || null,
+                },
+            });
+            syncDraftFromResponse(payload.data);
             resetCreateForm();
-            bootSelectedTemplate();
-            setStatus('Choisis un template pour demarrer un nouveau brouillon.');
+
+            await studioApi(`/game-drafts/${S.draft.id}/foundation`, {
+                method: 'PATCH',
+                body: {
+                    name: data.name.trim(),
+                    slug: S.draft.slug,
+                    description: data.description.trim() || null,
+                    visibility: data.visibility || 'private',
+                },
+            });
+
+            await studioApi(`/game-drafts/${S.draft.id}/structure`, {
+                method: 'PATCH',
+                body: {
+                    supports_modifiers: Boolean(data.supportsModifiers),
+                    supports_archetypes: Boolean(data.supportsArchetypes),
+                    allowed_item_slots: data.allowedItemSlots,
+                    allowed_modifier_types: data.supportsModifiers ? data.allowedModifierTypes : [],
+                },
+            });
+
+            if (data.supportsArchetypes) {
+                for (const entry of selectedModalArchetypes(selectedTemplate, data)) {
+                    await studioApi(`/game-drafts/${S.draft.id}/archetypes`, {
+                        method: 'POST',
+                        body: {
+                            name: entry.name,
+                            slug: entry.slug ?? slugify(entry.name ?? ''),
+                            description: entry.description ?? null,
+                        },
+                    });
+                }
+            }
+
+            data.createdCategories = [];
+            for (const entry of selectedModalCategories(selectedTemplate, data)) {
+                const created = await studioApi(`/game-drafts/${S.draft.id}/categories`, {
+                    method: 'POST',
+                    body: {
+                        label: entry.label,
+                        slug: entry.slug,
+                        description: entry.description ?? null,
+                    },
+                });
+                if (created.data?.id) data.createdCategories.push(created.data);
+            }
+
+            data.createdDraftId = S.draft.id;
+            await loadDraft(S.draft.id, 'Jeu créé. Continue dans la popup.');
+        }
+
+        async function persistModalContentForCurrentStep() {
+            const data = S.modal.data;
+            if (!S.draft?.id) return;
+
+            if (S.modal.stepKey === 'items' && !(data.createdItems ?? []).length) {
+                N.modalNext.textContent = 'Ajout...';
+                const slots = data.allowedItemSlots?.length ? data.allowedItemSlots : ['item'];
+                const categories = (data.createdCategories?.length ? data.createdCategories : (S.draft.categories ?? []));
+                const categoryIds = categories.map((category) => Number(category.id)).filter(Number.isFinite);
+                data.createdItems = [];
+
+                for (const [index, name] of modalLines(data.itemsText).entries()) {
+                    const created = await studioApi(`/game-drafts/${S.draft.id}/items`, {
+                        method: 'POST',
+                        body: {
+                            name,
+                            slug: `${slugify(name) || 'item'}-${index + 1}`,
+                            slot: slots[index % slots.length],
+                            rarity: 'standard',
+                            tier_level: `T${index + 1}`,
+                            score: 10 + index,
+                            attack: 0,
+                            defense: 0,
+                            utility: 0,
+                            accuracy: 0,
+                            mobility: 0,
+                            category_ids: categoryIds,
+                            item_slots: [],
+                        },
+                    });
+                    if (created.data?.id) data.createdItems.push(created.data);
+                }
+
+                await loadDraft(S.draft.id, 'Équipements ajoutés.');
+            }
+
+            if (S.modal.stepKey === 'modifiers' && data.supportsModifiers && !(data.createdModifiers ?? []).length) {
+                N.modalNext.textContent = 'Ajout...';
+                const types = data.allowedModifierTypes?.length ? data.allowedModifierTypes : ['modifier'];
+                const items = (data.createdItems?.length ? data.createdItems : (S.draft.items ?? []));
+                const itemIds = items.map((item) => Number(item.id)).filter(Number.isFinite);
+                data.createdModifiers = [];
+
+                for (const [index, name] of modalLines(data.modifiersText).entries()) {
+                    const created = await studioApi(`/game-drafts/${S.draft.id}/modifiers`, {
+                        method: 'POST',
+                        body: {
+                            name,
+                            slug: `${slugify(name) || 'modifier'}-${index + 1}`,
+                            modifier_type: types[index % types.length],
+                            description: `Modificateur ${name}`,
+                            delta_score: 1,
+                            delta_attack: 0,
+                            delta_defense: 0,
+                            delta_utility: 0,
+                            delta_accuracy: 0,
+                            delta_mobility: 0,
+                            compatible_item_ids: itemIds,
+                        },
+                    });
+                    if (created.data?.id) data.createdModifiers.push(created.data);
+                }
+
+                await loadDraft(S.draft.id, 'Modificateurs ajoutés.');
+            }
+        }
+
+        async function publishModalDraft() {
+            const data = S.modal.data;
+            if (!S.draft?.id) {
+                throw new Error('Crée le jeu avant de publier.');
+            }
+
+            N.modalNext.textContent = 'Publication...';
+            const payload = await studioApi(`/game-drafts/${S.draft.id}/publish`, {method: 'POST'});
+            data.publishedGame = payload.data?.game ?? null;
+            syncDraftFromResponse(payload.data?.draft);
+            S.activeStep = 'review';
             render();
+            setStatus('Jeu publié avec succès.');
+        }
+
+        N.modalBack.addEventListener('click', () => {
+            captureModalFields();
+            const steps = modalSteps();
+            const index = currentModalIndex();
+            if (index > 0) {
+                S.modal.stepKey = steps[index - 1];
+                renderModal();
+            }
+        });
+
+        N.modalNext.addEventListener('click', async () => {
+            if (S.modal.busy) return;
+            S.modal.busy = true;
+            N.modalNext.disabled = true;
+            captureModalFields();
+
+            try {
+                const data = S.modal.data;
+                const steps = modalSteps();
+                const index = currentModalIndex();
+
+                if (S.modal.stepKey === 'name' && !data.name.trim()) {
+                    setStatus('Le nom du jeu est requis.', 'danger');
+                    return;
+                }
+
+                if (S.modal.stepKey === 'description' && !data.description.trim()) {
+                    setStatus('La description est requise pour publier le jeu.', 'danger');
+                    return;
+                }
+
+                if (S.modal.stepKey === 'options' && !data.allowedItemSlots.length) {
+                    setStatus('Sélectionne au moins un slot d item.', 'danger');
+                    return;
+                }
+
+                if (S.modal.stepKey === 'options' && data.supportsModifiers && !data.allowedModifierTypes.length) {
+                    setStatus('Sélectionne au moins un type de modificateur ou désactive les modificateurs.', 'danger');
+                    return;
+                }
+
+                if (S.modal.stepKey === 'categories') {
+                    const categoryTotal = new Set([
+                        ...(data.starterCategorySlugs ?? []),
+                        ...modalLines(data.customCategories).map((label) => slugify(label)),
+                    ].filter(Boolean)).size;
+                    const minCategories = templateMinimum('categories', 2);
+                    if (categoryTotal < minCategories) {
+                        setStatus(`Ajoute au moins ${minCategories} catégorie(s) pour publier ce jeu.`, 'danger');
+                        return;
+                    }
+                }
+
+                if (S.modal.stepKey === 'items' && modalLines(data.itemsText).length < templateMinimum('items', 1)) {
+                    setStatus(`Ajoute au moins ${templateMinimum('items', 1)} équipement(s) pour publier ce jeu.`, 'danger');
+                    return;
+                }
+
+                if (S.modal.stepKey === 'modifiers' && data.supportsModifiers && modalLines(data.modifiersText).length < templateMinimum('modifiers', 1)) {
+                    setStatus(`Ajoute au moins ${templateMinimum('modifiers', 1)} modificateur(s) ou désactive les modificateurs.`, 'danger');
+                    return;
+                }
+
+                if (data.createdDraftId && S.modal.stepKey !== 'publish') {
+                    await persistModalContentForCurrentStep();
+                }
+
+                if (index < steps.length - 1) {
+                    if (S.modal.stepKey === 'categories' && !data.createdDraftId) {
+                        await createModalDraftShell();
+                    }
+                    S.modal.stepKey = steps[index + 1];
+                    renderModal();
+                    return;
+                }
+
+                if (S.modal.stepKey === 'publish') {
+                    if (data.publishedGame) {
+                        closeCreationModal();
+                        render();
+                        return;
+                    }
+                    await publishModalDraft();
+                    renderModal();
+                }
+            } catch (error) {
+                setStatus(error.message, 'danger');
+            } finally {
+                S.modal.busy = false;
+                if (S.modal.open) N.modalNext.disabled = false;
+            }
+        });
+
+        N.creationModal.addEventListener('click', (event) => {
+            if (event.target === N.creationModal) closeCreationModal();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && S.modal.open) closeCreationModal();
         });
 
         (async () => {
@@ -1546,7 +2167,7 @@
             renderDraftList();
 
             if (S.selectedDraftId) {
-                await loadDraft(S.selectedDraftId, 'Brouillon charge.');
+                await loadDraft(S.selectedDraftId, 'Jeu chargé.');
                 return;
             }
 

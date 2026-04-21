@@ -1,115 +1,292 @@
 @startuml
-title UML 2.5 - Class Diagram - Domain Model
+title UML 2.5 - Modele de domaine / MCD logique
 hide circle
 skinparam classAttributeIconSize 0
+skinparam linetype ortho
 
-class User {
-  +id: bigint
-  +username: string
-  +email: string
-  +role: string
+package "Identite et acces" {
+  enum UserRole {
+    Admin
+    User
+  }
+
+  class User {
+    +id: bigint
+    +username: varchar(80)
+    +email: varchar(190)
+    +password: varchar(255)
+    +role: UserRole
+    +first_name: varchar(100)
+    +last_name: varchar(100)
+    +display_name: varchar(120)
+    +is_anonymized: boolean
+    +privacy_policy_accepted_at: datetime
+    +last_login_at: datetime
+  }
+
+  class ApiKey {
+    +id: bigint
+    +user_id: bigint
+    +key_hash: varchar(64)
+    +label: varchar(100)
+    +is_active: boolean
+    +hashKey(plainKey): string
+  }
 }
 
-class ApiKey {
-  +id: bigint
-  +key_hash: string
-  +is_active: bool
+package "Catalogue publie runtime" {
+  class Game {
+    +id: bigint
+    +owner_user_id: bigint
+    +name: varchar(120)
+    +slug: varchar(120)
+    +genre: varchar(80)
+    +creation_category: varchar(40)
+    +source_type: varchar(30)
+    +visibility: varchar(30)
+    +published_at: datetime
+  }
+
+  class BuildProfile {
+    +id: bigint
+    +game_id: bigint
+    +name: varchar(120)
+    +description: text
+  }
+
+  class Tag {
+    +id: bigint
+    +game_id: bigint
+    +label: varchar(80)
+    +slug: varchar(120)
+    +source_type: varchar(30)
+  }
+
+  class EquipmentItem {
+    +id: bigint
+    +game_id: bigint
+    +name: varchar(140)
+    +slug: varchar(160)
+    +external_ref: varchar(160)
+    +slot: varchar(60)
+    +rarity: varchar(40)
+    +tier_level: varchar(20)
+    +score: int
+    +attack: int
+    +defense: int
+    +utility: int
+    +accuracy: int
+    +mobility: int
+    +metadata: json
+  }
+
+  class EquipmentItemSlot {
+    +id: bigint
+    +item_id: bigint
+    +slot_key: varchar(60)
+    +slot_label: varchar(80)
+    +accepted_modifier_type: varchar(60)
+    +sort_order: smallint
+    +is_required: boolean
+    +metadata: json
+  }
+
+  class EquipmentModifier {
+    +id: bigint
+    +game_id: bigint
+    +name: varchar(140)
+    +slug: varchar(160)
+    +external_ref: varchar(160)
+    +modifier_type: varchar(60)
+    +description: text
+    +delta_score: int
+    +delta_attack: int
+    +delta_defense: int
+    +delta_utility: int
+    +delta_accuracy: int
+    +delta_mobility: int
+    +metadata: json
+  }
+
+  class Build {
+    +id: bigint
+    +game_id: bigint
+    +user_id: bigint
+    +archetype_id: bigint
+    +title: varchar(140)
+    +description: text
+    +share_token: varchar(64)
+    +is_public: boolean
+  }
+
+  class "item_categories" as ItemCategories {
+    +item_id: bigint
+    +category_id: bigint
+  }
+
+  class "item_modifiers" as ItemModifiers {
+    +item_id: bigint
+    +modifier_id: bigint
+  }
+
+  class "build_items" as BuildItems {
+    +build_id: bigint
+    +item_id: bigint
+    +position: smallint
+  }
+
+  class "build_slots" as BuildSlots {
+    +build_id: bigint
+    +item_id: bigint
+    +item_slot_id: bigint
+    +modifier_id: bigint
+  }
 }
 
-class Game {
-  +id: bigint
-  +name: string
-  +slug: string
-  +visibility: string
+package "Studio / jeux en creation" {
+  class GameDraft {
+    +id: bigint
+    +owner_user_id: bigint
+    +published_game_id: bigint
+    +category_key: varchar(40)
+    +template_version: varchar(20)
+    +status: varchar(30)
+    +current_step: varchar(40)
+    +name: varchar(120)
+    +slug: varchar(120)
+    +description: text
+    +visibility: varchar(30)
+    +completion_percent: tinyint
+    +settings: json
+    +meta: json
+    +published_at: datetime
+  }
+
+  class GameDraftStep {
+    +id: bigint
+    +game_draft_id: bigint
+    +step_key: varchar(40)
+    +status: varchar(30)
+    +blocking_errors_count: int
+    +warnings_count: int
+    +payload_snapshot: json
+    +last_saved_at: datetime
+    +last_validated_at: datetime
+  }
+
+  class GameDraftArchetype {
+    +id: bigint
+    +game_draft_id: bigint
+    +name: varchar(120)
+    +slug: varchar(160)
+    +description: text
+  }
+
+  class GameDraftCategory {
+    +id: bigint
+    +game_draft_id: bigint
+    +label: varchar(80)
+    +slug: varchar(120)
+    +description: text
+  }
+
+  class GameDraftItem {
+    +id: bigint
+    +game_draft_id: bigint
+    +name: varchar(140)
+    +slug: varchar(160)
+    +slot: varchar(60)
+    +rarity: varchar(40)
+    +tier_level: varchar(20)
+    +score: int
+    +attack: int
+    +defense: int
+    +utility: int
+    +accuracy: int
+    +mobility: int
+    +metadata: json
+  }
+
+  class GameDraftItemSlot {
+    +id: bigint
+    +game_draft_item_id: bigint
+    +slot_key: varchar(60)
+    +slot_label: varchar(80)
+    +accepted_modifier_type: varchar(60)
+    +sort_order: smallint
+    +is_required: boolean
+    +metadata: json
+  }
+
+  class GameDraftModifier {
+    +id: bigint
+    +game_draft_id: bigint
+    +name: varchar(140)
+    +slug: varchar(160)
+    +modifier_type: varchar(60)
+    +description: text
+    +delta_score: int
+    +delta_attack: int
+    +delta_defense: int
+    +delta_utility: int
+    +delta_accuracy: int
+    +delta_mobility: int
+    +metadata: json
+  }
+
+  class "game_draft_item_categories" as DraftItemCategories {
+    +game_draft_item_id: bigint
+    +game_draft_category_id: bigint
+  }
+
+  class "game_draft_item_modifiers" as DraftItemModifiers {
+    +game_draft_item_id: bigint
+    +game_draft_modifier_id: bigint
+  }
 }
 
-class BuildProfile {
-  +id: bigint
-  +name: string
-}
-
-class EquipmentItem {
-  +id: bigint
-  +name: string
-  +slot: string
-  +score: int
-}
-
-class EquipmentItemSlot {
-  +id: bigint
-  +slot_key: string
-  +accepted_modifier_type: string
-}
-
-class EquipmentModifier {
-  +id: bigint
-  +name: string
-  +modifier_type: string
-}
-
-class Tag {
-  +id: bigint
-  +label: string
-  +slug: string
-}
-
-class Build {
-  +id: bigint
-  +title: string
-  +is_public: bool
-}
-
-class GameDraft {
-  +id: bigint
-  +category_key: string
-  +status: string
-  +current_step: string
-}
-
-class GameDraftItem {
-  +id: bigint
-  +name: string
-}
-
-class GameDraftModifier {
-  +id: bigint
-  +name: string
-}
-
-class GameDraftCategory {
-  +id: bigint
-  +label: string
-}
-
-class GameDraftArchetype {
-  +id: bigint
-  +name: string
-}
-
-User "1" -- "0..*" Build
-User "1" -- "0..*" GameDraft
 User "1" -- "0..*" ApiKey
+User "1" -- "0..*" Game : owner_user_id
+User "1" -- "0..*" Build
+User "1" -- "0..*" GameDraft : owner_user_id
 
-Game "1" -- "0..*" BuildProfile
-Game "1" -- "0..*" EquipmentItem
-Game "1" -- "0..*" EquipmentModifier
-Game "1" -- "0..*" Tag
+Game "1" -- "0..*" BuildProfile : archetypes
+Game "1" -- "0..*" Tag : categories
+Game "1" -- "0..*" EquipmentItem : items
+Game "1" -- "0..*" EquipmentModifier : modifiers
 Game "1" -- "0..*" Build
 
-Build "0..*" -- "0..*" EquipmentItem : build_items
-Build "0..*" -- "0..*" EquipmentModifier : build_slots
-
 EquipmentItem "1" -- "0..*" EquipmentItemSlot
-EquipmentItem "0..*" -- "0..*" Tag : item_categories
-EquipmentItem "0..*" -- "0..*" EquipmentModifier : item_modifiers
+EquipmentItem "1" -- "0..*" ItemCategories
+Tag "1" -- "0..*" ItemCategories
+EquipmentItem "1" -- "0..*" ItemModifiers
+EquipmentModifier "1" -- "0..*" ItemModifiers
 
+Build "1" -- "0..*" BuildItems
+EquipmentItem "1" -- "0..*" BuildItems
+Build "1" -- "0..*" BuildSlots
+EquipmentItem "1" -- "0..*" BuildSlots
+EquipmentItemSlot "0..1" -- "0..*" BuildSlots
+EquipmentModifier "1" -- "0..*" BuildSlots
+BuildProfile "0..1" -- "0..*" Build : archetype_id
+
+GameDraft "1" -- "0..*" GameDraftStep
 GameDraft "1" -- "0..*" GameDraftArchetype
 GameDraft "1" -- "0..*" GameDraftCategory
 GameDraft "1" -- "0..*" GameDraftItem
 GameDraft "1" -- "0..*" GameDraftModifier
-GameDraftItem "0..*" -- "0..*" GameDraftCategory
-GameDraftItem "0..*" -- "0..*" GameDraftModifier
-GameDraft ..> Game : publish runtime dataset
+GameDraftItem "1" -- "0..*" GameDraftItemSlot
+GameDraftItem "1" -- "0..*" DraftItemCategories
+GameDraftCategory "1" -- "0..*" DraftItemCategories
+GameDraftItem "1" -- "0..*" DraftItemModifiers
+GameDraftModifier "1" -- "0..*" DraftItemModifiers
+GameDraft "0..*" --> "0..1" Game : published_game_id
+
+note right of GameDraft
+Le draft est un espace de travail.
+A la publication, GameDraftPublicationService
+copie les archetypes, categories, items,
+slots et modificateurs vers le catalogue runtime.
+end note
 
 @enduml
-
