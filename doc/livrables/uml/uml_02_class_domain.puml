@@ -1,10 +1,27 @@
-@startuml
-title UML 2.5 - Modele de domaine / MCD logique
+@startuml uml_02_class_domain
+title UML 2.5 — Modele de domaine — Wiki Builder API
 hide circle
 skinparam classAttributeIconSize 0
 skinparam linetype ortho
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam ArrowColor #5D6D7E
+skinparam ArrowThickness 1.1
 
-package "Identite et acces" {
+skinparam class {
+  BackgroundColor #FAFAFA
+  BorderColor #5D6D7E
+  HeaderBackgroundColor #ECF0F1
+  FontSize 10
+}
+skinparam package {
+  BackgroundColor #F5F5F5
+  BorderColor #2C3E50
+  FontStyle bold
+}
+
+package "Identite et acces" #EDE7F6 {
   enum UserRole {
     Admin
     User
@@ -19,8 +36,19 @@ package "Identite et acces" {
     +first_name: varchar(100)
     +last_name: varchar(100)
     +display_name: varchar(120)
+    +phone: varchar(30)
+    +birth_date: date
+    +country_code: char(2)
+    +city: varchar(120)
+    +postal_code: varchar(20)
+    +address_line_1: varchar(190)
+    +address_line_2: varchar(190)
+    +avatar_url: varchar(512)
     +is_anonymized: boolean
+    +anonymized_at: datetime
     +privacy_policy_accepted_at: datetime
+    +privacy_policy_version: varchar(30)
+    +marketing_consent_at: datetime
     +last_login_at: datetime
   }
 
@@ -34,7 +62,7 @@ package "Identite et acces" {
   }
 }
 
-package "Catalogue publie runtime" {
+package "Catalogue publie runtime" #E3F2FD {
   class Game {
     +id: bigint
     +owner_user_id: bigint
@@ -143,7 +171,7 @@ package "Catalogue publie runtime" {
   }
 }
 
-package "Studio / jeux en creation" {
+package "Studio / jeux en creation" #FCE4EC {
   class GameDraft {
     +id: bigint
     +owner_user_id: bigint
@@ -287,6 +315,39 @@ Le draft est un espace de travail.
 A la publication, GameDraftPublicationService
 copie les archetypes, categories, items,
 slots et modificateurs vers le catalogue runtime.
+end note
+
+note top of BuildProfile
+Modele Eloquent : BuildProfile
+Table physique : archetypes
+end note
+
+note top of Tag
+Modele Eloquent : Tag
+Table physique : categories (scopee par game_id)
+end note
+
+note top of EquipmentItem
+Modele Eloquent : EquipmentItem
+Table physique : items
+end note
+
+note top of EquipmentModifier
+Modele Eloquent : EquipmentModifier
+Table physique : modifiers
+end note
+
+note top of EquipmentItemSlot
+Modele Eloquent : EquipmentItemSlot
+Table physique : item_slots
+end note
+
+note bottom of Game
+source_type = 'system' pour les jeux officiels (BO7...)
+source_type = 'user' pour les jeux crees par un utilisateur.
+visibility = 'public' : visible de tous via GET /api/v1/games.
+visibility = 'private' : visible uniquement du proprietaire
+via GET /api/v1/my/games (API KEY requis).
 end note
 
 @enduml

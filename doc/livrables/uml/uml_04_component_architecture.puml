@@ -1,54 +1,85 @@
-@startuml
-title UML 2.5 - Diagramme de composants - Architecture Laravel
+@startuml uml_04_component_architecture
+title UML 2.5 — Architecture — Composants Laravel
 skinparam componentStyle rectangle
 skinparam linetype ortho
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam ArrowColor #5D6D7E
+skinparam ArrowThickness 1.1
 
-package "Clients" {
+skinparam component {
+  BackgroundColor #FAFAFA
+  BorderColor #5D6D7E
+  FontSize 10
+}
+skinparam package {
+  BackgroundColor #F5F5F5
+  BorderColor #2C3E50
+  FontStyle bold
+}
+skinparam database {
+  BackgroundColor #D6EAF8
+  BorderColor #2471A3
+}
+skinparam folder {
+  BackgroundColor #FFF9C4
+  BorderColor #F39C12
+}
+skinparam cloud {
+  BackgroundColor #E8F5E9
+  BorderColor #27AE60
+}
+
+package "Clients" #ECF0F1 {
   [Navigateur\nBlade UI] as Browser
   [Postman / cURL] as Postman
 }
 
-package "Presentation" {
+package "Presentation" #E3F2FD {
   [Home Builder\nwelcome.blade.php] as HomeView
   [Studio popup\nstudio/games/create.blade.php] as StudioView
   [Dashboard / Account / Auth] as AccountViews
 }
 
-package "Routing Laravel" {
-  [routes/web.php] as WebRoutes
-  [routes/api.php] as ApiRoutes
-  [Middleware auth/session] as WebMiddlewares
-  [Middleware API\nthrottle, api key, role,\nresolve.request.user] as ApiMiddlewares
+package "Routing Laravel" #FFF3E0 {
+  [routes/web.php\nauth session, CSRF] as WebRoutes
+  [routes/api.php\nJSON REST versionnee] as ApiRoutes
+  [Middleware web\nauth (session Laravel)\nSetLocale, throttle] as WebMiddlewares
+  [Middleware API\nthrottle:60,1\nresolve.request.user\ncache.api:120\ncheck.api.key\nrequire.request.user\ncheck.role:admin] as ApiMiddlewares
 }
 
-package "Controllers" {
-  [HomeController] as HomeController
-  [GameStudioController] as StudioController
-  [Auth + Account controllers] as AccountControllers
-  [ApiHomeController] as ApiHomeController
-  [GameController] as GameController
-  [BuildController] as BuildController
-  [GameDraft controllers] as DraftControllers
-  [Runtime admin controllers] as AdminControllers
-  [RGPD controllers] as RgpdControllers
+package "Controllers" #E8F5E9 {
+  [HomeController\njeux publics accueil] as HomeController
+  [GameStudioController\nstudio creation jeux] as StudioController
+  [Auth + Account controllers\nRegisteredUserController\nAuthenticatedSessionController\nAccountController] as AccountControllers
+  [PrivacyPolicyController] as PrivacyController
+  [ApiHomeController\ndocumentation JSON] as ApiHomeController
+  [GameController\njeux publics + my/games] as GameController
+  [BuildController\nbuilds CRUD + compare + share] as BuildController
+  [GameCategoryController\ntemplates de creation] as GameCatController
+  [GameDraft controllers\nGameDraftController\nArchetype/Category/Item/Modifier] as DraftControllers
+  [Runtime admin controllers\nBuildProfile/Tag/Item/Modifier\nCompatibilite/ItemTag] as AdminControllers
+  [RgpdController\nexport/anonymize/delete user] as RgpdControllers
 }
 
-package "Validation / Serialization" {
+package "Validation / Serialization" #EDE7F6 {
   [FormRequests] as FormRequests
   [Json Resources] as Resources
   [ApiResponse] as ApiResponse
 }
 
-package "Services metier" {
-  [BuildRuleService] as BuildRule
-  [BuildSummaryService] as BuildSummary
-  [GameCategoryTemplateRegistry] as TemplateRegistry
-  [GameDraftProgressService] as DraftProgress
-  [GameDraftPublicationService] as DraftPublication
-  [BO7 services\nsnapshot/import] as Bo7Services
+package "Services metier" #FCE4EC {
+  [BuildRuleService\nvalidation items/slots/modifiers] as BuildRule
+  [BuildSummaryService\nstats agregees + comparaison] as BuildSummary
+  [GameCategoryTemplateRegistry\ntemplates fps/rpg versiones] as TemplateRegistry
+  [GameDraftProgressService\nprogression et blocages] as DraftProgress
+  [GameDraftPublicationService\ndraft -> runtime transactionnel] as DraftPublication
+  [UserPrivacyService\nexport/anonymize/delete RGPD] as PrivacyService
+  [BO7 services\nBo7DatasetBootstrapService\nBo7OperationLockService] as Bo7Services
 }
 
-package "Domaine Eloquent" {
+package "Domaine Eloquent" #FBE9E7 {
   [User / ApiKey] as IdentityModels
   [Game / BuildProfile] as GameModels
   [EquipmentItem / EquipmentModifier / Tag] as CatalogModels
@@ -71,29 +102,35 @@ ApiRoutes --> ApiMiddlewares
 WebRoutes --> HomeController
 WebRoutes --> StudioController
 WebRoutes --> AccountControllers
-WebRoutes --> DraftControllers : /studio/api/v1
+WebRoutes --> PrivacyController
+WebRoutes --> DraftControllers : /studio/api/v1\n(session auth)
 ApiRoutes --> ApiHomeController
 ApiRoutes --> GameController
+ApiRoutes --> GameCatController
 ApiRoutes --> BuildController
-ApiRoutes --> DraftControllers
+ApiRoutes --> DraftControllers : /api/v1/game-drafts/*\n(API KEY auth)
 ApiRoutes --> AdminControllers
 ApiRoutes --> RgpdControllers
 
 HomeController --> HomeView
 StudioController --> StudioView
 AccountControllers --> AccountViews
+PrivacyController --> AccountViews
 
 GameController --> Resources
 BuildController --> FormRequests
 BuildController --> BuildRule
 BuildController --> BuildSummary
 DraftControllers --> FormRequests
+DraftControllers --> TemplateRegistry
 DraftControllers --> DraftProgress
+DraftControllers --> DraftPublication
 DraftControllers --> Resources
 DraftControllers --> ApiResponse
 AdminControllers --> FormRequests
 AdminControllers --> Resources
 RgpdControllers --> IdentityModels
+AccountControllers --> PrivacyService
 
 DraftPublication --> DraftProgress
 DraftPublication --> DraftModels
@@ -101,6 +138,8 @@ DraftPublication --> GameModels
 DraftPublication --> CatalogModels
 DraftPublication --> DB
 TemplateRegistry --> DraftProgress
+PrivacyService --> IdentityModels
+PrivacyService --> DB
 Bo7Services --> Snapshot
 Bo7Services --> Codmunity
 Bo7Services --> CatalogModels

@@ -19,64 +19,62 @@
 
 ## 1. Diagramme de cas d'utilisation
 
-Trois acteurs principaux avec héritage : **Administrateur** étend **Utilisateur** qui étend **Visiteur**.
+Quatre acteurs : **Administrateur** hérite de **Utilisateur connecté** qui hérite de **Visiteur**. Le **Développeur API** accède aux routes `/api/v1/*` directement via Postman ou cURL.
 
 ```mermaid
 flowchart LR
     V(("Visiteur"))
-    U(("Utilisateur"))
+    U(("Utilisateur\nconnecté"))
     A(("Admin"))
+    D(("Développeur\nAPI"))
 
-    U -.->|extends| V
-    A -.->|extends| U
+    U -.->|hérite| V
+    A -.->|hérite| U
 
-    subgraph Consultation["Consultation publique"]
-        UC1["Consulter le catalogue des jeux"]
-        UC2["Voir les détails d un jeu"]
-        UC3["Consulter les items et modificateurs"]
-        UC4["Consulter les builds publics"]
-        UC5["Comparer des builds"]
-        UC6["Accéder à un build partagé"]
-        UC7["Changer la langue FR/EN"]
+    subgraph Catalogue["Catalogue — accès libre"]
+        UC1["Voir la liste des jeux"]
+        UC2["Voir le contenu d'un jeu"]
+        UC3["Parcourir les builds publics"]
+        UC4["Voir les statistiques d'un build"]
+        UC5["Comparer deux builds"]
+        UC6["Ouvrir un build par lien de partage"]
     end
 
-    subgraph Auth["Authentification"]
-        UC8["S inscrire"]
-        UC9["Se connecter"]
+    subgraph Builder["Builder — composer son build"]
+        UC7["Choisir un jeu et un archétype"]
+        UC8["Ajouter des items dans ses emplacements"]
+        UC9["Configurer les accessoires"]
+        UC10["Comparer ses emplacements"]
+        UC11["Sauvegarder / modifier / supprimer son build (API-KEY)"]
     end
 
-    subgraph Builds["Gestion des builds"]
-        UC10["Créer un build"]
-        UC11["Modifier un build"]
-        UC12["Supprimer un build"]
-        UC13["Partager un build"]
+    subgraph Compte["Mon compte — connexion requise"]
+        UC12["S'inscrire / Se connecter"]
+        UC13["Tableau de bord"]
+        UC14["Voir tous mes jeux (publics et privés)"]
+        UC15["Modifier mon profil"]
+        UC16["Télécharger mes données personnelles"]
+        UC17["Anonymiser ou supprimer mon compte"]
     end
 
-    subgraph Studio["Studio de création de jeu"]
-        UC14["Créer un brouillon de jeu"]
-        UC15["Configurer la structure"]
-        UC16["Gérer archétypes du brouillon"]
-        UC17["Gérer catégories du brouillon"]
-        UC18["Gérer items du brouillon"]
-        UC19["Gérer modificateurs du brouillon"]
-        UC20["Publier le jeu"]
-        UC21["Consulter ses jeux"]
+    subgraph Studio["Studio — créer et publier un jeu"]
+        UC18["Démarrer depuis un template (FPS, RPG...)"]
+        UC19["Nom et description"]
+        UC20["Emplacements et archétypes"]
+        UC21["Catégories d'items"]
+        UC22["Ajouter les armes et objets"]
+        UC23["Ajouter les accessoires"]
+        UC24["Publier le jeu"]
+        UC25["Reprendre un jeu non encore publié"]
     end
 
-    subgraph Compte["Compte et RGPD"]
-        UC22["Gérer son profil"]
-        UC23["Exporter ses données"]
-        UC24["Anonymiser son compte"]
-        UC25["Supprimer son compte"]
-    end
-
-    subgraph Administration["Administration"]
-        UC26["CRUD Archétypes"]
-        UC27["CRUD Catégories"]
-        UC28["CRUD Items"]
-        UC29["CRUD Modificateurs"]
-        UC30["Gérer compatibilités item-modifier"]
-        UC31["Administration RGPD utilisateurs"]
+    subgraph Administration["Administration — rôle admin"]
+        UC26["Gérer les archétypes"]
+        UC27["Gérer les catégories"]
+        UC28["Gérer les armes et objets"]
+        UC29["Gérer les accessoires"]
+        UC30["Définir les compatibilités accessoire/arme"]
+        UC31["Gérer les comptes utilisateurs (RGPD)"]
     end
 
     V --- UC1
@@ -88,10 +86,10 @@ flowchart LR
     V --- UC7
     V --- UC8
     V --- UC9
+    V --- UC10
+    V --- UC12
 
-    U --- UC10
     U --- UC11
-    U --- UC12
     U --- UC13
     U --- UC14
     U --- UC15
@@ -113,8 +111,18 @@ flowchart LR
     A --- UC30
     A --- UC31
 
-    UC15 -.->|include| UC14
-    UC20 -.->|include| UC15
+    D --- UC1
+    D --- UC2
+    D --- UC5
+    D --- UC11
+    D --- UC14
+    D --- UC18
+    D --- UC24
+    D --- UC28
+    D --- UC30
+    D --- UC31
+
+    UC10 -.->|include| UC8
 ```
 
 ---

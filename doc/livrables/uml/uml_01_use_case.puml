@@ -1,103 +1,168 @@
-@startuml
-title UML 2.5 - Cas d'utilisation - Wiki Builder API
+@startuml uml_01_use_case
+title UML 2.5 — Cas d'utilisation — Wiki Builder API
 left to right direction
+
 skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam actorStyle awesome
+skinparam nodesep 25
+skinparam ranksep 110
 
-actor "Visiteur" as Visitor
-actor "Utilisateur authentifie" as User
-actor "Administrateur" as Admin
-actor "Client API externe\n(Postman/cURL)" as ApiClient
-
-User --|> Visitor
-Admin --|> User
-
-rectangle "Wiki Builder API" {
-  package "Consultation publique" {
-    usecase "Consulter la documentation\n/api/v1" as UC_API_HOME
-    usecase "Lister les jeux publics" as UC_GAMES
-    usecase "Consulter le catalogue\nitems/modificateurs" as UC_CATALOG
-    usecase "Consulter les builds publics" as UC_BUILDS
-    usecase "Comparer deux builds" as UC_COMPARE
-    usecase "Ouvrir un build partage" as UC_SHARE
-  }
-
-  package "Builder" {
-    usecase "Selectionner un jeu" as UC_SELECT_GAME
-    usecase "Charger un build public" as UC_LOAD_BUILD
-    usecase "Composer un build local" as UC_LOCAL_BUILD
-    usecase "Comparer les statistiques" as UC_COMPARE_UI
-  }
-
-  package "Studio de creation" {
-    usecase "Demarrer un jeu\ndepuis un template" as UC_DRAFT_CREATE
-    usecase "Renseigner nom et description" as UC_FOUNDATION
-    usecase "Configurer structure\nslots, archetypes, modificateurs" as UC_STRUCTURE
-    usecase "Ajouter categories et archetypes" as UC_TAXONOMY
-    usecase "Ajouter items/equipements" as UC_ITEMS
-    usecase "Ajouter modificateurs" as UC_MODIFIERS
-    usecase "Publier le jeu" as UC_PUBLISH
-    usecase "Reprendre un jeu en cours" as UC_RESUME
-  }
-
-  package "Compte et RGPD" {
-    usecase "S'inscrire / se connecter" as UC_AUTH
-    usecase "Consulter le dashboard" as UC_DASHBOARD
-    usecase "Gerer le compte" as UC_ACCOUNT
-    usecase "Exporter ses donnees" as UC_EXPORT
-    usecase "Anonymiser ou supprimer\nson compte" as UC_DELETE_ACCOUNT
-  }
-
-  package "Administration API" {
-    usecase "Administrer archetypes" as UC_ADMIN_ARCH
-    usecase "Administrer categories" as UC_ADMIN_CAT
-    usecase "Administrer items" as UC_ADMIN_ITEMS
-    usecase "Administrer modificateurs" as UC_ADMIN_MODS
-    usecase "Gerer compatibilites\nitem/modificateur/categorie" as UC_ADMIN_LINKS
-    usecase "Operations RGPD admin" as UC_ADMIN_GDPR
-  }
+skinparam actor {
+  BorderColor #2C3E50
+  FontSize 11
+  FontStyle bold
+  BackgroundColor #ECF0F1
+}
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #5D6D7E
+  FontSize 10
+  RoundCorner 8
+}
+skinparam ArrowColor #5D6D7E
+skinparam ArrowThickness 1.1
+skinparam rectangle {
+  BorderColor #2C3E50
+  FontStyle bold
 }
 
-Visitor --> UC_API_HOME
+' ══════════════════════════════════════════════════════
+'  ACTEURS
+' ══════════════════════════════════════════════════════
+actor "Visiteur"                         as Visitor
+actor "Utilisateur connecte"             as User
+actor "Administrateur"                   as Admin
+actor "Developpeur API\n(Postman / cURL)" as DevApi
+
+User  --|> Visitor
+Admin --|> User
+
+' ══════════════════════════════════════════════════════
+'  SYSTEME
+' ══════════════════════════════════════════════════════
+rectangle "Wiki Builder API" {
+
+  package "Catalogue — acces libre" #E3F2FD {
+    usecase "Voir la liste des jeux" as UC_GAMES
+    usecase "Voir le contenu d'un jeu\n(armes, persos, accessoires, archetypes)" as UC_GAME_DETAIL
+    usecase "Parcourir les builds publics" as UC_BUILDS
+    usecase "Voir les statistiques d'un build" as UC_SUMMARY
+    usecase "Comparer deux builds cote a cote" as UC_COMPARE
+    usecase "Ouvrir un build par lien de partage" as UC_SHARE
+  }
+
+  package "Builder — composer son build" #E8F5E9 {
+    usecase "Choisir un jeu et un archetype" as UC_SELECT
+    usecase "Ajouter des items dans ses emplacements" as UC_SLOTS
+    usecase "Configurer les accessoires de chaque item" as UC_ACC
+    usecase "Comparer ses emplacements\n(tableau — disponible des 2 slots charges)" as UC_MATRIX
+    usecase "Sauvegarder / modifier / supprimer son build\n[API-KEY requis]" as UC_SAVE
+  }
+
+  package "Mon compte — connexion requise" #FFF9C4 {
+    usecase "S'inscrire / Se connecter" as UC_LOGIN
+    usecase "Tableau de bord\n(drafts en cours, jeux publies, builds)" as UC_DASHBOARD
+    usecase "Voir tous mes jeux\n(publics et prives)" as UC_MY_GAMES
+    usecase "Modifier mon profil" as UC_ACCOUNT
+    usecase "Telecharger mes donnees personnelles" as UC_EXPORT
+    usecase "Anonymiser ou supprimer mon compte" as UC_CLOSE
+  }
+
+  package "Studio — creer et publier un jeu" #FCE4EC {
+    usecase "Demarrer un jeu depuis un template\n(FPS, RPG...)" as UC_DRAFT_NEW
+    usecase "Donner un nom et une description" as UC_DRAFT_FOUND
+    usecase "Configurer les emplacements et archetypes" as UC_DRAFT_STRUCT
+    usecase "Ajouter les categories d'items" as UC_DRAFT_CAT
+    usecase "Ajouter les armes, persos et objets" as UC_DRAFT_ITEMS
+    usecase "Ajouter les accessoires" as UC_DRAFT_MODS
+    usecase "Publier le jeu\n(accessible a tous ou en prive)" as UC_DRAFT_PUBLISH
+    usecase "Reprendre un jeu non encore publie" as UC_DRAFT_RESUME
+  }
+
+  package "Administration du catalogue  [role admin]" #FBE9E7 {
+    usecase "Gerer les archetypes" as UC_ADM_ARCH
+    usecase "Gerer les categories" as UC_ADM_CAT
+    usecase "Gerer les armes et objets" as UC_ADM_ITEMS
+    usecase "Gerer les accessoires" as UC_ADM_MODS
+    usecase "Definir les compatibilites\naccessoire / arme / categorie" as UC_ADM_COMPAT
+    usecase "Gerer les comptes utilisateurs\n(exporter, anonymiser, supprimer)" as UC_ADM_RGPD
+  }
+
+}
+
+' ── Visiteur ─────────────────────────────────────────
 Visitor --> UC_GAMES
-Visitor --> UC_CATALOG
+Visitor --> UC_GAME_DETAIL
 Visitor --> UC_BUILDS
+Visitor --> UC_SUMMARY
 Visitor --> UC_COMPARE
 Visitor --> UC_SHARE
-Visitor --> UC_SELECT_GAME
-Visitor --> UC_LOAD_BUILD
-Visitor --> UC_LOCAL_BUILD
-Visitor --> UC_COMPARE_UI
-Visitor --> UC_AUTH
+Visitor --> UC_SELECT
+Visitor --> UC_SLOTS
+Visitor --> UC_ACC
+Visitor --> UC_MATRIX
+Visitor --> UC_LOGIN
 
-ApiClient --> UC_API_HOME
-ApiClient --> UC_GAMES
-ApiClient --> UC_CATALOG
-ApiClient --> UC_BUILDS
-ApiClient --> UC_COMPARE
-
+' ── Utilisateur connecte ─────────────────────────────
 User --> UC_DASHBOARD
+User --> UC_MY_GAMES
+User --> UC_SAVE
 User --> UC_ACCOUNT
 User --> UC_EXPORT
-User --> UC_DELETE_ACCOUNT
-User --> UC_DRAFT_CREATE
-User --> UC_RESUME
-User --> UC_PUBLISH
+User --> UC_CLOSE
+User --> UC_DRAFT_NEW
+User --> UC_DRAFT_FOUND
+User --> UC_DRAFT_STRUCT
+User --> UC_DRAFT_CAT
+User --> UC_DRAFT_ITEMS
+User --> UC_DRAFT_MODS
+User --> UC_DRAFT_PUBLISH
+User --> UC_DRAFT_RESUME
 
-Admin --> UC_ADMIN_ARCH
-Admin --> UC_ADMIN_CAT
-Admin --> UC_ADMIN_ITEMS
-Admin --> UC_ADMIN_MODS
-Admin --> UC_ADMIN_LINKS
-Admin --> UC_ADMIN_GDPR
+' ── Administrateur ───────────────────────────────────
+Admin --> UC_ADM_ARCH
+Admin --> UC_ADM_CAT
+Admin --> UC_ADM_ITEMS
+Admin --> UC_ADM_MODS
+Admin --> UC_ADM_COMPAT
+Admin --> UC_ADM_RGPD
 
-UC_DRAFT_CREATE .> UC_FOUNDATION : <<include>>
-UC_DRAFT_CREATE .> UC_STRUCTURE : <<include>>
-UC_DRAFT_CREATE .> UC_TAXONOMY : <<include>>
-UC_DRAFT_CREATE .> UC_ITEMS : <<include>>
-UC_DRAFT_CREATE .> UC_MODIFIERS : <<extend>>\nsi modificateurs actifs
-UC_PUBLISH .> UC_DRAFT_CREATE : <<include>>
-UC_COMPARE_UI .> UC_LOCAL_BUILD : <<include>>
-UC_ADMIN_LINKS .> UC_ADMIN_ITEMS : <<include>>
-UC_ADMIN_LINKS .> UC_ADMIN_MODS : <<include>>
+' ── Developpeur API — toutes les routes /api/v1/* ─────
+DevApi --> UC_GAMES
+DevApi --> UC_GAME_DETAIL
+DevApi --> UC_COMPARE
+DevApi --> UC_SAVE
+DevApi --> UC_MY_GAMES
+DevApi --> UC_DRAFT_NEW
+DevApi --> UC_DRAFT_PUBLISH
+DevApi --> UC_ADM_ITEMS
+DevApi --> UC_ADM_COMPAT
+DevApi --> UC_ADM_RGPD
+
+' ── Relation structurelle ────────────────────────────
+UC_MATRIX .> UC_SLOTS : <<include>>
+
+note bottom of UC_DRAFT_PUBLISH
+  <b>Etapes obligatoires dans le Studio</b>
+  1. Template  ->  2. Nom & description
+  3. Emplacements & archetypes  ->  4. Categories
+  5. Items  ->  6. Accessoires (si actives dans le template)
+  7. Publier  ->  le jeu apparait dans le catalogue
+end note
+
+note right of UC_MY_GAMES
+  <b>public</b>  visible de tous sur la page d'accueil
+  <b>prive</b>   visible uniquement par le createur
+end note
+
+note bottom of DevApi
+  Accede a toutes les routes /api/v1/*.
+  Sans cle API   -> lecture seule (catalogue, builds)
+  Avec API-KEY   -> ecriture (builds, drafts)
+  API-KEY + role admin -> gestion du catalogue
+end note
 
 @enduml

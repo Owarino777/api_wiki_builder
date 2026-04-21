@@ -1,29 +1,52 @@
-@startuml
-title UML 2.5 - Vue fonctionnelle des routes
-
+@startuml uml_07_routes_api
+title UML 2.5 — Vue des routes — Wiki Builder API
 left to right direction
+
 skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam actorStyle awesome
+skinparam nodesep 20
+skinparam ranksep 80
+
+skinparam actor {
+  BorderColor #2C3E50
+  FontSize 11
+  FontStyle bold
+  BackgroundColor #ECF0F1
+}
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #5D6D7E
+  FontSize 10
+  RoundCorner 8
+}
+skinparam ArrowColor #5D6D7E
+skinparam ArrowThickness 1.1
+skinparam rectangle {
+  BorderColor #2C3E50
+  FontStyle bold
+}
 
 actor "Visiteur" as Visitor
-actor "Client API public" as PublicClient
-actor "Utilisateur authentifie\nAPI-KEY ou session Studio" as UserClient
-actor "Administrateur\nAPI-KEY + role admin" as AdminClient
+actor "Developpeur API\n(acces public)" as PublicClient
+actor "Utilisateur connecte\n(API-KEY ou session Studio)" as UserClient
+actor "Administrateur\n(API-KEY + role admin)" as AdminClient
 
 rectangle "Application Wiki Builder" {
-  package "Web public" as WebPublic {
+  package "Web public" #F1F8E9 {
     usecase "GET /\nAccueil et documentation API" as UCWebHome
     usecase "GET /privacy\nPolitique de confidentialite" as UCWebPrivacy
     usecase "GET /locale/{locale}\nChangement fr/en" as UCWebLocale
   }
 
-  package "Web invite" as WebGuest {
+  package "Web invite" #FFF9C4 {
     usecase "GET/POST /login\nConnexion" as UCLogin
     usecase "GET/POST /register\nInscription" as UCRegister
   }
 
-  package "Web authentifie" as WebAuth {
+  package "Web authentifie" #FFF3E0 {
     usecase "GET /dashboard\nTableau de bord" as UCDashboard
     usecase "GET /account\nCompte" as UCAccount
     usecase "GET /account/export\nExport RGPD" as UCAccountExport
@@ -33,7 +56,7 @@ rectangle "Application Wiki Builder" {
     usecase "POST /logout\nDeconnexion" as UCLogout
   }
 
-  package "API v1 publique\nthrottle + resolve.request.user" as ApiPublic {
+  package "API v1 publique\n(throttle + resolve.request.user)" #E3F2FD {
     usecase "GET /api/v1\nDocumentation JSON" as UCApiHome
     usecase "GET /api/v1/game-categories\nGET /api/v1/game-categories/{key}\nTemplates de jeux" as UCTemplates
     usecase "GET /api/v1/games\nGET /api/v1/games/{id}\nCatalogue des jeux" as UCGames
@@ -45,7 +68,7 @@ rectangle "Application Wiki Builder" {
     usecase "POST /api/v1/builds/compare\nComparer deux builds" as UCBuildCompare
   }
 
-  package "API v1 utilisateur\ncheck.api.key + require.request.user" as ApiUser {
+  package "API v1 utilisateur\n(check.api.key + require.request.user)" #E8F5E9 {
     usecase "GET /api/v1/my/games\nGET /api/v1/my/games/{id}\nJeux appartenant a l'utilisateur" as UCMyGames
     usecase "GET/POST /api/v1/game-drafts\nGET/DELETE /api/v1/game-drafts/{id}\nGestion des brouillons" as UCDraftCrud
     usecase "PATCH /api/v1/game-drafts/{id}/foundation\nPATCH /api/v1/game-drafts/{id}/structure\nConfiguration du brouillon" as UCDraftConfig
@@ -57,7 +80,7 @@ rectangle "Application Wiki Builder" {
     usecase "POST /api/v1/builds\nPUT /api/v1/builds/{id}\nDELETE /api/v1/builds/{id}\nCreation et gestion des builds" as UCBuildWrite
   }
 
-  package "API v1 administration\ncheck.role:admin" as ApiAdmin {
+  package "API v1 administration\n(check.role:admin)" #FBE9E7 {
     usecase "POST/PUT/DELETE /api/v1/archetypes\nAdministration des archetypes" as UCAdminArchetypes
     usecase "POST/PUT/DELETE /api/v1/categories\nAdministration des categories" as UCAdminCategories
     usecase "POST/PUT/DELETE /api/v1/items\nAdministration des items" as UCAdminItems
@@ -67,7 +90,7 @@ rectangle "Application Wiki Builder" {
     usecase "GET /api/v1/users/{id}/export\nPOST /api/v1/users/{id}/anonymize\nDELETE /api/v1/users/{id}\nOperations RGPD admin" as UCAdminRgpd
   }
 
-  package "Studio interne\nsession auth + resolve.request.user" as StudioApi {
+  package "Studio interne\n(session auth + resolve.request.user)" #FCE4EC {
     usecase "GET/POST /studio/api/v1/game-drafts\nGET/DELETE /studio/api/v1/game-drafts/{id}\nBrouillons du Studio" as UCStudioDraftCrud
     usecase "PATCH /studio/api/v1/game-drafts/{id}/foundation\nPATCH /studio/api/v1/game-drafts/{id}/structure\nConfiguration Studio" as UCStudioDraftConfig
     usecase "POST /studio/api/v1/game-drafts/{id}/publish\nPublication Studio" as UCStudioPublish

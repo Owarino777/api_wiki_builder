@@ -1,8 +1,20 @@
-@startuml
-title UML 2.5 - Activite - Parcours Studio popup complet
-
+@startuml uml_06_activity_draft_workflow
+title UML 2.5 — Activite — Workflow Studio de creation de jeu
 skinparam shadowing false
 skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam ArrowColor #5D6D7E
+skinparam ArrowThickness 1.1
+
+skinparam activity {
+  BackgroundColor #ECF0F1
+  BorderColor #5D6D7E
+  FontSize 10
+}
+skinparam diamond {
+  BackgroundColor #D5F5E3
+  BorderColor #1E8449
+}
 
 start
 

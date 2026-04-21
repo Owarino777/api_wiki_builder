@@ -1,5 +1,24 @@
-@startuml
-title UML 2.5 - Sequence - Parcours Studio popup jusqu'a publication
+@startuml uml_03_sequence_draft_publish
+title UML 2.5 — Sequence — Parcours Studio jusqu’a publication
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam sequenceArrowThickness 1.5
+skinparam sequence {
+  ArrowColor #5D6D7E
+  LifeLineBorderColor #2C3E50
+  ParticipantBorderColor #5D6D7E
+  ParticipantBackgroundColor #ECF0F1
+  ParticipantFontSize 10
+  ActorBorderColor #2C3E50
+  ActorBackgroundColor #ECF0F1
+  BoxBackgroundColor #F9F9F9
+  BoxBorderColor #AABCC6
+}
+skinparam database {
+  BackgroundColor #D6EAF8
+  BorderColor #2471A3
+}
 autonumber
 
 actor "Utilisateur" as User

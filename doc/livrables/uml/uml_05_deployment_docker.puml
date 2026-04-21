@@ -1,12 +1,37 @@
-@startuml
-title UML 2.5 - Deploiement Docker Laravel
-
+@startuml uml_05_deployment_docker
+title UML 2.5 — Deploiement Docker — Wiki Builder API
 skinparam linetype ortho
 skinparam shadowing false
 skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam ArrowColor #5D6D7E
+skinparam ArrowThickness 1.1
+
+skinparam actor {
+  BorderColor #2C3E50
+  BackgroundColor #ECF0F1
+  FontStyle bold
+}
+skinparam node {
+  BackgroundColor #ECF0F1
+  BorderColor #2C3E50
+  FontStyle bold
+}
+skinparam database {
+  BackgroundColor #D6EAF8
+  BorderColor #2471A3
+}
+skinparam artifact {
+  BackgroundColor #F9F9F9
+  BorderColor #5D6D7E
+}
+skinparam folder {
+  BackgroundColor #FFF9C4
+  BorderColor #F39C12
+}
 
 actor "Navigateur utilisateur" as Browser
-actor "Client API\nPostman / curl / front tiers" as ApiClient
+actor "Developpeur API\n(Postman / cURL)" as ApiClient
 actor "Developpeur" as Dev
 
 node "Machine locale ou serveur" as Host {
